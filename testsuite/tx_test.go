@@ -3,14 +3,12 @@ package testsuite
 import (
 	"encoding/json"
 	"fmt"
+	F "incognito-dev-framework"
+	"incognito-dev-framework/account"
+	"incognito-dev-framework/rpcclient"
 	"testing"
-
-	"github.com/incognitochain/incognito-chain/devframework/account"
-
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
-	F "github.com/incognitochain/incognito-chain/devframework"
-	"github.com/incognitochain/incognito-chain/devframework/rpcclient"
 	"github.com/incognitochain/incognito-chain/transaction"
 )
 

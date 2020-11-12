@@ -1,6 +1,8 @@
 package devframework
 
 import (
+	"incognito-dev-framework/mock"
+	"incognito-dev-framework/rpcclient"
 	"log"
 	"net"
 	"os"
@@ -9,8 +11,6 @@ import (
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
-	"github.com/incognitochain/incognito-chain/devframework/mock"
-	"github.com/incognitochain/incognito-chain/devframework/rpcclient"
 	"github.com/incognitochain/incognito-chain/incdb"
 	"github.com/incognitochain/incognito-chain/memcache"
 	"github.com/incognitochain/incognito-chain/mempool"

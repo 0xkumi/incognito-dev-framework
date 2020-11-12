@@ -1,11 +1,11 @@
 package devframework
 
 import (
-	"github.com/incognitochain/incognito-chain/devframework/account"
+	"incognito-dev-framework/account"
+	"incognito-dev-framework/rpcclient"
 	"os"
 	"time"
 
-	"github.com/incognitochain/incognito-chain/devframework/rpcclient"
 )
 
 func NewRPCClient(endpoint string) *rpcclient.RPCClient {

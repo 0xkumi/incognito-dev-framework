@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/incognitochain/incognito-chain/devframework"
-	"github.com/incognitochain/incognito-chain/devframework/account"
-	"github.com/incognitochain/incognito-chain/devframework/rpcclient"
+	devframework "incognito-dev-framework"
+	"incognito-dev-framework/account"
+	"incognito-dev-framework/rpcclient"
 )
 
 func main() {

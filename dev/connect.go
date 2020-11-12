@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/incognitochain/incognito-chain/devframework"
+	"incognito-dev-framework"
 )
 
 func main() {
