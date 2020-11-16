@@ -85,9 +85,7 @@ func Test_SendTX(t *testing.T) {
 			Insert: func(chainID int, block common.BlockInterface, doInsert func(common.BlockInterface) error) {
 				if chainID == -1 {
 					//fmt.Printf("%+v %+v", block.(*blockchain.BeaconBlock).GetHeight(), block.(*blockchain.BeaconBlock).Body.ShardState)
-
 					doInsert(block)
-
 				} else {
 					doInsert(block)
 				}

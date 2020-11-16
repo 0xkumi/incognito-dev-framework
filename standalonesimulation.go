@@ -8,15 +8,9 @@ import (
 	"incognito-dev-framework/mock"
 	"incognito-dev-framework/rpcclient"
 	"log"
-	"math"
 	"net"
-	"os"
 	"path/filepath"
-	"strconv"
 	"time"
-
-	"github.com/incognitochain/incognito-chain/dataaccessobject/statedb"
-	"github.com/incognitochain/incognito-chain/wallet"
 
 	"github.com/incognitochain/incognito-chain/pubsub"
 
@@ -99,11 +93,11 @@ func (sim *SimulationEngine) NewAccount() account.Account {
 
 func (sim *SimulationEngine) init() {
 	simName := sim.simName
-	path, err := os.Getwd()
-	if err != nil {
-		log.Println(err)
-	}
-	initLogRotator(filepath.Join(path, simName+".log"))
+	//path, err := os.Getwd()
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//initLogRotator(filepath.Join(path, simName+".log"))
 	dbLogger.SetLevel(common.LevelTrace)
 	blockchainLogger.SetLevel(common.LevelTrace)
 	bridgeLogger.SetLevel(common.LevelTrace)
@@ -634,39 +628,40 @@ func (s *SimulationEngine) OnInserted(blkType int, f func(msg interface{})) {
 	s.listennerRegister[blkType] = append(s.listennerRegister[blkType], f)
 }
 
-func createGenesisTx(accounts []account.Account) []string {
-	transactions := []string{}
-	db, err := incdb.Open("leveldb", "/tmp/"+time.Now().UTC().String())
-	if err != nil {
-		fmt.Print("could not open connection to leveldb")
-		fmt.Print(err)
-		panic(err)
+
+func (s *SimulationEngine) OnNewBlockFromParticularHeight(chainID int,  blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash,height uint64)){
+	chain := s.bc.GetChain(chainID)
+	waitingBlkHeight := uint64(blkHeight)
+	if blkHeight == -1 {
+		if isFinalized {
+			waitingBlkHeight = chain.GetFinalView().GetHeight()
+		} else {
+			waitingBlkHeight = chain.GetBestView().GetHeight()
+		}
 	}
-	stateDB, _ := statedb.NewWithPrefixTrie(common.EmptyRoot, statedb.NewDatabaseAccessWarper(db))
-	initPRV := int(1000000000000 * math.Pow(10, 9))
-	for _, account := range accounts {
-		txs := initSalaryTx(strconv.Itoa(initPRV), account.PrivateKey, stateDB)
-		transactions = append(transactions, txs[0])
-	}
-	return transactions
+
+	go func(){
+		for{
+			if (isFinalized && chain.GetFinalView().GetHeight() > waitingBlkHeight )|| (!isFinalized && chain.GetBestView().GetHeight() > waitingBlkHeight){
+				if chainID == -1 {
+					hash,err := s.bc.GetBeaconBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
+					if err == nil {
+						f(s.bc, *hash,waitingBlkHeight)
+					}
+				} else {
+					hash,err := s.bc.GetShardBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
+					if err == nil {
+						f(s.bc, *hash,waitingBlkHeight)
+					}
+				}
+			} else {
+				time.Sleep(500*time.Millisecond)
+			}
+			waitingBlkHeight++
+		}
+	}()
 }
 
-func initSalaryTx(amount string, privateKey string, stateDB *statedb.StateDB) []string {
-	var initTxs []string
-	var initAmount, _ = strconv.Atoi(amount) // amount init
-	testUserkeyList := []string{
-		privateKey,
-	}
-	for _, val := range testUserkeyList {
-
-		testUserKey, _ := wallet.Base58CheckDeserialize(val)
-		testSalaryTX := transaction.Tx{}
-		testSalaryTX.InitTxSalary(uint64(initAmount), &testUserKey.KeySet.PaymentAddress, &testUserKey.KeySet.PrivateKey,
-			stateDB,
-			nil,
-		)
-		initTx, _ := json.Marshal(testSalaryTX)
-		initTxs = append(initTxs, string(initTx))
-	}
-	return initTxs
+func (s *SimulationEngine) DisableChainLog(){
+	disableStdoutLog = true
 }

@@ -3,9 +3,7 @@ package devframework
 import (
 	"incognito-dev-framework/mock"
 	"incognito-dev-framework/rpcclient"
-	"log"
 	"net"
-	"os"
 	"path/filepath"
 
 	"github.com/incognitochain/incognito-chain/blockchain"
@@ -29,7 +27,9 @@ const (
 
 type IncognitoNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
-	OnInserted(blkType int, f func(msg interface{}))
+	OnNewBlockFromParticularHeight(chainID int,blkHeight int64, isFinalized bool,f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
+	DisableChainLog()
+	GetBlockchain() *blockchain.BlockChain
 }
 
 func NewIncognitoNode(name string, mode int, chainCustomParam *blockchain.Params, highwayAddr string, enableRPC bool) IncognitoNodeInterface {
@@ -37,6 +37,7 @@ func NewIncognitoNode(name string, mode int, chainCustomParam *blockchain.Params
 	sim := &SimulationEngine{
 		simName: name,
 	}
+	//disableStdoutLog  = true
 	chainParam := &blockchain.Params{}
 	switch mode {
 	case MODE_MAINNET:
@@ -79,11 +80,11 @@ func NewIncognitoNode(name string, mode int, chainCustomParam *blockchain.Params
 
 func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, enableRPC bool) {
 	simName := sim.simName
-	path, err := os.Getwd()
-	if err != nil {
-		log.Println(err)
-	}
-	initLogRotator(filepath.Join(path, simName+".log"))
+	//path, err := os.Getwd()
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//initLogRotator(filepath.Join(path, simName+".log"))
 	dbLogger.SetLevel(common.LevelTrace)
 	blockchainLogger.SetLevel(common.LevelTrace)
 	bridgeLogger.SetLevel(common.LevelTrace)
