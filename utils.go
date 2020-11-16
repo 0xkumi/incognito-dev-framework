@@ -1,17 +1,22 @@
 package devframework
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"incognito-dev-framework/account"
+	"io"
+	"math"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/dataaccessobject/statedb"
 	"github.com/incognitochain/incognito-chain/incdb"
 	"github.com/incognitochain/incognito-chain/transaction"
 	"github.com/incognitochain/incognito-chain/wallet"
-	"incognito-dev-framework/account"
-	"math"
-	"strconv"
-	"time"
 )
 
 func createGenesisTx(accounts []account.Account) []string {
@@ -82,12 +87,14 @@ func DownloadLatestBackup(remoteURL string, chainID int) error {
 	fmt.Println("Download finish", chainName)
 	return nil
 }
+
 type JsonRequest struct {
 	Jsonrpc string      `json:"Jsonrpc"`
 	Method  string      `json:"Method"`
 	Params  interface{} `json:"Params"`
 	Id      interface{} `json:"Id"`
 }
+
 func makeRPCDownloadRequest(address string, method string, w io.Writer, params ...interface{}) error {
 	request := JsonRequest{
 		Jsonrpc: "1.0",
