@@ -84,7 +84,7 @@ func Test_SendTX(t *testing.T) {
 		sim.GenerateBlock(F.Hook{
 			Insert: func(chainID int, block common.BlockInterface, doInsert func(common.BlockInterface) error) {
 				if chainID == -1 {
-					fmt.Printf("%+v %+v", block.(*blockchain.BeaconBlock).GetHeight(), block.(*blockchain.BeaconBlock).Body.ShardState)
+					//fmt.Printf("%+v %+v", block.(*blockchain.BeaconBlock).GetHeight(), block.(*blockchain.BeaconBlock).Body.ShardState)
 
 					doInsert(block)
 
@@ -212,7 +212,7 @@ func Test_StakeFlow1(t *testing.T) {
 
 	unstake1 := rpcclient.StopStakingParam{
 		BurnAddr:  sim.GetBlockchain().GetBurningAddress(sim.GetBlockchain().BeaconChain.GetFinalViewHeight()),
-		StakerPrk: miner1.PrivateKey,
+		StakerPrk: sim.GenesisAccount.PrivateKey,
 		MinerPrk:  miner1.PrivateKey,
 	}
 	if _, err := sim.RPC.API_SendTxStopAutoStake(unstake1); err != nil {
