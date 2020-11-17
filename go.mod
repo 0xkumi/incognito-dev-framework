@@ -1,4 +1,4 @@
-module incognito-dev-framework
+module github.com/0xkumi/incongito-dev-framework
 
 go 1.15
 

@@ -2,7 +2,8 @@ package rpcclient
 
 import (
 	"fmt"
-	"incognito-dev-framework/account"
+
+	"github.com/0xkumi/incongito-dev-framework/account"
 
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/common/base58"

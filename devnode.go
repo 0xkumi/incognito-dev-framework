@@ -1,10 +1,11 @@
 package devframework
 
 import (
-	"incognito-dev-framework/mock"
-	"incognito-dev-framework/rpcclient"
 	"net"
 	"path/filepath"
+
+	"github.com/0xkumi/incongito-dev-framework/mock"
+	"github.com/0xkumi/incongito-dev-framework/rpcclient"
 
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
@@ -27,7 +28,7 @@ const (
 
 type IncognitoNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
-	OnNewBlockFromParticularHeight(chainID int,blkHeight int64, isFinalized bool,f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
+	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
 	DisableChainLog()
 	GetBlockchain() *blockchain.BlockChain
 }

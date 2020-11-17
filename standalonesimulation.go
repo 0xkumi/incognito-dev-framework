@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"incognito-dev-framework/account"
-	"incognito-dev-framework/mock"
-	"incognito-dev-framework/rpcclient"
 	"log"
 	"net"
 	"path/filepath"
 	"time"
+
+	"github.com/0xkumi/incongito-dev-framework/account"
+	"github.com/0xkumi/incongito-dev-framework/mock"
+	"github.com/0xkumi/incongito-dev-framework/rpcclient"
 
 	"github.com/incognitochain/incognito-chain/pubsub"
 
@@ -628,8 +629,7 @@ func (s *SimulationEngine) OnInserted(blkType int, f func(msg interface{})) {
 	s.listennerRegister[blkType] = append(s.listennerRegister[blkType], f)
 }
 
-
-func (s *SimulationEngine) OnNewBlockFromParticularHeight(chainID int,  blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash,height uint64)){
+func (s *SimulationEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64)) {
 	chain := s.bc.GetChain(chainID)
 	waitingBlkHeight := uint64(blkHeight)
 	if blkHeight == -1 {
@@ -640,28 +640,28 @@ func (s *SimulationEngine) OnNewBlockFromParticularHeight(chainID int,  blkHeigh
 		}
 	}
 
-	go func(){
-		for{
-			if (isFinalized && chain.GetFinalView().GetHeight() > waitingBlkHeight )|| (!isFinalized && chain.GetBestView().GetHeight() > waitingBlkHeight){
+	go func() {
+		for {
+			if (isFinalized && chain.GetFinalView().GetHeight() > waitingBlkHeight) || (!isFinalized && chain.GetBestView().GetHeight() > waitingBlkHeight) {
 				if chainID == -1 {
-					hash,err := s.bc.GetBeaconBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
+					hash, err := s.bc.GetBeaconBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
 					if err == nil {
-						f(s.bc, *hash,waitingBlkHeight)
+						f(s.bc, *hash, waitingBlkHeight)
 					}
 				} else {
-					hash,err := s.bc.GetShardBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
+					hash, err := s.bc.GetShardBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
 					if err == nil {
-						f(s.bc, *hash,waitingBlkHeight)
+						f(s.bc, *hash, waitingBlkHeight)
 					}
 				}
 			} else {
-				time.Sleep(500*time.Millisecond)
+				time.Sleep(500 * time.Millisecond)
 			}
 			waitingBlkHeight++
 		}
 	}()
 }
 
-func (s *SimulationEngine) DisableChainLog(){
+func (s *SimulationEngine) DisableChainLog() {
 	disableStdoutLog = true
 }
