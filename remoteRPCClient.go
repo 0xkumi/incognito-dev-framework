@@ -744,3 +744,34 @@ func (r *RemoteRPCClient) GetBurningAddress(beaconHeight float64) (res string,er
 	}
 	return resp.Result,err
 }
+
+
+func (r *RemoteRPCClient) GetPublicKeyRole(publicKey string, detail bool) (res interface{},err error) {
+	requestBody, rpcERR := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "getpublickeyrole",
+		"params":   []interface{}{publicKey,detail},
+		"id":      1,
+	})
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	resp := struct {
+		Result  interface{}
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resp.Result,err
+}

@@ -314,3 +314,31 @@ func (r *RPCClient) API_SendTxWithdrawReward(privateKey string, paymentAddress s
 	}
 	return &txResp, nil
 }
+
+func (r *RPCClient) API_GetPublicKeyRole(miningPublicKey string) (role string, chainID int) {
+	result, err := r.client.GetPublicKeyRole("bls:"+miningPublicKey, true)
+	if err != nil {
+		return "", -2
+	}
+	switch result.(*struct {
+		Role    int
+		ShardID int
+	}).Role {
+	case -1:
+		role = ""
+		break
+	case 0:
+		role = "waiting"
+		break
+	case 1:
+		role = "pending"
+		break
+	case 2:
+		role = "committee"
+		break
+	}
+	return role, result.(*struct {
+		Role    int
+		ShardID int
+	}).ShardID
+}

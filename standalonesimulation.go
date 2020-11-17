@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -94,11 +95,11 @@ func (sim *SimulationEngine) NewAccount() account.Account {
 
 func (sim *SimulationEngine) init() {
 	simName := sim.simName
-	//path, err := os.Getwd()
-	//if err != nil {
-	//	log.Println(err)
-	//}
-	//initLogRotator(filepath.Join(path, simName+".log"))
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+	initLogRotator(filepath.Join(path, simName+".log"))
 	dbLogger.SetLevel(common.LevelTrace)
 	blockchainLogger.SetLevel(common.LevelTrace)
 	bridgeLogger.SetLevel(common.LevelTrace)
@@ -144,7 +145,9 @@ func (sim *SimulationEngine) init() {
 	temppool := mempool.TxPool{}
 	btcrd := mock.BTCRandom{} // use mock for now
 	sync := syncker.NewSynckerManager()
-	server := mock.Server{}
+	server := mock.Server{
+		BlockChain: &bc,
+	}
 	ps := pubsub.NewPubSubManager()
 	fees := make(map[byte]*mempool.FeeEstimator)
 	for i := byte(0); i < byte(activeNetParams.ActiveShards); i++ {

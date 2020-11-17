@@ -149,7 +149,7 @@ func Test_StakeFlow1(t *testing.T) {
 		pendingPool := []string{}
 		committeePool := []string{}
 		for _, stake := range stakeList {
-			role, _ := sim.GetCommitteePublicKeyState(stake.CommitteeKey)
+			role, _ := sim.RPC.API_GetPublicKeyRole(stake.CommitteeKey.GetMiningKeyBase58("bls"))
 			switch role {
 			case "waiting":
 				waitingPool = append(waitingPool, stake.Name)
@@ -278,7 +278,7 @@ func Test_StakeFlow1(t *testing.T) {
 }
 
 func Test_PDEFlow(t *testing.T) {
-	F.DisableLog(true)
+	// F.DisableLog(true)
 	sim := F.NewStandaloneSimulation("sim3", F.Config{
 		ShardNumber: 1,
 	})

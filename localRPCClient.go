@@ -215,3 +215,12 @@ func (r *LocalRPCClient) GetBurningAddress(beaconHeight float64) (res string,err
 	}
 	return resI.(string),nil
 }
+func (r *LocalRPCClient) GetPublicKeyRole(publicKey string, detail bool) (res interface{},err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getpublickeyrole"]
+	resI, rpcERR := c(httpServer, []interface{}{publicKey,detail}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(interface{}),nil
+}

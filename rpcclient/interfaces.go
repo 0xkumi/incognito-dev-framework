@@ -28,4 +28,5 @@ type ClientInterface interface {
 	GetTransactionByHash(transactionHash string) (*jsonresult.TransactionDetail, error)
 	GetPrivacyCustomToken(tokenStr string) (*jsonresult.GetCustomToken, error)
 	GetBurningAddress(beaconHeight float64) (string, error)
+	GetPublicKeyRole(publicKey string, detail bool) (interface{}, error)
 }

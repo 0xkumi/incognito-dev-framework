@@ -26,14 +26,14 @@ const (
 	MODE_CUSTOM
 )
 
-type IncognitoNodeInterface interface {
+type AppNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
 	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
 	DisableChainLog()
 	GetBlockchain() *blockchain.BlockChain
 }
 
-func NewIncognitoNode(name string, mode int, chainCustomParam *blockchain.Params, highwayAddr string, enableRPC bool) IncognitoNodeInterface {
+func NewAppNode(name string, mode int, chainCustomParam *blockchain.Params, highwayAddr string, enableRPC bool) AppNodeInterface {
 	// os.RemoveAll(name)
 	sim := &SimulationEngine{
 		simName: name,
