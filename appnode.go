@@ -29,8 +29,9 @@ const (
 type AppNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
 	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
-	DisableChainLog()
+	DisableChainLog(disable bool)
 	GetBlockchain() *blockchain.BlockChain
+	GetRPC() *rpcclient.RPCClient
 }
 
 func NewAppNode(name string, mode int, chainCustomParam *blockchain.Params, highwayAddr string, enableRPC bool) AppNodeInterface {
@@ -38,7 +39,6 @@ func NewAppNode(name string, mode int, chainCustomParam *blockchain.Params, high
 	sim := &SimulationEngine{
 		simName: name,
 	}
-	//disableStdoutLog  = true
 	chainParam := &blockchain.Params{}
 	switch mode {
 	case MODE_MAINNET:
@@ -251,4 +251,8 @@ func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, enableRPC b
 
 	//init syncker
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
+}
+
+func (sim *SimulationEngine) GetRPC() *rpcclient.RPCClient {
+	return sim.RPC
 }
