@@ -16,7 +16,6 @@ import (
 
 	"github.com/incognitochain/incognito-chain/pubsub"
 
-	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/syncker"
 
 	"github.com/btcsuite/btcd/chaincfg"
@@ -561,67 +560,67 @@ func (sim *SimulationEngine) GetBlockchain() *blockchain.BlockChain {
 	return sim.bc
 }
 
-func DisableLog(disable bool) {
-	disableStdoutLog = disable
-}
+// func DisableLog(disable bool) {
+// 	disableStdoutLog = disable
+// }
 
-func (sim *SimulationEngine) GetCommitteePublicKeyState(userPk *incognitokey.CommitteePublicKey) (role string, chainID int) {
+// func (sim *SimulationEngine) GetCommitteePublicKeyState(userPk *incognitokey.CommitteePublicKey) (role string, chainID int) {
 
-	//For Beacon, check in beacon state, if user is in committee
-	for _, v := range sim.bc.BeaconChain.GetCommittee() {
-		if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
-			return common.CommitteeRole, -1
-		}
-	}
-	for _, v := range sim.bc.BeaconChain.GetPendingCommittee() {
-		if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
-			return common.PendingRole, -1
-		}
-	}
+// 	//For Beacon, check in beacon state, if user is in committee
+// 	for _, v := range sim.bc.BeaconChain.GetCommittee() {
+// 		if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
+// 			return common.CommitteeRole, -1
+// 		}
+// 	}
+// 	for _, v := range sim.bc.BeaconChain.GetPendingCommittee() {
+// 		if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
+// 			return common.PendingRole, -1
+// 		}
+// 	}
 
-	//For Shard
-	shardPendingCommiteeFromBeaconView := sim.bc.GetBeaconBestState().GetShardPendingValidator()
-	shardCommiteeFromBeaconView := sim.bc.GetBeaconBestState().GetShardCommittee()
-	shardCandidateFromBeaconView := sim.bc.GetBeaconBestState().GetShardCandidate()
-	//check if in committee of any shard
-	for _, chain := range sim.bc.ShardChain {
-		for _, v := range chain.GetCommittee() {
-			if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) { // in shard commitee in shard state
-				return common.CommitteeRole, chain.GetShardID()
-			}
-		}
+// 	//For Shard
+// 	shardPendingCommiteeFromBeaconView := sim.bc.GetBeaconBestState().GetShardPendingValidator()
+// 	shardCommiteeFromBeaconView := sim.bc.GetBeaconBestState().GetShardCommittee()
+// 	shardCandidateFromBeaconView := sim.bc.GetBeaconBestState().GetShardCandidate()
+// 	//check if in committee of any shard
+// 	for _, chain := range sim.bc.ShardChain {
+// 		for _, v := range chain.GetCommittee() {
+// 			if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) { // in shard commitee in shard state
+// 				return common.CommitteeRole, chain.GetShardID()
+// 			}
+// 		}
 
-		for _, v := range chain.GetPendingCommittee() {
-			if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) { // in shard pending ommitee in shard state
-				return common.PendingRole, chain.GetShardID()
-			}
-		}
-	}
+// 		for _, v := range chain.GetPendingCommittee() {
+// 			if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) { // in shard pending ommitee in shard state
+// 				return common.PendingRole, chain.GetShardID()
+// 			}
+// 		}
+// 	}
 
-	//check if in committee or pending committee in beacon
-	for _, chain := range sim.bc.ShardChain {
-		for _, v := range shardPendingCommiteeFromBeaconView[byte(chain.GetShardID())] { //if in pending commitee in beacon state
-			if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
-				return common.PendingRole, chain.GetShardID()
-			}
-		}
+// 	//check if in committee or pending committee in beacon
+// 	for _, chain := range sim.bc.ShardChain {
+// 		for _, v := range shardPendingCommiteeFromBeaconView[byte(chain.GetShardID())] { //if in pending commitee in beacon state
+// 			if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
+// 				return common.PendingRole, chain.GetShardID()
+// 			}
+// 		}
 
-		for _, v := range shardCommiteeFromBeaconView[byte(chain.GetShardID())] { //if in commitee in beacon state, but not in shard
-			if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
-				return common.SyncingRole, chain.GetShardID()
-			}
-		}
-	}
+// 		for _, v := range shardCommiteeFromBeaconView[byte(chain.GetShardID())] { //if in commitee in beacon state, but not in shard
+// 			if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
+// 				return common.SyncingRole, chain.GetShardID()
+// 			}
+// 		}
+// 	}
 
-	//if is waiting for assigning
-	for _, v := range shardCandidateFromBeaconView {
-		if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
-			return common.WaitingRole, -2
-		}
-	}
+// 	//if is waiting for assigning
+// 	for _, v := range shardCandidateFromBeaconView {
+// 		if v.IsEqualMiningPubKey(common.BlsConsensus, userPk) {
+// 			return common.WaitingRole, -2
+// 		}
+// 	}
 
-	return "", -2
-}
+// 	return "", -2
+// }
 
 func (s *SimulationEngine) OnReceive(msgType int, f func(msg interface{})) {
 	s.Network.listennerRegister[msgType] = append(s.Network.listennerRegister[msgType], f)
@@ -665,6 +664,6 @@ func (s *SimulationEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight
 	}()
 }
 
-func (s *SimulationEngine) DisableChainLog() {
-	disableStdoutLog = true
+func (s *SimulationEngine) DisableChainLog(disable bool) {
+	disableStdoutLog = disable
 }
