@@ -6,3 +6,4 @@ debug
 */devnode
 .idea
 */*.log
+vendor/
