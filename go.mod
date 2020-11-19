@@ -7,7 +7,7 @@ require (
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/dchest/siphash v1.2.2 // indirect
 	github.com/elastic/gosigar v0.12.0 // indirect
-	github.com/incognitochain/incognito-chain v0.0.0-20201116063456-2dc57996d6a2
+	github.com/incognitochain/incognito-chain v0.0.0-20201119014858-dba08e7ce24d
 	github.com/jrick/logrotate v1.0.0
 	github.com/libp2p/go-libp2p-peer v0.2.0
 	github.com/olekukonko/tablewriter v0.0.4 // indirect

@@ -38,10 +38,8 @@ type Config struct {
 	RoundInterval int
 }
 
-type HookCreate func(chain interface{}, doCreate func(time time.Time) (blk common.BlockInterface, err error))
-
 type Hook struct {
-	Create     func(chainID int, doCreate func(time time.Time) (blk common.BlockInterface, err error))
+	Create     func(chainID int, doCreate func() (blk common.BlockInterface, err error))
 	Validation func(chainID int, block common.BlockInterface, doValidation func(blk common.BlockInterface) error)
 	Insert     func(chainID int, block common.BlockInterface, doInsert func(blk common.BlockInterface) error)
 }
@@ -402,7 +400,7 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 	//Create blocks for apply chain
 	for _, chainID := range chainArray {
 		if h != nil && h.Create != nil {
-			h.Create(chainID, func(time time.Time) (blk common.BlockInterface, err error) {
+			h.Create(chainID, func() (blk common.BlockInterface, err error) {
 				if chainID == -1 {
 					block, err = chain.BeaconChain.CreateNewBlock(2, "", 1, sim.timer.Now())
 					if err != nil {
@@ -451,7 +449,7 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 					}
 					return nil
 				} else {
-					err = chain.VerifyPreSignShardBlock(block.(*blockchain.ShardBlock), byte(chainID))
+					err = chain.VerifyPreSignShardBlock(blk.(*blockchain.ShardBlock), byte(chainID))
 					if err != nil {
 						return err
 					}

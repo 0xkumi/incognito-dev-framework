@@ -120,3 +120,40 @@ func makeRPCDownloadRequest(address string, method string, w io.Writer, params .
 	}
 	return nil
 }
+
+func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
+	var sender string
+	var receivers = make(map[string]interface{})
+	for i, arg := range args {
+		if i == 0 {
+			sender = arg.(account.Account).PrivateKey
+		} else {
+			switch arg.(type) {
+			default:
+				if i%2 == 1 {
+					amount, ok := args[i+1].(int)
+					if !ok {
+						amountF64 := args[i+1].(float64)
+						amount = int(amountF64)
+					}
+					receivers[arg.(account.Account).PaymentAddress] = float64(amount)
+				}
+			}
+		}
+	}
+
+	res, err := sim.RPC.API_SendTxPRV(sender, receivers, 1, 1)
+	if err != nil {
+		fmt.Println(err)
+		sim.Pause()
+	}
+	return res.TxID, nil
+}
+
+func (sim *SimulationEngine) ShowBalance(acc account.Account)  {
+	res,err := sim.RPC.API_GetBalance(acc)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(res)
+}
