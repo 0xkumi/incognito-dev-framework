@@ -34,38 +34,52 @@ type AppNodeInterface interface {
 	GetRPC() *rpcclient.RPCClient
 }
 
-func NewAppNode(name string, mode int, chainCustomParam *blockchain.Params, highwayAddr string, enableRPC bool) AppNodeInterface {
+type NetworkParam struct {
+	ChainParam     *blockchain.Params
+	HighwayAddress string
+}
+
+var (
+	MainNetParam = NetworkParam{
+		HighwayAddress: "51.91.72.45:9330",
+	}
+	TestNetParam = NetworkParam{
+		HighwayAddress: "45.56.115.6:9330",
+	}
+	TestNet2Param = NetworkParam{
+		HighwayAddress: "74.207.247.250:9330",
+	}
+)
+
+func NewAppNode(name string, networkParam NetworkParam, enableRPC bool) AppNodeInterface {
 	// os.RemoveAll(name)
 	sim := &SimulationEngine{
 		simName: name,
 	}
 	chainParam := &blockchain.Params{}
-	switch mode {
-	case MODE_MAINNET:
+	switch networkParam {
+	case MainNetParam:
 		blockchain.IsTestNet = false
 		blockchain.IsTestNet2 = false
 		blockchain.ReadKey(blockchain.MainnetKeylist, blockchain.Mainnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainMainParam
-		chainParam.NumberOfFixedBlockValidators = 22
 		break
-	case MODE_TESTNET:
+	case TestNetParam:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
 		blockchain.ReadKey(blockchain.TestnetKeylist, blockchain.Testnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTestParam
-		chainParam.NumberOfFixedBlockValidators = 4
 		break
-	case MODE_TESTNET2:
+	case TestNet2Param:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = true
 		blockchain.ReadKey(blockchain.Testnet2Keylist, blockchain.Testnet2v2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTest2Param
-		chainParam.NumberOfFixedBlockValidators = 4
 		break
-	case MODE_CUSTOM:
+	default:
 		blockchain.IsTestNet = false
 		blockchain.IsTestNet2 = false
 		break
@@ -75,7 +89,7 @@ func NewAppNode(name string, mode int, chainCustomParam *blockchain.Params, high
 	for index := 0; index < common.MaxShardNumber; index++ {
 		relayShards = append(relayShards, byte(index))
 	}
-	sim.ConnectNetwork(highwayAddr, relayShards)
+	sim.ConnectNetwork(networkParam.HighwayAddress, relayShards)
 	return sim
 }
 

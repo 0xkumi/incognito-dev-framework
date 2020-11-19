@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	node := devframework.NewAppNode("devnode", devframework.MODE_MAINNET, nil, "51.91.72.45:9330", true)
+	node := devframework.NewAppNode("devnode", devframework.MainNetParam, true)
 	node.DisableChainLog(true)
 
 	//update blkHeight that want to process from
