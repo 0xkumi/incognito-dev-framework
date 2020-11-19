@@ -10,8 +10,7 @@ import (
 )
 
 func main() {
-	node := devframework.NewAppNode("fullnode", devframework.MODE_MAINNET, nil, "51.91.72.45:9330", true)
-	node.DisableChainLog(true)
+	node := devframework.NewAppNode("fullnode", devframework.MainNetParam, true)
 
 	//update blkHeight that want to process from
 	//blkHeight = -1, start from current best view height
