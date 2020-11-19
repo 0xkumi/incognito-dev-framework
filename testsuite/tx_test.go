@@ -14,10 +14,9 @@ import (
 )
 
 func Test_SendTX(t *testing.T) {
-	F.DisableLog(true)
 	sim := F.NewStandaloneSimulation("sim1", F.Config{
 		ShardNumber: 2,
-	})
+	}, true)
 	sim.GenerateBlock().NextRound()
 	acc1 := sim.NewAccountFromShard(1)
 	acc2 := sim.NewAccountFromShard(0)
@@ -101,10 +100,9 @@ func Test_SendTX(t *testing.T) {
 }
 
 func Test_StakeFlow1(t *testing.T) {
-	F.DisableLog(true)
 	sim := F.NewStandaloneSimulation("sim2", F.Config{
 		ShardNumber: 1,
-	})
+	}, true)
 	sim.GenerateBlock().NextRound()
 	miner1 := sim.NewAccountFromShard(0)
 
@@ -281,7 +279,7 @@ func Test_PDEFlow(t *testing.T) {
 	// F.DisableLog(true)
 	sim := F.NewStandaloneSimulation("sim3", F.Config{
 		ShardNumber: 1,
-	})
+	}, true)
 	acc1 := sim.NewAccountFromShard(0)
 	_, err := sim.RPC.API_SendTxPRV(sim.GenesisAccount.PrivateKey, map[string]interface{}{
 		acc1.PaymentAddress: float64(100000000),

@@ -44,26 +44,26 @@ func NewAppNode(name string, mode int, chainCustomParam *blockchain.Params, high
 	case MODE_MAINNET:
 		blockchain.IsTestNet = false
 		blockchain.IsTestNet2 = false
-		blockchain.NumberOfFixedBlockValidators = 22
 		blockchain.ReadKey(blockchain.MainnetKeylist, blockchain.Mainnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainMainParam
+		chainParam.NumberOfFixedBlockValidators = 22
 		break
 	case MODE_TESTNET:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
 		blockchain.ReadKey(blockchain.TestnetKeylist, blockchain.Testnetv2Keylist)
 		blockchain.SetupParam()
-		blockchain.NumberOfFixedBlockValidators = 4
 		chainParam = &blockchain.ChainTestParam
+		chainParam.NumberOfFixedBlockValidators = 4
 		break
 	case MODE_TESTNET2:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = true
 		blockchain.ReadKey(blockchain.Testnet2Keylist, blockchain.Testnet2v2Keylist)
 		blockchain.SetupParam()
-		blockchain.NumberOfFixedBlockValidators = 4
 		chainParam = &blockchain.ChainTest2Param
+		chainParam.NumberOfFixedBlockValidators = 4
 		break
 	case MODE_CUSTOM:
 		blockchain.IsTestNet = false
