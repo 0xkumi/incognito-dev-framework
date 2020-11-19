@@ -82,8 +82,7 @@ func NewAccountFromPrivatekey(privateKey string) (*Account, error) {
 	return acc, nil
 }
 
-func GenerateAccountByShard(shardID int, keyID int, seed string) (*Account, error) {
-	acc := &Account{}
+func GenerateAccountByShard(shardID int, keyID int, seed string) (acc *Account,err error) {
 	key, _ := wallet.NewMasterKey([]byte(fmt.Sprintf("%v-%v", seed, shardID)))
 	var i int
 	var k = 0
@@ -91,16 +90,11 @@ func GenerateAccountByShard(shardID int, keyID int, seed string) (*Account, erro
 		i++
 		child, _ := key.NewChildKey(uint32(i))
 		privAddr := child.Base58CheckSerialize(wallet.PriKeyType)
-		paymentAddress := child.Base58CheckSerialize(wallet.PaymentAddressType)
 		if child.KeySet.PaymentAddress.Pk[common.PublicKeySize-1] == byte(shardID) {
-			acc.PublicKey = base58.Base58Check{}.Encode(child.KeySet.PaymentAddress.Pk, common.ZeroByte)
-			acc.PrivateKey = privAddr
-			acc.PaymentAddress = paymentAddress
-			validatorKeyBytes := common.HashB(common.HashB(child.KeySet.PrivateKey))
-			acc.MiningKey = base58.Base58Check{}.Encode(validatorKeyBytes, common.ZeroByte)
-			acc.keyset = &child.KeySet
-			committeeKey, _ := incognitokey.NewCommitteeKeyFromSeed(common.HashB(common.HashB(child.KeySet.PrivateKey)), child.KeySet.PaymentAddress.Pk)
-			acc.SelfCommitteePubkey, _ = committeeKey.ToBase58()
+			acc,err = NewAccountFromPrivatekey(privAddr)
+			if err != nil {
+				panic(err)
+			}
 			if k == keyID {
 				break
 			}
