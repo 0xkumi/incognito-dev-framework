@@ -82,6 +82,7 @@ func NewAppNode(name string, networkParam NetworkParam, enableRPC bool) AppNodeI
 	default:
 		blockchain.IsTestNet = false
 		blockchain.IsTestNet2 = false
+		chainParam = networkParam.ChainParam
 		break
 	}
 	sim.initNode(chainParam, enableRPC)
