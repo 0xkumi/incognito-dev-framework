@@ -161,6 +161,43 @@ func (r *RPCClient) API_GetPDEState(beaconHeight float64) (jsonresult.CurrentPDE
 	return result, err
 }
 
+
+func (sim *RPCClient) SendPRV(args ...interface{}) (string, error) {
+	var sender string
+	var receivers = make(map[string]interface{})
+	for i, arg := range args {
+		if i == 0 {
+			sender = arg.(account.Account).PrivateKey
+		} else {
+			switch arg.(type) {
+			default:
+				if i%2 == 1 {
+					amount, ok := args[i+1].(int)
+					if !ok {
+						amountF64 := args[i+1].(float64)
+						amount = int(amountF64)
+					}
+					receivers[arg.(account.Account).PaymentAddress] = float64(amount)
+				}
+			}
+		}
+	}
+
+	res, err := sim.API_SendTxPRV(sender, receivers, 1, 1)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return res.TxID, nil
+}
+
+func (sim *RPCClient) ShowBalance(acc account.Account)  {
+	res,err := sim.API_GetBalance(acc)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(res)
+}
+
 func (r *RPCClient) API_GetBeaconBestState() (jsonresult.GetBeaconBestState, error) {
 	result, err := r.client.GetBeaconBestState()
 	return result, err
@@ -216,6 +253,16 @@ type StopStakingParam struct {
 	MinerPrk  string
 }
 
+func (r *RPCClient) Stake(acc account.Account) (*jsonresult.CreateTransactionResult, error) {
+	stake1 := StakingTxParam{
+		BurnAddr:    "12RxahVABnAVCGP3LGwCn8jkQxgw7z1x14wztHzn455TTVpi1wBq9YGwkRMQg3J4e657AbAnCvYCJSdA9czBUNuCKwGSRQt55Xwz8WA",
+		StakerPrk:   acc.PrivateKey,
+		StakeShard:  true,
+		AutoRestake: true,
+	}
+	return r.API_SendTxStaking(stake1)
+}
+
 func (r *RPCClient) API_SendTxStaking(stakeMeta StakingTxParam) (*jsonresult.CreateTransactionResult, error) {
 	stakeAmount := 0
 	stakingType := 0
@@ -253,6 +300,17 @@ func (r *RPCClient) API_SendTxStaking(stakeMeta StakingTxParam) (*jsonresult.Cre
 		panic(0)
 	}
 	burnAddr := stakeMeta.BurnAddr
+
+	fmt.Println(burnAddr)
+	fmt.Println(stakingType)
+	fmt.Println(stakeAmount)
+	fmt.Println(stakeMeta.StakerPrk)
+	fmt.Println(minerPayment)
+	fmt.Println(privateSeed)
+	fmt.Println(stakeMeta.RewardAddr)
+	fmt.Println(stakeMeta.AutoRestake)
+
+
 	txResp, err := r.client.CreateAndSendStakingTransaction(stakeMeta.StakerPrk, map[string]interface{}{burnAddr: float64(stakeAmount)}, 1, 0, map[string]interface{}{
 		"StakingType":                  float64(stakingType),
 		"CandidatePaymentAddress":      minerPayment,

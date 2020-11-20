@@ -78,7 +78,7 @@ func (sim *SimulationEngine) NewAccountFromShard(sid int) account.Account {
 	lastID++
 	sim.accountGenHistory[sid] = lastID
 	acc, _ := account.GenerateAccountByShard(sid, lastID, sim.accountSeed)
-	return *acc
+	return acc
 }
 
 func (sim *SimulationEngine) NewAccount() account.Account {
@@ -86,7 +86,7 @@ func (sim *SimulationEngine) NewAccount() account.Account {
 	lastID++
 	sim.accountGenHistory[0] = lastID
 	acc, _ := account.GenerateAccountByShard(0, lastID, sim.accountSeed)
-	return *acc
+	return acc
 }
 
 func (sim *SimulationEngine) init() {

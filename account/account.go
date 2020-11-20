@@ -64,11 +64,11 @@ func NewAccountFromCommitteePublicKey(committeePK string) (*Account, error) {
 	return acc, nil
 }
 
-func NewAccountFromPrivatekey(privateKey string) (*Account, error) {
-	acc := &Account{}
+func NewAccountFromPrivatekey(privateKey string) (Account, error) {
+	acc := Account{}
 	wl, err := wallet.Base58CheckDeserialize(privateKey)
 	if err != nil {
-		return nil, err
+		return Account{}, err
 	}
 	acc.PrivateKey = privateKey
 	acc.PublicKey = wl.KeySet.GetPublicKeyInBase58CheckEncode()
@@ -82,7 +82,7 @@ func NewAccountFromPrivatekey(privateKey string) (*Account, error) {
 	return acc, nil
 }
 
-func GenerateAccountByShard(shardID int, keyID int, seed string) (acc *Account,err error) {
+func GenerateAccountByShard(shardID int, keyID int, seed string) (acc Account,err error) {
 	key, _ := wallet.NewMasterKey([]byte(fmt.Sprintf("%v-%v", seed, shardID)))
 	var i int
 	var k = 0
