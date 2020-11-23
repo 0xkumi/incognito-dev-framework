@@ -2,7 +2,6 @@ package devframework
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -12,6 +11,9 @@ import (
 	"github.com/0xkumi/incongito-dev-framework/account"
 	"github.com/0xkumi/incongito-dev-framework/mock"
 	"github.com/0xkumi/incongito-dev-framework/rpcclient"
+	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/filter"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 
 	"github.com/incognitochain/incognito-chain/pubsub"
 
@@ -30,6 +32,10 @@ import (
 	btcrelaying "github.com/incognitochain/incognito-chain/relaying/btc"
 	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/transaction"
+
+	lvdbErrors "github.com/syndtr/goleveldb/leveldb/errors"
+
+	"github.com/pkg/errors"
 )
 
 type Config struct {
@@ -71,6 +77,8 @@ type SimulationEngine struct {
 
 	RPC               *rpcclient.RPCClient
 	listennerRegister map[int][]func(msg interface{})
+
+	userDB *leveldb.DB
 }
 
 func (sim *SimulationEngine) NewAccountFromShard(sid int) account.Account {
@@ -159,8 +167,8 @@ func (sim *SimulationEngine) init() {
 	if err != nil {
 		panic(err)
 	}
-
-	db, err := incdb.OpenMultipleDB("leveldb", filepath.Join("./"+simName, "database"))
+	dbpath := filepath.Join("./"+simName, "database")
+	db, err := incdb.OpenMultipleDB("leveldb", dbpath)
 	// Create db and use it.
 	if err != nil {
 		panic(err)
@@ -277,6 +285,24 @@ func (sim *SimulationEngine) init() {
 
 	//init syncker
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
+
+	//init user database
+	handles := 256
+	cache := 8
+	userDBPath := filepath.Join(dbpath, "userdb")
+	lvdb, err := leveldb.OpenFile(userDBPath, &opt.Options{
+		OpenFilesCacheCapacity: handles,
+		BlockCacheCapacity:     cache / 2 * opt.MiB,
+		WriteBuffer:            cache / 4 * opt.MiB, // Two of these are used internally
+		Filter:                 filter.NewBloomFilter(10),
+	})
+	if _, corrupted := err.(*lvdbErrors.ErrCorrupted); corrupted {
+		lvdb, err = leveldb.RecoverFile(userDBPath, nil)
+	}
+	sim.userDB = lvdb
+	if err != nil {
+		panic(errors.Wrapf(err, "levelvdb.OpenFile %s", userDBPath))
+	}
 }
 
 func (sim *SimulationEngine) startPubSub() {
@@ -559,4 +585,8 @@ func (sim *SimulationEngine) GetBlockchain() *blockchain.BlockChain {
 
 func (s *SimulationEngine) DisableChainLog(disable bool) {
 	disableStdoutLog = disable
+}
+
+func (s *SimulationEngine) GetUserDatabase() *leveldb.DB {
+	return s.userDB
 }
