@@ -332,7 +332,7 @@ func Test_PDEFlow(t *testing.T) {
 	rBytes, _ := json.Marshal(r)
 	fmt.Println(string(rBytes))
 
-	_, err = sim.RPC.API_SendTxWithPRVCrossPoolTradeReq(acc1, result1.TokenID, "1000000")
+	_, err = sim.RPC.API_SendTxWithPRVCrossPoolTradeReq(acc1, result1.TokenID, "1000000", "1")
 	if err != nil {
 		panic(err)
 	}
@@ -340,7 +340,7 @@ func Test_PDEFlow(t *testing.T) {
 		sim.GenerateBlock().NextRound()
 	}
 
-	_, err = sim.RPC.API_SendTxWithPTokenCrossPoolTradeReq(sim.GenesisAccount, result1.TokenID, "0000000000000000000000000000000000000000000000000000000000000004", "1000000000")
+	_, err = sim.RPC.API_SendTxWithPTokenCrossPoolTradeReq(sim.GenesisAccount, result1.TokenID, "0000000000000000000000000000000000000000000000000000000000000004", "1000000000", "1")
 	if err != nil {
 		panic(err)
 	}
