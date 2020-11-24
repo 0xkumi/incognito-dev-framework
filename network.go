@@ -1,6 +1,8 @@
 package devframework
 
 import (
+	"context"
+
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/peer"
@@ -95,7 +97,6 @@ func (s *HighwayConnection) Connect() {
 		"relay",
 		s.config.RelayShards,
 	)
-
 	go s.conn.Start(nil)
 
 }
@@ -183,12 +184,28 @@ func (s *HighwayConnection) onPeerState(p *peer.PeerConn, msg *wire.MessagePeerS
 /*
 	Framework Network interface
 */
-func (s *HighwayConnection) GetBeaconBlock(from, to int) []*blockchain.BeaconBlock {
-	panic("implement me")
+func (s *HighwayConnection) GetBeaconBlock(from, to uint64) []*blockchain.BeaconBlock {
+	blkCh, err := s.conn.RequestBeaconBlocksViaStream(context.Background(), "", from, to)
+	if err != nil {
+		return nil
+	}
+	result := []*blockchain.BeaconBlock{}
+	for block := range blkCh {
+		result = append(result, block.(*blockchain.BeaconBlock))
+	}
+	return result
 }
 
-func (s *HighwayConnection) GetShardBlock(sid, from, to int) *blockchain.ShardBlock {
-	panic("implement me")
+func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) []*blockchain.ShardBlock {
+	blkCh, err := s.conn.RequestShardBlocksViaStream(context.Background(), "", sid, from, to)
+	if err != nil {
+		return nil
+	}
+	result := []*blockchain.ShardBlock{}
+	for block := range blkCh {
+		result = append(result, block.(*blockchain.ShardBlock))
+	}
+	return result
 }
 
 func (s *HighwayConnection) GetCrossShardBlock(fromsid, tosid, from, to int) *blockchain.CrossShardBlock {
