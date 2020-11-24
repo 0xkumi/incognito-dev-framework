@@ -61,21 +61,21 @@ func NewAppNode(name string, networkParam NetworkParam, enableRPC bool) AppNodeI
 	case MainNetParam:
 		blockchain.IsTestNet = false
 		blockchain.IsTestNet2 = false
-		blockchain.ReadKey(blockchain.MainnetKeylist, blockchain.Mainnetv2Keylist)
+		blockchain.ReadKey(MainnetKeylist, Mainnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainMainParam
 		break
 	case TestNetParam:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
-		blockchain.ReadKey(blockchain.TestnetKeylist, blockchain.Testnetv2Keylist)
+		blockchain.ReadKey(TestnetKeylist, Testnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTestParam
 		break
 	case TestNet2Param:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = true
-		blockchain.ReadKey(blockchain.Testnet2Keylist, blockchain.Testnet2v2Keylist)
+		blockchain.ReadKey(Testnet2Keylist, Testnet2v2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTest2Param
 		break
