@@ -6,6 +6,11 @@ import (
 
 	"github.com/0xkumi/incongito-dev-framework/mock"
 	"github.com/0xkumi/incongito-dev-framework/rpcclient"
+	"github.com/pkg/errors"
+	"github.com/syndtr/goleveldb/leveldb"
+	lvdbErrors "github.com/syndtr/goleveldb/leveldb/errors"
+	"github.com/syndtr/goleveldb/leveldb/filter"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
@@ -32,6 +37,7 @@ type AppNodeInterface interface {
 	DisableChainLog(disable bool)
 	GetBlockchain() *blockchain.BlockChain
 	GetRPC() *rpcclient.RPCClient
+	GetUserDatabase() *leveldb.DB
 }
 
 type NetworkParam struct {
@@ -141,8 +147,8 @@ func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, enableRPC b
 	}
 
 	// pubkey := cs.GetMiningPublicKeys()
-
-	db, err := incdb.OpenMultipleDB("leveldb", filepath.Join("./"+simName, "database"))
+	dbpath := filepath.Join("./"+simName, "database")
+	db, err := incdb.OpenMultipleDB("leveldb", dbpath)
 	// Create db and use it.
 	if err != nil {
 		panic(err)
@@ -266,6 +272,24 @@ func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, enableRPC b
 
 	//init syncker
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
+
+	//init user database
+	handles := 256
+	cache := 8
+	userDBPath := filepath.Join(dbpath, "userdb")
+	lvdb, err := leveldb.OpenFile(userDBPath, &opt.Options{
+		OpenFilesCacheCapacity: handles,
+		BlockCacheCapacity:     cache / 2 * opt.MiB,
+		WriteBuffer:            cache / 4 * opt.MiB, // Two of these are used internally
+		Filter:                 filter.NewBloomFilter(10),
+	})
+	if _, corrupted := err.(*lvdbErrors.ErrCorrupted); corrupted {
+		lvdb, err = leveldb.RecoverFile(userDBPath, nil)
+	}
+	sim.userDB = lvdb
+	if err != nil {
+		panic(errors.Wrapf(err, "levelvdb.OpenFile %s", userDBPath))
+	}
 }
 
 func (sim *SimulationEngine) GetRPC() *rpcclient.RPCClient {

@@ -11,7 +11,9 @@ require (
 	github.com/jrick/logrotate v1.0.0
 	github.com/libp2p/go-libp2p-peer v0.2.0
 	github.com/olekukonko/tablewriter v0.0.4 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/tsdb v0.10.0 // indirect
+	github.com/syndtr/goleveldb v1.0.0
 )
 
-replace github.com/incognitochain/incognito-chain => /home/lam/go/src/github.com/incognitochain/incognito-chain
+// replace github.com/incognitochain/incognito-chain => /home/lam/go/src/github.com/incognitochain/incognito-chain

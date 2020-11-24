@@ -70,7 +70,7 @@ func (r *RPCClient) API_SendTxWithPTokenTradeReq(privateKey string, receivers ma
 	result, err := r.client.CreateAndSendTxWithPTokenTradeReq(privateKey, receivers, fee, privacy, reqInfo, "", 0)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPTokenCrossPoolTradeReq(acount account.Account, tokenID string, buyTokenID string, amount string) (*jsonresult.CreateTransactionTokenResult, error) {
+func (r *RPCClient) API_SendTxWithPTokenCrossPoolTradeReq(acount account.Account, tokenID string, buyTokenID string, sellAmount string, miniumBuyAmount string) (*jsonresult.CreateTransactionTokenResult, error) {
 	burnAddr, err := r.client.GetBurningAddress(float64(0))
 	if err != nil {
 		return nil, err
@@ -81,15 +81,15 @@ func (r *RPCClient) API_SendTxWithPTokenCrossPoolTradeReq(acount account.Account
 		"TokenTxType": float64(1),
 		"TokenName":   "",
 		"TokenSymbol": "",
-		"TokenAmount": amount,
+		"TokenAmount": sellAmount,
 		"TokenReceivers": map[string]interface{}{
-			burnAddr: amount,
+			burnAddr: sellAmount,
 		},
 		"TokenFee":            "0",
 		"TokenIDToBuyStr":     buyTokenID,
 		"TokenIDToSellStr":    tokenID,
-		"SellAmount":          amount,
-		"MinAcceptableAmount": "1",
+		"SellAmount":          sellAmount,
+		"MinAcceptableAmount": miniumBuyAmount,
 		"TradingFee":          "1",
 		"TraderAddressStr":    acount.PaymentAddress,
 	}
@@ -100,7 +100,7 @@ func (r *RPCClient) API_SendTxWithPRVTradeReq(privateKey string, receivers map[s
 	result, err := r.client.CreateAndSendTxWithPRVTradeReq(privateKey, receivers, fee, privacy, reqInfo)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPRVCrossPoolTradeReq(account account.Account, buyTokenID string, amount string) (*jsonresult.CreateTransactionResult, error) {
+func (r *RPCClient) API_SendTxWithPRVCrossPoolTradeReq(account account.Account, buyTokenID string, sellAmount string, miniumBuyAmount string) (*jsonresult.CreateTransactionResult, error) {
 	burnAddr, err := r.client.GetBurningAddress(float64(0))
 	if err != nil {
 		return nil, err
@@ -108,13 +108,13 @@ func (r *RPCClient) API_SendTxWithPRVCrossPoolTradeReq(account account.Account, 
 	reqInfo := map[string]interface{}{
 		"TokenIDToBuyStr":     buyTokenID,
 		"TokenIDToSellStr":    "0000000000000000000000000000000000000000000000000000000000000004",
-		"SellAmount":          amount,
-		"MinAcceptableAmount": "1",
+		"SellAmount":          sellAmount,
+		"MinAcceptableAmount": miniumBuyAmount,
 		"TradingFee":          "0",
 		"TraderAddressStr":    account.PaymentAddress,
 	}
 	result, err := r.client.CreateAndSendTxWithPRVCrossPoolTradeReq(account.PrivateKey, map[string]interface{}{
-		burnAddr: amount,
+		burnAddr: sellAmount,
 	}, -1, -1, reqInfo)
 	return &result, err
 }
@@ -161,7 +161,6 @@ func (r *RPCClient) API_GetPDEState(beaconHeight float64) (jsonresult.CurrentPDE
 	return result, err
 }
 
-
 func (sim *RPCClient) SendPRV(args ...interface{}) (string, error) {
 	var sender string
 	var receivers = make(map[string]interface{})
@@ -190,8 +189,8 @@ func (sim *RPCClient) SendPRV(args ...interface{}) (string, error) {
 	return res.TxID, nil
 }
 
-func (sim *RPCClient) ShowBalance(acc account.Account)  {
-	res,err := sim.API_GetBalance(acc)
+func (sim *RPCClient) ShowBalance(acc account.Account) {
+	res, err := sim.API_GetBalance(acc)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -309,7 +308,6 @@ func (r *RPCClient) API_SendTxStaking(stakeMeta StakingTxParam) (*jsonresult.Cre
 	fmt.Println(privateSeed)
 	fmt.Println(stakeMeta.RewardAddr)
 	fmt.Println(stakeMeta.AutoRestake)
-
 
 	txResp, err := r.client.CreateAndSendStakingTransaction(stakeMeta.StakerPrk, map[string]interface{}{burnAddr: float64(stakeAmount)}, 1, 0, map[string]interface{}{
 		"StakingType":                  float64(stakingType),
