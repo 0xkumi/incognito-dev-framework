@@ -2,6 +2,7 @@ package rpcclient
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/0xkumi/incongito-dev-framework/account"
 
@@ -23,13 +24,29 @@ func NewRPCClient(client ClientInterface) *RPCClient {
 	return rpc
 }
 
-func (r *RPCClient) API_SendTxPRV(privateKey string, receivers map[string]interface{}, fee float64, privacy float64) (*jsonresult.CreateTransactionResult, error) {
-	result, err := r.client.CreateAndSendTransaction(privateKey, receivers, fee, privacy)
+func mapUintToInterface(m map[string]uint64) map[string]interface{} {
+	mfl := make(map[string]interface{})
+	for a, v := range m {
+		mfl[a] = float64(v)
+	}
+	return mfl
+}
+func (r *RPCClient) API_SendTxPRV(privateKey string, receivers map[string]uint64, fee int64, privacy bool) (*jsonresult.CreateTransactionResult, error) {
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+
+	result, err := r.client.CreateAndSendTransaction(privateKey, mapUintToInterface(receivers), float64(fee), privacyTx)
 	return &result, err
 }
 
-func (r *RPCClient) API_SendTxCreateCustomToken(privateKey string, receiverPaymentAddress string, privacy float64, tokenName string, tokenSymbol string, tokenAmount uint64) (*jsonresult.CreateTransactionTokenResult, error) {
-	result, err := r.client.CreateAndSendPrivacyCustomTokenTransaction(privateKey, nil, -1, privacy, map[string]interface{}{
+func (r *RPCClient) API_SendTxCreateCustomToken(privateKey string, receiverPaymentAddress string, privacy bool, tokenName string, tokenSymbol string, tokenAmount uint64) (*jsonresult.CreateTransactionTokenResult, error) {
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+	result, err := r.client.CreateAndSendPrivacyCustomTokenTransaction(privateKey, nil, -1, privacyTx, map[string]interface{}{
 		"Privacy":     true,
 		"TokenID":     "",
 		"TokenName":   tokenName,
@@ -40,12 +57,16 @@ func (r *RPCClient) API_SendTxCreateCustomToken(privateKey string, receiverPayme
 		"TokenReceivers": map[string]interface{}{
 			receiverPaymentAddress: float64(tokenAmount),
 		},
-	}, "", privacy)
+	}, "", privacyTx)
 	return &result, err
 }
 
-func (r *RPCClient) API_SendTxCustomToken(privateKey string, tokenID string, receivers map[string]interface{}, fee float64, privacy float64) (*jsonresult.CreateTransactionTokenResult, error) {
-	result, err := r.client.CreateAndSendPrivacyCustomTokenTransaction(privateKey, receivers, fee, privacy, map[string]interface{}{
+func (r *RPCClient) API_SendTxCustomToken(privateKey string, tokenID string, receivers map[string]uint64, fee int64, privacy bool) (*jsonresult.CreateTransactionTokenResult, error) {
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+	result, err := r.client.CreateAndSendPrivacyCustomTokenTransaction(privateKey, mapUintToInterface(receivers), float64(fee), privacyTx, map[string]interface{}{
 		"Privacy":        true,
 		"TokenID":        tokenID,
 		"TokenName":      "",
@@ -54,23 +75,35 @@ func (r *RPCClient) API_SendTxCustomToken(privateKey string, tokenID string, rec
 		"TokenTxType":    float64(1),
 		"TokenAmount":    float64(0),
 		"TokenReceivers": receivers,
-	}, "", privacy)
+	}, "", privacyTx)
 	return &result, err
 }
 
-func (r *RPCClient) API_SendTxWithWithdrawalReqV2(privateKey string, receivers map[string]interface{}, fee float64, privacy float64, reqInfo map[string]interface{}) (*jsonresult.CreateTransactionResult, error) {
-	result, err := r.client.CreateAndSendTxWithWithdrawalReqV2(privateKey, receivers, fee, privacy, reqInfo)
+func (r *RPCClient) API_SendTxWithWithdrawalReqV2(privateKey string, receivers map[string]uint64, fee int64, privacy bool, reqInfo map[string]interface{}) (*jsonresult.CreateTransactionResult, error) {
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+	result, err := r.client.CreateAndSendTxWithWithdrawalReqV2(privateKey, mapUintToInterface(receivers), float64(fee), privacyTx, reqInfo)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPDEFeeWithdrawalReq(privateKey string, receivers map[string]interface{}, fee float64, privacy float64, reqInfo map[string]interface{}) (*jsonresult.CreateTransactionResult, error) {
-	result, err := r.client.CreateAndSendTxWithPDEFeeWithdrawalReq(privateKey, receivers, fee, privacy, reqInfo)
+func (r *RPCClient) API_SendTxWithPDEFeeWithdrawalReq(privateKey string, receivers map[string]uint64, fee int64, privacy bool, reqInfo map[string]interface{}) (*jsonresult.CreateTransactionResult, error) {
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+	result, err := r.client.CreateAndSendTxWithPDEFeeWithdrawalReq(privateKey, mapUintToInterface(receivers), float64(fee), privacyTx, reqInfo)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPTokenTradeReq(privateKey string, receivers map[string]interface{}, fee float64, privacy float64, reqInfo map[string]interface{}) (*jsonresult.CreateTransactionTokenResult, error) {
-	result, err := r.client.CreateAndSendTxWithPTokenTradeReq(privateKey, receivers, fee, privacy, reqInfo, "", 0)
+func (r *RPCClient) API_SendTxWithPTokenTradeReq(privateKey string, receivers map[string]uint64, fee int64, privacy bool, reqInfo map[string]interface{}) (*jsonresult.CreateTransactionTokenResult, error) {
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+	result, err := r.client.CreateAndSendTxWithPTokenTradeReq(privateKey, mapUintToInterface(receivers), float64(fee), privacyTx, reqInfo, "", 0)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPTokenCrossPoolTradeReq(acount account.Account, tokenID string, buyTokenID string, sellAmount string, miniumBuyAmount string) (*jsonresult.CreateTransactionTokenResult, error) {
+func (r *RPCClient) API_SendTxWithPTokenCrossPoolTradeReq(acount account.Account, tokenID string, buyTokenID string, sellAmount int, miniumBuyAmount int) (*jsonresult.CreateTransactionTokenResult, error) {
 	burnAddr, err := r.client.GetBurningAddress(float64(0))
 	if err != nil {
 		return nil, err
@@ -81,26 +114,30 @@ func (r *RPCClient) API_SendTxWithPTokenCrossPoolTradeReq(acount account.Account
 		"TokenTxType": float64(1),
 		"TokenName":   "",
 		"TokenSymbol": "",
-		"TokenAmount": sellAmount,
+		"TokenAmount": strconv.Itoa(sellAmount),
 		"TokenReceivers": map[string]interface{}{
-			burnAddr: sellAmount,
+			burnAddr: strconv.Itoa(sellAmount),
 		},
 		"TokenFee":            "0",
 		"TokenIDToBuyStr":     buyTokenID,
 		"TokenIDToSellStr":    tokenID,
-		"SellAmount":          sellAmount,
-		"MinAcceptableAmount": miniumBuyAmount,
+		"SellAmount":          strconv.Itoa(sellAmount),
+		"MinAcceptableAmount": strconv.Itoa(miniumBuyAmount),
 		"TradingFee":          "1",
 		"TraderAddressStr":    acount.PaymentAddress,
 	}
 	result, err := r.client.CreateAndSendTxWithPTokenCrossPoolTradeReq(acount.PrivateKey, map[string]interface{}{burnAddr: "1"}, -1, 0, reqInfo, "", 0)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPRVTradeReq(privateKey string, receivers map[string]interface{}, fee float64, privacy float64, reqInfo map[string]interface{}) (*jsonresult.CreateTransactionResult, error) {
-	result, err := r.client.CreateAndSendTxWithPRVTradeReq(privateKey, receivers, fee, privacy, reqInfo)
+func (r *RPCClient) API_SendTxWithPRVTradeReq(privateKey string, receivers map[string]uint64, fee int64, privacy bool, reqInfo map[string]interface{}) (*jsonresult.CreateTransactionResult, error) {
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+	result, err := r.client.CreateAndSendTxWithPRVTradeReq(privateKey, mapUintToInterface(receivers), float64(fee), privacyTx, reqInfo)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPRVCrossPoolTradeReq(account account.Account, buyTokenID string, sellAmount string, miniumBuyAmount string) (*jsonresult.CreateTransactionResult, error) {
+func (r *RPCClient) API_SendTxWithPRVCrossPoolTradeReq(account account.Account, buyTokenID string, sellAmount int, miniumBuyAmount int) (*jsonresult.CreateTransactionResult, error) {
 	burnAddr, err := r.client.GetBurningAddress(float64(0))
 	if err != nil {
 		return nil, err
@@ -108,17 +145,17 @@ func (r *RPCClient) API_SendTxWithPRVCrossPoolTradeReq(account account.Account, 
 	reqInfo := map[string]interface{}{
 		"TokenIDToBuyStr":     buyTokenID,
 		"TokenIDToSellStr":    "0000000000000000000000000000000000000000000000000000000000000004",
-		"SellAmount":          sellAmount,
-		"MinAcceptableAmount": miniumBuyAmount,
+		"SellAmount":          strconv.Itoa(sellAmount),
+		"MinAcceptableAmount": strconv.Itoa(miniumBuyAmount),
 		"TradingFee":          "0",
 		"TraderAddressStr":    account.PaymentAddress,
 	}
 	result, err := r.client.CreateAndSendTxWithPRVCrossPoolTradeReq(account.PrivateKey, map[string]interface{}{
-		burnAddr: sellAmount,
+		burnAddr: strconv.Itoa(sellAmount),
 	}, -1, -1, reqInfo)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPTokenContributionV2(account account.Account, tokenID string, tokenAmount string, pairID string) (*jsonresult.CreateTransactionTokenResult, error) {
+func (r *RPCClient) API_SendTxWithPTokenContributionV2(account account.Account, tokenID string, tokenAmount int, pairID string) (*jsonresult.CreateTransactionTokenResult, error) {
 	burnAddr, err := r.client.GetBurningAddress(float64(0))
 	if err != nil {
 		return nil, err
@@ -129,20 +166,20 @@ func (r *RPCClient) API_SendTxWithPTokenContributionV2(account account.Account, 
 		"TokenTxType": float64(1),
 		"TokenName":   "",
 		"TokenSymbol": "",
-		"TokenAmount": tokenAmount,
+		"TokenAmount": strconv.Itoa(tokenAmount),
 		"TokenReceivers": map[string]interface{}{
-			burnAddr: tokenAmount,
+			burnAddr: strconv.Itoa(tokenAmount),
 		},
 		"TokenFee":              "0",
 		"PDEContributionPairID": pairID,
 		"ContributorAddressStr": account.PaymentAddress,
-		"ContributedAmount":     tokenAmount,
+		"ContributedAmount":     strconv.Itoa(tokenAmount),
 		"TokenIDStr":            tokenID,
 	}
 	result, err := r.client.CreateAndSendTxWithPTokenContributionV2(account.PrivateKey, nil, -1, 0, reqInfo, "", 0)
 	return &result, err
 }
-func (r *RPCClient) API_SendTxWithPRVContributionV2(account account.Account, prvAmount string, pairID string) (*jsonresult.CreateTransactionResult, error) {
+func (r *RPCClient) API_SendTxWithPRVContributionV2(account account.Account, prvAmount int, pairID string) (*jsonresult.CreateTransactionResult, error) {
 	burnAddr, err := r.client.GetBurningAddress(float64(0))
 	if err != nil {
 		return nil, err
@@ -150,7 +187,7 @@ func (r *RPCClient) API_SendTxWithPRVContributionV2(account account.Account, prv
 	reqInfo := map[string]interface{}{
 		"PDEContributionPairID": pairID,
 		"ContributorAddressStr": account.PaymentAddress,
-		"ContributedAmount":     prvAmount,
+		"ContributedAmount":     strconv.Itoa(prvAmount),
 		"TokenIDStr":            "0000000000000000000000000000000000000000000000000000000000000004",
 	}
 	result, err := r.client.CreateAndSendTxWithPRVContributionV2(account.PrivateKey, map[string]interface{}{burnAddr: prvAmount}, -1, 0, reqInfo)
@@ -163,7 +200,7 @@ func (r *RPCClient) API_GetPDEState(beaconHeight float64) (jsonresult.CurrentPDE
 
 func (sim *RPCClient) SendPRV(args ...interface{}) (string, error) {
 	var sender string
-	var receivers = make(map[string]interface{})
+	var receivers = make(map[string]uint64)
 	for i, arg := range args {
 		if i == 0 {
 			sender = arg.(account.Account).PrivateKey
@@ -171,12 +208,12 @@ func (sim *RPCClient) SendPRV(args ...interface{}) (string, error) {
 			switch arg.(type) {
 			default:
 				if i%2 == 1 {
-					amount, ok := args[i+1].(int)
+					amount, ok := args[i+1].(uint64)
 					if !ok {
 						amountF64 := args[i+1].(float64)
-						amount = int(amountF64)
+						amount = uint64(amountF64)
 					}
-					receivers[arg.(account.Account).PaymentAddress] = float64(amount)
+					receivers[arg.(account.Account).PaymentAddress] = amount
 				}
 			}
 		}
