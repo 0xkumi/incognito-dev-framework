@@ -219,7 +219,7 @@ func (sim *RPCClient) SendPRV(args ...interface{}) (string, error) {
 		}
 	}
 
-	res, err := sim.API_SendTxPRV(sender, receivers, -1, 1)
+	res, err := sim.API_SendTxPRV(sender, receivers, -1, true)
 	if err != nil {
 		fmt.Println(err)
 	}
