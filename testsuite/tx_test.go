@@ -21,10 +21,10 @@ func Test_SendTX(t *testing.T) {
 	acc1 := sim.NewAccountFromShard(1)
 	acc2 := sim.NewAccountFromShard(0)
 
-	_, err := sim.RPC.API_SendTxPRV(sim.GenesisAccount.PrivateKey, map[string]interface{}{
-		acc1.PaymentAddress: float64(1000),
-		acc2.PaymentAddress: float64(3000),
-	}, -1, 0)
+	_, err := sim.RPC.API_SendTxPRV(sim.GenesisAccount.PrivateKey, map[string]uint64{
+		acc1.PaymentAddress: 1000,
+		acc2.PaymentAddress: 3000,
+	}, -1, true)
 	if err != nil {
 		panic(err)
 	}
@@ -106,7 +106,7 @@ func Test_StakeFlow1(t *testing.T) {
 	sim.GenerateBlock().NextRound()
 	miner1 := sim.NewAccountFromShard(0)
 
-	sim.RPC.API_SendTxPRV(sim.GenesisAccount.PrivateKey, map[string]interface{}{miner1.PaymentAddress: float64(1000000)}, -1, 1)
+	sim.RPC.API_SendTxPRV(sim.GenesisAccount.PrivateKey, map[string]uint64{miner1.PaymentAddress: 1000000}, -1, true)
 	for i := 0; i < 4; i++ {
 		sim.GenerateBlock().NextRound()
 	}
@@ -249,9 +249,9 @@ func Test_PDEFlow(t *testing.T) {
 		ShardNumber: 1,
 	}, true)
 	acc1 := sim.NewAccountFromShard(0)
-	_, err := sim.RPC.API_SendTxPRV(sim.GenesisAccount.PrivateKey, map[string]interface{}{
-		acc1.PaymentAddress: float64(100000000),
-	}, -1, -1)
+	_, err := sim.RPC.API_SendTxPRV(sim.GenesisAccount.PrivateKey, map[string]uint64{
+		acc1.PaymentAddress: 100000000,
+	}, -1, false)
 	if err != nil {
 		panic(err)
 	}
@@ -259,7 +259,7 @@ func Test_PDEFlow(t *testing.T) {
 	sim.GenerateBlock().NextRound()
 
 	//Create custom token
-	result1, err := sim.RPC.API_SendTxCreateCustomToken(sim.GenesisAccount.PrivateKey, sim.GenesisAccount.PaymentAddress, 1, "pTest", "TES", 30000000000)
+	result1, err := sim.RPC.API_SendTxCreateCustomToken(sim.GenesisAccount.PrivateKey, sim.GenesisAccount.PaymentAddress, true, "pTest", "TES", 30000000000)
 	if err != nil {
 		panic(err)
 	}
@@ -273,7 +273,7 @@ func Test_PDEFlow(t *testing.T) {
 
 	// burnAddr := sim.GetBlockchain().GetBurningAddress(sim.GetBlockchain().BeaconChain.GetFinalViewHeight())
 	// fmt.Println(burnAddr)
-	result2, err := sim.RPC.API_SendTxWithPTokenContributionV2(sim.GenesisAccount, result1.TokenID, "300000000", "testPAIR")
+	result2, err := sim.RPC.API_SendTxWithPTokenContributionV2(sim.GenesisAccount, result1.TokenID, 300000000, "testPAIR")
 	if err != nil {
 		panic(err)
 	}
@@ -285,7 +285,7 @@ func Test_PDEFlow(t *testing.T) {
 		sim.GenerateBlock().NextRound()
 	}
 
-	_, err = sim.RPC.API_SendTxWithPRVContributionV2(sim.GenesisAccount, "100000000000", "testPAIR")
+	_, err = sim.RPC.API_SendTxWithPRVContributionV2(sim.GenesisAccount, 100000000000, "testPAIR")
 	if err != nil {
 		panic(err)
 	}
@@ -300,7 +300,7 @@ func Test_PDEFlow(t *testing.T) {
 	rBytes, _ := json.Marshal(r)
 	fmt.Println(string(rBytes))
 
-	_, err = sim.RPC.API_SendTxWithPRVCrossPoolTradeReq(acc1, result1.TokenID, "1000000", "1")
+	_, err = sim.RPC.API_SendTxWithPRVCrossPoolTradeReq(acc1, result1.TokenID, 1000000, 1)
 	if err != nil {
 		panic(err)
 	}
@@ -308,7 +308,7 @@ func Test_PDEFlow(t *testing.T) {
 		sim.GenerateBlock().NextRound()
 	}
 
-	_, err = sim.RPC.API_SendTxWithPTokenCrossPoolTradeReq(sim.GenesisAccount, result1.TokenID, "0000000000000000000000000000000000000000000000000000000000000004", "1000000000", "1")
+	_, err = sim.RPC.API_SendTxWithPTokenCrossPoolTradeReq(sim.GenesisAccount, result1.TokenID, "0000000000000000000000000000000000000000000000000000000000000004", 1000000000, 1)
 	if err != nil {
 		panic(err)
 	}

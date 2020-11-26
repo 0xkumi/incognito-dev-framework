@@ -123,7 +123,7 @@ func makeRPCDownloadRequest(address string, method string, w io.Writer, params .
 
 func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
 	var sender string
-	var receivers = make(map[string]interface{})
+	var receivers = make(map[string]uint64)
 	for i, arg := range args {
 		if i == 0 {
 			sender = arg.(account.Account).PrivateKey
@@ -131,18 +131,17 @@ func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
 			switch arg.(type) {
 			default:
 				if i%2 == 1 {
-					amount, ok := args[i+1].(int)
+					amount, ok := args[i+1].(uint64)
 					if !ok {
 						amountF64 := args[i+1].(float64)
-						amount = int(amountF64)
+						amount = uint64(amountF64)
 					}
-					receivers[arg.(account.Account).PaymentAddress] = float64(amount)
+					receivers[arg.(account.Account).PaymentAddress] = amount
 				}
 			}
 		}
 	}
-
-	res, err := sim.RPC.API_SendTxPRV(sender, receivers, 1, 1)
+	res, err := sim.RPC.API_SendTxPRV(sender, receivers, 1, true)
 	if err != nil {
 		fmt.Println(err)
 		sim.Pause()
@@ -150,8 +149,8 @@ func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
 	return res.TxID, nil
 }
 
-func (sim *SimulationEngine) ShowBalance(acc account.Account)  {
-	res,err := sim.RPC.API_GetBalance(acc)
+func (sim *SimulationEngine) ShowBalance(acc account.Account) {
+	res, err := sim.RPC.API_GetBalance(acc)
 	if err != nil {
 		fmt.Println(err)
 	}
