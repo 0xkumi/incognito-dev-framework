@@ -94,7 +94,6 @@ func (s *HighwayConnection) Connect() {
 		&incognitokey.CommitteePublicKey{},
 		s.config.ConsensusEngine,
 		dispatcher,
-		"relay",
 		s.config.RelayShards,
 	)
 	go s.conn.Start(nil)
@@ -208,9 +207,9 @@ func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) []*blockchai
 	return result
 }
 
-func (s *HighwayConnection) GetCrossShardBlock(fromsid, tosid, from, to int) *blockchain.CrossShardBlock {
-	panic("implement me")
-}
+//func (s *HighwayConnection) GetCrossShardBlock(fromsid, tosid, from, to int) *blockchain.CrossShardBlock {
+//	panic("implement me")
+//}
 
 func (s *HighwayConnection) SyncChain(ints []int) {
 	panic("implement me")

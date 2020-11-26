@@ -4,10 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/incognitochain/incognito-chain/blockchain"
+	bnbrelaying "github.com/incognitochain/incognito-chain/relaying/bnb"
+	btcrelaying "github.com/incognitochain/incognito-chain/relaying/btc"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -19,6 +25,37 @@ import (
 	"github.com/incognitochain/incognito-chain/transaction"
 	"github.com/incognitochain/incognito-chain/wallet"
 )
+
+func getBTCRelayingChain(btcRelayingChainID string, btcDataFolderName string, dataFolder string) (*btcrelaying.BlockChain, error) {
+	relayingChainParams := map[string]*chaincfg.Params{
+		blockchain.TestnetBTCChainID:  btcrelaying.GetTestNet3Params(),
+		blockchain.Testnet2BTCChainID: btcrelaying.GetTestNet3ParamsForInc2(),
+		blockchain.MainnetBTCChainID:  btcrelaying.GetMainNetParams(),
+	}
+	relayingChainGenesisBlkHeight := map[string]int32{
+		blockchain.TestnetBTCChainID:  int32(1833130),
+		blockchain.Testnet2BTCChainID: int32(1833130),
+		blockchain.MainnetBTCChainID:  int32(634140),
+	}
+	return btcrelaying.GetChainV2(
+		filepath.Join("./"+dataFolder, btcDataFolderName),
+		relayingChainParams[btcRelayingChainID],
+		relayingChainGenesisBlkHeight[btcRelayingChainID],
+	)
+}
+
+func getBNBRelayingChainState(bnbRelayingChainID string, dataFolder string) (*bnbrelaying.BNBChainState, error) {
+	bnbChainState := new(bnbrelaying.BNBChainState)
+	err := bnbChainState.LoadBNBChainState(
+		filepath.Join("./"+dataFolder, "bnbrelayingv3"),
+		bnbRelayingChainID,
+	)
+	if err != nil {
+		log.Printf("Error getBNBRelayingChainState: %v\n", err)
+		return nil, err
+	}
+	return bnbChainState, nil
+}
 
 func createGenesisTx(accounts []account.Account) []string {
 	transactions := []string{}

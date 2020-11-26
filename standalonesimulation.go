@@ -19,7 +19,6 @@ import (
 
 	"github.com/incognitochain/incognito-chain/syncker"
 
-	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/common/base58"
@@ -28,8 +27,6 @@ import (
 	"github.com/incognitochain/incognito-chain/memcache"
 	"github.com/incognitochain/incognito-chain/mempool"
 	"github.com/incognitochain/incognito-chain/metadata"
-	bnbrelaying "github.com/incognitochain/incognito-chain/relaying/bnb"
-	btcrelaying "github.com/incognitochain/incognito-chain/relaying/btc"
 	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/transaction"
 
@@ -353,37 +350,6 @@ func (sim *SimulationEngine) ConnectNetwork(highwayAddr string, relayShards []by
 
 }
 
-func getBTCRelayingChain(btcRelayingChainID string, btcDataFolderName string, dataFolder string) (*btcrelaying.BlockChain, error) {
-	relayingChainParams := map[string]*chaincfg.Params{
-		blockchain.TestnetBTCChainID:  btcrelaying.GetTestNet3Params(),
-		blockchain.Testnet2BTCChainID: btcrelaying.GetTestNet3ParamsForInc2(),
-		blockchain.MainnetBTCChainID:  btcrelaying.GetMainNetParams(),
-	}
-	relayingChainGenesisBlkHeight := map[string]int32{
-		blockchain.TestnetBTCChainID:  int32(1833130),
-		blockchain.Testnet2BTCChainID: int32(1833130),
-		blockchain.MainnetBTCChainID:  int32(634140),
-	}
-	return btcrelaying.GetChainV2(
-		filepath.Join("./"+dataFolder, btcDataFolderName),
-		relayingChainParams[btcRelayingChainID],
-		relayingChainGenesisBlkHeight[btcRelayingChainID],
-	)
-}
-
-func getBNBRelayingChainState(bnbRelayingChainID string, dataFolder string) (*bnbrelaying.BNBChainState, error) {
-	bnbChainState := new(bnbrelaying.BNBChainState)
-	err := bnbChainState.LoadBNBChainState(
-		filepath.Join("./"+dataFolder, "bnbrelayingv3"),
-		bnbRelayingChainID,
-	)
-	if err != nil {
-		log.Printf("Error getBNBRelayingChainState: %v\n", err)
-		return nil, err
-	}
-	return bnbChainState, nil
-}
-
 func (sim *SimulationEngine) Pause() {
 	fmt.Print("Simulation pause! Press Enter to continue ...")
 	var input string
@@ -519,8 +485,6 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 					} else {
 						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ShardNumber)
 						for _, blk := range crossX {
-							fmt.Println("add cross shard block into system")
-							sim.Pause()
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
 					}
@@ -543,8 +507,6 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 					} else {
 						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ShardNumber)
 						for _, blk := range crossX {
-							fmt.Println("add cross shard block into system")
-							sim.Pause()
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
 

@@ -99,6 +99,35 @@ func Test_SendTX(t *testing.T) {
 
 }
 
+func Test_CrossShard(t *testing.T) {
+	node := F.NewStandaloneSimulation("newsim", F.Config{
+		ShardNumber: 2,
+	}, true)
+
+	node.GenerateBlock().NextRound()
+
+	acc1 := node.NewAccountFromShard(1)
+	node.ShowBalance(acc1)
+
+	node.SendPRV(node.GenesisAccount, acc1, 1000)
+	for i:=0; i < 10; i++ {
+		node.GenerateBlock().NextRound()
+		node.SendPRV(node.GenesisAccount, acc1, 1000)
+		node.ApplyChain(0,1).GenerateBlock().NextRound()
+	}
+
+	node.ShowBalance(acc1)
+	fmt.Println(node.GetBlockchain().BeaconChain.GetAllView())
+	node.Pause()
+
+	node.GenerateBlock().NextRound()
+	node.GenerateBlock().NextRound()
+	node.GenerateBlock().NextRound()
+	node.GenerateBlock().NextRound()
+	node.GenerateBlock().NextRound()
+	node.GenerateBlock().NextRound()
+	node.ShowBalance(acc1)
+}
 func Test_StakeFlow1(t *testing.T) {
 	sim := F.NewStandaloneSimulation("sim2", F.Config{
 		ShardNumber: 1,

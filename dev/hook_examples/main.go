@@ -7,7 +7,7 @@ import (
 func main() {
 	node := Inc.NewStandaloneSimulation("newsim", Inc.Config{
 		ShardNumber: 2,
-	})
+	}, false)
 
 	node.GenerateBlock().NextRound()
 

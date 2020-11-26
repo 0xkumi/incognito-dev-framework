@@ -12,9 +12,14 @@ type Execute struct {
 	appliedChain []int
 }
 
-func (exec *Execute) GenerateBlock(args ...interface{}) {
+func (exec *Execute) GenerateBlock(args ...interface{}) *Execute {
 	args = append(args, exec)
 	exec.sim.GenerateBlock(args...)
+	return exec
+}
+
+func (exec *Execute) NextRound() {
+	exec.sim.NextRound()
 }
 
 func (sim *SimulationEngine) ApplyChain(chain_array ...int) *Execute {
