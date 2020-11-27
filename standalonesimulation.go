@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/0xkumi/incongito-dev-framework/account"
-	"github.com/0xkumi/incongito-dev-framework/mock"
-	"github.com/0xkumi/incongito-dev-framework/rpcclient"
+	"github.com/0xkumi/incognito-dev-framework/account"
+	"github.com/0xkumi/incognito-dev-framework/mock"
+	"github.com/0xkumi/incognito-dev-framework/rpcclient"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"

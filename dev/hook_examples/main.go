@@ -1,13 +1,14 @@
 package main
 
 import (
-	Inc "github.com/0xkumi/incongito-dev-framework"
+	Inc "github.com/0xkumi/incognito-dev-framework"
 )
 
 func main() {
 	node := Inc.NewStandaloneSimulation("newsim", Inc.Config{
-		ShardNumber: 2,
-	}, false)
+		ChainParam: Inc.NewChainParam(Inc.ID_TESTNET2).SetActiveShardNumber(2),
+		DisableLog: false,
+	})
 
 	node.GenerateBlock().NextRound()
 
@@ -25,17 +26,7 @@ func main() {
 	node.ShowBalance(acc2)
 
 
-	node.ApplyChain(0).GenerateBlock(Inc.Hook{
-		//Create: func(chainID int, doCreate func() (blk common.BlockInterface, err error)) {
-		//	doCreate()
-		//},
-		//Validation: func(chainID int, block common.BlockInterface, doValidation func(blk common.BlockInterface) error) {
-		//	doValidation(block)
-		//},
-		//Insert: func(chainID int, block common.BlockInterface, doInsert func(blk common.BlockInterface) error) {
-		//	doInsert(block)
-		//},
-	})
+	node.ApplyChain(0).GenerateBlock().NextRound()
 
 
 }

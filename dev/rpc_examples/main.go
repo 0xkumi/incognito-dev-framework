@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	devframework "github.com/0xkumi/incongito-dev-framework"
+	devframework "github.com/0xkumi/incognito-dev-framework"
 	"sort"
 )
 

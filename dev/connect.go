@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	devframework "github.com/0xkumi/incongito-dev-framework"
+	devframework "github.com/0xkumi/incognito-dev-framework"
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/dataaccessobject/statedb"

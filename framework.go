@@ -4,8 +4,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/0xkumi/incongito-dev-framework/account"
-	"github.com/0xkumi/incongito-dev-framework/rpcclient"
+	"github.com/0xkumi/incognito-dev-framework/account"
+	"github.com/0xkumi/incognito-dev-framework/rpcclient"
 )
 
 func NewRPCClient(endpoint string) *rpcclient.RPCClient {

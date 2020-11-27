@@ -3,8 +3,9 @@ package rpcclient
 import (
 	"fmt"
 	"strconv"
+	"time"
 
-	"github.com/0xkumi/incongito-dev-framework/account"
+	"github.com/0xkumi/incognito-dev-framework/account"
 
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/common/base58"
@@ -38,6 +39,7 @@ func (r *RPCClient) API_SendTxPRV(privateKey string, receivers map[string]uint64
 	}
 
 	result, err := r.client.CreateAndSendTransaction(privateKey, mapUintToInterface(receivers), float64(fee), privacyTx)
+	time.Sleep(time.Millisecond)
 	return &result, err
 }
 
@@ -190,7 +192,8 @@ func (r *RPCClient) API_SendTxWithPRVContributionV2(account account.Account, prv
 		"ContributedAmount":     strconv.Itoa(prvAmount),
 		"TokenIDStr":            "0000000000000000000000000000000000000000000000000000000000000004",
 	}
-	result, err := r.client.CreateAndSendTxWithPRVContributionV2(account.PrivateKey, map[string]interface{}{burnAddr: prvAmount}, -1, 0, reqInfo)
+	result, err := r.client.CreateAndSendTxWithPRVContributionV2(account.PrivateKey, map[string]interface{}{burnAddr: strconv.Itoa(prvAmount)}, -1, 0, reqInfo)
+	time.Sleep(time.Millisecond)
 	return &result, err
 }
 func (r *RPCClient) API_GetPDEState(beaconHeight float64) (jsonresult.CurrentPDEState, error) {

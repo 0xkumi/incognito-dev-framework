@@ -17,7 +17,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/0xkumi/incongito-dev-framework/account"
+	"github.com/0xkumi/incognito-dev-framework/account"
 
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/dataaccessobject/statedb"

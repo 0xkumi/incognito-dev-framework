@@ -4,8 +4,8 @@ import (
 	"net"
 	"path/filepath"
 
-	"github.com/0xkumi/incongito-dev-framework/mock"
-	"github.com/0xkumi/incongito-dev-framework/rpcclient"
+	"github.com/0xkumi/incognito-dev-framework/mock"
+	"github.com/0xkumi/incognito-dev-framework/rpcclient"
 	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb"
 	lvdbErrors "github.com/syndtr/goleveldb/leveldb/errors"
