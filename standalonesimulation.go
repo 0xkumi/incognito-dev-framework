@@ -37,9 +37,8 @@ import (
 )
 
 type Config struct {
-	ChainParam     *ChainParam
+	ChainParam *ChainParam
 	DisableLog bool
-
 }
 
 type Hook struct {
@@ -113,7 +112,6 @@ func (sim *SimulationEngine) init() {
 	transactionLogger.SetLevel(common.LevelTrace)
 	privacyLogger.SetLevel(common.LevelTrace)
 	mempoolLogger.SetLevel(common.LevelTrace)
-
 
 	activeNetParams := sim.config.ChainParam.GetParamData()
 	common.MaxShardNumber = activeNetParams.ActiveShards
@@ -548,11 +546,10 @@ func (sim *SimulationEngine) GetBlockchain() *blockchain.BlockChain {
 	return sim.bc
 }
 
-
 func (s *SimulationEngine) GetUserDatabase() *leveldb.DB {
 	return s.userDB
 }
 
-func (s *SimulationEngine) DisableChainLog(b bool)  {
+func (s *SimulationEngine) DisableChainLog(b bool) {
 	disableStdoutLog = b
 }

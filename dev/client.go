@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	devframework "github.com/0xkumi/incongito-dev-framework"
-	"github.com/0xkumi/incongito-dev-framework/account"
-	"github.com/0xkumi/incongito-dev-framework/rpcclient"
+	devframework "github.com/0xkumi/incognito-dev-framework"
+	"github.com/0xkumi/incognito-dev-framework/account"
+	"github.com/0xkumi/incognito-dev-framework/rpcclient"
 	// devframework "incognito-dev-framework"
 	// "incognito-dev-framework/account"
 	// "incognito-dev-framework/rpcclient"

@@ -18,7 +18,7 @@ import (
 	bnbrelaying "github.com/incognitochain/incognito-chain/relaying/bnb"
 	btcrelaying "github.com/incognitochain/incognito-chain/relaying/btc"
 
-	"github.com/0xkumi/incongito-dev-framework/account"
+	"github.com/0xkumi/incognito-dev-framework/account"
 
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/dataaccessobject/statedb"
@@ -172,7 +172,7 @@ func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
 					amount, ok := args[i+1].(int)
 					if !ok {
 						amountF64 := args[i+1].(int)
-						amount = uint64(amountF64)
+						amount = amountF64
 					}
 					receivers[arg.(account.Account).PaymentAddress] = uint64(amount)
 				}
