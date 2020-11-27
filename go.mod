@@ -1,4 +1,4 @@
-module github.com/0xkumi/incongito-dev-framework
+module github.com/0xkumi/incognito-dev-framework
 
 go 1.13
 
@@ -16,4 +16,4 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 )
 
-// replace github.com/incognitochain/incognito-chain => /home/lam/go/src/github.com/incognitochain/incognito-chain
+ //replace github.com/incognitochain/incognito-chain => /home/david/go/src/github.com/incognitochain/incognito-chain
