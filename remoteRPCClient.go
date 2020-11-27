@@ -775,3 +775,65 @@ func (r *RemoteRPCClient) GetPublicKeyRole(publicKey string, detail bool) (res i
 	}
 	return resp.Result,err
 }
+
+
+func (r *RemoteRPCClient) GetBlockChainInfo() (res *jsonresult.GetBlockChainInfoResult,err error) {
+	requestBody, rpcERR := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "getblockchaininfo",
+		"params":   []interface{}{},
+		"id":      1,
+	})
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	resp := struct {
+		Result  *jsonresult.GetBlockChainInfoResult
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resp.Result,err
+}
+
+
+func (r *RemoteRPCClient) GetCandidateList() (res *jsonresult.CandidateListsResult,err error) {
+	requestBody, rpcERR := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "getcandidatelist",
+		"params":   []interface{}{},
+		"id":      1,
+	})
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	resp := struct {
+		Result  *jsonresult.CandidateListsResult
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resp.Result,err
+}

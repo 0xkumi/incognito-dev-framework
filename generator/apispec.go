@@ -29,4 +29,6 @@ type ClientInterface interface {
 	GetPrivacyCustomToken(tokenStr string) (*jsonresult.GetCustomToken, error)
 	GetBurningAddress(beaconHeight float64) (string, error)
 	GetPublicKeyRole(publicKey string, detail bool) (interface{}, error)
+	GetBlockChainInfo() (*jsonresult.GetBlockChainInfoResult, error)
+	GetCandidateList() (*jsonresult.CandidateListsResult, error)
 }

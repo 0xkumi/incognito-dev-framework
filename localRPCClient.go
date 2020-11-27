@@ -224,3 +224,21 @@ func (r *LocalRPCClient) GetPublicKeyRole(publicKey string, detail bool) (res in
 	}
 	return resI.(interface{}),nil
 }
+func (r *LocalRPCClient) GetBlockChainInfo() (res *jsonresult.GetBlockChainInfoResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getblockchaininfo"]
+	resI, rpcERR := c(httpServer, []interface{}{}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.GetBlockChainInfoResult),nil
+}
+func (r *LocalRPCClient) GetCandidateList() (res *jsonresult.CandidateListsResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getcandidatelist"]
+	resI, rpcERR := c(httpServer, []interface{}{}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.CandidateListsResult),nil
+}

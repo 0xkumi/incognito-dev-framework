@@ -234,8 +234,6 @@ func (sim *RPCClient) ShowBalance(acc account.Account) {
 	fmt.Println(res)
 }
 
-
-
 func (r *RPCClient) API_GetBeaconBestState() (jsonresult.GetBeaconBestState, error) {
 	result, err := r.client.GetBeaconBestState()
 	return result, err
@@ -436,4 +434,20 @@ func (r *RPCClient) API_GetPublicKeyRole(miningPublicKey string) (role string, c
 		Role    int
 		ShardID int
 	}).ShardID
+}
+
+func (r *RPCClient) API_GetBlockChainInfo() (*jsonresult.GetBlockChainInfoResult, error) {
+	result, err := r.client.GetBlockChainInfo()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *RPCClient) API_GetCandidateList() (*jsonresult.CandidateListsResult, error) {
+	result, err := r.client.GetCandidateList()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
