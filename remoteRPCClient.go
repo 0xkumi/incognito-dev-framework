@@ -95,37 +95,6 @@ func (r *RemoteRPCClient) GetListPrivacyCustomTokenBalance(privateKey string) (r
 }
 
 
-func (r *RemoteRPCClient) GetCommitteeList(empty string) (res jsonresult.CommitteeListsResult,err error) {
-	requestBody, rpcERR := json.Marshal(map[string]interface{}{
-		"jsonrpc": "1.0",
-		"method":  "getcommitteelist",
-		"params":   []interface{}{empty},
-		"id":      1,
-	})
-	if err != nil {
-		return res,errors.New(rpcERR.Error())
-	}
-	body, err := r.sendRequest(requestBody)
-	if err != nil {
-		return res,errors.New(rpcERR.Error())
-	}
-	resp := struct {
-		Result  jsonresult.CommitteeListsResult
-		Error *ErrMsg
-	}{}
-	err = json.Unmarshal(body, &resp)
-
-	if resp.Error != nil && resp.Error.StackTrace != "" {
-		return res, errors.New(resp.Error.StackTrace)
-	}
-
-	if err != nil {
-		return res,errors.New(rpcERR.Error())
-	}
-	return resp.Result,err
-}
-
-
 func (r *RemoteRPCClient) GetRewardAmount(paymentAddress string) (res map[string]uint64,err error) {
 	requestBody, rpcERR := json.Marshal(map[string]interface{}{
 		"jsonrpc": "1.0",
@@ -824,6 +793,37 @@ func (r *RemoteRPCClient) GetCandidateList() (res *jsonresult.CandidateListsResu
 	}
 	resp := struct {
 		Result  *jsonresult.CandidateListsResult
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resp.Result,err
+}
+
+
+func (r *RemoteRPCClient) GetCommitteeList() (res *jsonresult.CommitteeListsResult,err error) {
+	requestBody, rpcERR := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "getcommitteelist",
+		"params":   []interface{}{},
+		"id":      1,
+	})
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	resp := struct {
+		Result  *jsonresult.CommitteeListsResult
 		Error *ErrMsg
 	}{}
 	err = json.Unmarshal(body, &resp)

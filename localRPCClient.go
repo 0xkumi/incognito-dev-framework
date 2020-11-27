@@ -26,15 +26,6 @@ func (r *LocalRPCClient) GetListPrivacyCustomTokenBalance(privateKey string) (re
 	}
 	return resI.(jsonresult.ListCustomTokenBalance),nil
 }
-func (r *LocalRPCClient) GetCommitteeList(empty string) (res jsonresult.CommitteeListsResult,err error) {
-	httpServer := r.rpcServer.HttpServer
-	c := rpcserver.HttpHandler["getcommitteelist"]
-	resI, rpcERR := c(httpServer, []interface{}{empty}, nil)
-	if rpcERR != nil {
-		return res,errors.New(rpcERR.Error())
-	}
-	return resI.(jsonresult.CommitteeListsResult),nil
-}
 func (r *LocalRPCClient) GetRewardAmount(paymentAddress string) (res map[string]uint64,err error) {
 	httpServer := r.rpcServer.HttpServer
 	c := rpcserver.HttpHandler["getrewardamount"]
@@ -241,4 +232,13 @@ func (r *LocalRPCClient) GetCandidateList() (res *jsonresult.CandidateListsResul
 		return res,errors.New(rpcERR.Error())
 	}
 	return resI.(*jsonresult.CandidateListsResult),nil
+}
+func (r *LocalRPCClient) GetCommitteeList() (res *jsonresult.CommitteeListsResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getcommitteelist"]
+	resI, rpcERR := c(httpServer, []interface{}{}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.CommitteeListsResult),nil
 }

@@ -451,3 +451,11 @@ func (r *RPCClient) API_GetCandidateList() (*jsonresult.CandidateListsResult, er
 	}
 	return result, nil
 }
+
+func (r *RPCClient) API_GetCommitteeList() (*jsonresult.CommitteeListsResult, error) {
+	result, err := r.client.GetCommitteeList()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
