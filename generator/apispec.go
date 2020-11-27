@@ -7,7 +7,6 @@ import (
 type ClientInterface interface {
 	GetBalanceByPrivateKey(privateKey string) (uint64, error)
 	GetListPrivacyCustomTokenBalance(privateKey string) (jsonresult.ListCustomTokenBalance, error)
-	GetCommitteeList(empty string) (jsonresult.CommitteeListsResult, error)
 	GetRewardAmount(paymentAddress string) (map[string]uint64, error)
 	WithdrawReward(privateKey string, receivers map[string]interface{}, amount float64, privacy float64, info map[string]interface{}) (jsonresult.CreateTransactionResult, error)
 	CreateAndSendStakingTransaction(privateKey string, receivers map[string]interface{}, fee float64, privacy float64, stakeInfo map[string]interface{}) (jsonresult.CreateTransactionResult, error)
@@ -29,4 +28,7 @@ type ClientInterface interface {
 	GetPrivacyCustomToken(tokenStr string) (*jsonresult.GetCustomToken, error)
 	GetBurningAddress(beaconHeight float64) (string, error)
 	GetPublicKeyRole(publicKey string, detail bool) (interface{}, error)
+	GetBlockChainInfo() (*jsonresult.GetBlockChainInfoResult, error)
+	GetCandidateList() (*jsonresult.CandidateListsResult, error)
+	GetCommitteeList() (*jsonresult.CommitteeListsResult, error)
 }
