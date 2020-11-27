@@ -14,9 +14,10 @@ import (
 )
 
 func Test_SendTX(t *testing.T) {
-	sim := F.NewStandaloneSimulation("sim1", F.Config{
-		ShardNumber: 2,
-	}, true)
+	sim := F.NewStandaloneSimulation("newsim", F.Config{
+		ChainParam: F.NewChainParam(F.ID_TESTNET2).SetActiveShardNumber(2),
+		DisableLog: true,
+	})
 	sim.GenerateBlock().NextRound()
 	acc1 := sim.NewAccountFromShard(1)
 	acc2 := sim.NewAccountFromShard(0)
@@ -101,8 +102,9 @@ func Test_SendTX(t *testing.T) {
 
 func Test_CrossShard(t *testing.T) {
 	node := F.NewStandaloneSimulation("newsim", F.Config{
-		ShardNumber: 2,
-	}, true)
+		ChainParam: F.NewChainParam(F.ID_TESTNET2).SetActiveShardNumber(2),
+		DisableLog: true,
+	})
 
 	node.GenerateBlock().NextRound()
 
@@ -129,9 +131,10 @@ func Test_CrossShard(t *testing.T) {
 	node.ShowBalance(acc1)
 }
 func Test_StakeFlow1(t *testing.T) {
-	sim := F.NewStandaloneSimulation("sim2", F.Config{
-		ShardNumber: 1,
-	}, true)
+	sim := F.NewStandaloneSimulation("newsim", F.Config{
+		ChainParam: F.NewChainParam(F.ID_TESTNET2).SetActiveShardNumber(2).SetMaxShardCommitteeSize(5),
+		DisableLog: true,
+	})
 	sim.GenerateBlock().NextRound()
 	miner1 := sim.NewAccountFromShard(0)
 
@@ -274,9 +277,10 @@ func Test_StakeFlow1(t *testing.T) {
 
 func Test_PDEFlow(t *testing.T) {
 	// F.DisableLog(true)
-	sim := F.NewStandaloneSimulation("sim3", F.Config{
-		ShardNumber: 1,
-	}, true)
+	sim := F.NewStandaloneSimulation("newsim", F.Config{
+		ChainParam: F.NewChainParam(F.ID_TESTNET2).SetActiveShardNumber(2),
+		DisableLog: true,
+	})
 	acc1 := sim.NewAccountFromShard(0)
 	_, err := sim.RPC.API_SendTxPRV(sim.GenesisAccount.PrivateKey, map[string]uint64{
 		acc1.PaymentAddress: 100000000,
@@ -328,7 +332,6 @@ func Test_PDEFlow(t *testing.T) {
 	}
 	rBytes, _ := json.Marshal(r)
 	fmt.Println(string(rBytes))
-
 	_, err = sim.RPC.API_SendTxWithPRVCrossPoolTradeReq(acc1, result1.TokenID, 1000000, 1)
 	if err != nil {
 		panic(err)

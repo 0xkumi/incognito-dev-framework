@@ -168,17 +168,17 @@ func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
 			switch arg.(type) {
 			default:
 				if i%2 == 1 {
-					amount, ok := args[i+1].(uint64)
+					amount, ok := args[i+1].(int)
 					if !ok {
 						amountF64 := args[i+1].(float64)
-						amount = uint64(amountF64)
+						amount = int(amountF64)
 					}
-					receivers[arg.(account.Account).PaymentAddress] = amount
+					receivers[arg.(account.Account).PaymentAddress] = uint64(amount)
 				}
 			}
 		}
 	}
-	res, err := sim.RPC.API_SendTxPRV(sender, receivers, 1, true)
+	res, err := sim.RPC.API_SendTxPRV(sender, receivers, -1, true)
 	if err != nil {
 		fmt.Println(err)
 		sim.Pause()

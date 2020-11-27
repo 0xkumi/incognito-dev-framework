@@ -24,17 +24,11 @@ import (
 	"github.com/incognitochain/incognito-chain/syncker"
 )
 
-const (
-	MODE_MAINNET = iota
-	MODE_TESTNET
-	MODE_TESTNET2
-	MODE_CUSTOM
-)
 
 type AppNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
 	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
-	DisableChainLog(disable bool)
+	DisableChainLog(bool)
 	GetBlockchain() *blockchain.BlockChain
 	GetRPC() *rpcclient.RPCClient
 	GetUserDatabase() *leveldb.DB
@@ -74,7 +68,7 @@ func NewAppNode(name string, networkParam NetworkParam, enableRPC bool) AppNodeI
 	case TestNetParam:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
-		blockchain.ReadKey(TestnetKeylist, Testnetv2Keylist)
+		blockchain.ReadKey(TestnetKeylist, TestnetKeylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTestParam
 		break

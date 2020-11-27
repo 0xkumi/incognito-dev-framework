@@ -36,8 +36,9 @@ import (
 )
 
 type Config struct {
-	ShardNumber   int
-	RoundInterval int
+	ChainParam     *ChainParam
+	DisableLog bool
+
 }
 
 type Hook struct {
@@ -100,6 +101,7 @@ func (sim *SimulationEngine) init() {
 	if err != nil {
 		log.Println(err)
 	}
+	disableStdoutLog = sim.config.DisableLog
 	initLogRotator(filepath.Join(path, simName+".log"))
 	dbLogger.SetLevel(common.LevelTrace)
 	blockchainLogger.SetLevel(common.LevelTrace)
@@ -111,12 +113,10 @@ func (sim *SimulationEngine) init() {
 	privacyLogger.SetLevel(common.LevelTrace)
 	mempoolLogger.SetLevel(common.LevelTrace)
 
-	//setup param
-	blockchain.SetupParam()
-	activeNetParams := &blockchain.ChainTest2Param
-	activeNetParams.ActiveShards = sim.config.ShardNumber
-	common.MaxShardNumber = sim.config.ShardNumber
-	activeNetParams.MaxShardCommitteeSize = 5
+
+	activeNetParams := sim.config.ChainParam.GetParamData()
+	common.MaxShardNumber = activeNetParams.ActiveShards
+
 	for i := 0; i < activeNetParams.MinBeaconCommitteeSize; i++ {
 		acc := sim.NewAccountFromShard(-1)
 		sim.committeeAccount[-1] = append(sim.committeeAccount[-1], acc)
@@ -131,6 +131,7 @@ func (sim *SimulationEngine) init() {
 			activeNetParams.GenesisParams.PreSelectShardNodeSerializedPaymentAddress = append(activeNetParams.GenesisParams.PreSelectShardNodeSerializedPaymentAddress, acc.PaymentAddress)
 		}
 	}
+
 	sim.GenesisAccount = sim.NewAccount()
 	initTxs := createGenesisTx([]account.Account{sim.GenesisAccount})
 	activeNetParams.GenesisParams.InitialIncognito = initTxs
@@ -367,7 +368,7 @@ func (sim *SimulationEngine) PrintBlockChainInfo() {
 //PreCreate -> PreValidation -> PreInsert ->
 func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngine {
 	var chainArray = []int{-1}
-	for i := 0; i < sim.config.ShardNumber; i++ {
+	for i := 0; i < sim.config.ChainParam.ActiveShards; i++ {
 		chainArray = append(chainArray, i)
 	}
 	var h *Hook
@@ -483,7 +484,7 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 					if err != nil {
 						return err
 					} else {
-						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ShardNumber)
+						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ChainParam.ActiveShards)
 						for _, blk := range crossX {
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
@@ -505,7 +506,7 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 					if err != nil {
 						fmt.Println("InsertBlkErr", err)
 					} else {
-						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ShardNumber)
+						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ChainParam.ActiveShards)
 						for _, blk := range crossX {
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
@@ -545,10 +546,11 @@ func (sim *SimulationEngine) GetBlockchain() *blockchain.BlockChain {
 	return sim.bc
 }
 
-func (s *SimulationEngine) DisableChainLog(disable bool) {
-	disableStdoutLog = disable
-}
 
 func (s *SimulationEngine) GetUserDatabase() *leveldb.DB {
 	return s.userDB
+}
+
+func (s *SimulationEngine) DisableChainLog(b bool)  {
+	disableStdoutLog = b
 }
