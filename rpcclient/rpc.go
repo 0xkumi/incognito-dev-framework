@@ -193,7 +193,6 @@ func (r *RPCClient) API_SendTxWithPRVContributionV2(account account.Account, prv
 		"TokenIDStr":            "0000000000000000000000000000000000000000000000000000000000000004",
 	}
 	result, err := r.client.CreateAndSendTxWithPRVContributionV2(account.PrivateKey, map[string]interface{}{burnAddr: strconv.Itoa(prvAmount)}, -1, 0, reqInfo)
-	time.Sleep(time.Millisecond)
 	return &result, err
 }
 func (r *RPCClient) API_GetPDEState(beaconHeight float64) (jsonresult.CurrentPDEState, error) {

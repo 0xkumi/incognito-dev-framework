@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/0xkumi/incognito-dev-framework/account"
 	"github.com/0xkumi/incognito-dev-framework/mock"
@@ -367,6 +368,7 @@ func (sim *SimulationEngine) PrintBlockChainInfo() {
 //life cycle of a block generation process:
 //PreCreate -> PreValidation -> PreInsert ->
 func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngine {
+	time.Sleep(time.Nanosecond)
 	var chainArray = []int{-1}
 	for i := 0; i < sim.config.ChainParam.ActiveShards; i++ {
 		chainArray = append(chainArray, i)

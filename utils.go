@@ -4,10 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/incognitochain/incognito-chain/blockchain"
-	bnbrelaying "github.com/incognitochain/incognito-chain/relaying/bnb"
-	btcrelaying "github.com/incognitochain/incognito-chain/relaying/btc"
 	"io"
 	"log"
 	"math"
@@ -17,7 +13,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/0xkumi/incognito-dev-framework/account"
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/incognitochain/incognito-chain/blockchain"
+	bnbrelaying "github.com/incognitochain/incognito-chain/relaying/bnb"
+	btcrelaying "github.com/incognitochain/incognito-chain/relaying/btc"
+
+	"github.com/0xkumi/incongito-dev-framework/account"
 
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/dataaccessobject/statedb"
@@ -170,8 +171,8 @@ func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
 				if i%2 == 1 {
 					amount, ok := args[i+1].(int)
 					if !ok {
-						amountF64 := args[i+1].(float64)
-						amount = int(amountF64)
+						amountF64 := args[i+1].(int)
+						amount = uint64(amountF64)
 					}
 					receivers[arg.(account.Account).PaymentAddress] = uint64(amount)
 				}

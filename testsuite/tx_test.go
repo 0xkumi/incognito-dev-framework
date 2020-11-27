@@ -112,10 +112,10 @@ func Test_CrossShard(t *testing.T) {
 	node.ShowBalance(acc1)
 
 	node.SendPRV(node.GenesisAccount, acc1, 1000)
-	for i:=0; i < 10; i++ {
+	for i := 0; i < 10; i++ {
 		node.GenerateBlock().NextRound()
 		node.SendPRV(node.GenesisAccount, acc1, 1000)
-		node.ApplyChain(0,1).GenerateBlock().NextRound()
+		node.ApplyChain(0, 1).GenerateBlock().NextRound()
 	}
 
 	node.ShowBalance(acc1)
@@ -288,9 +288,12 @@ func Test_PDEFlow(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+	// for i := 0; i < 2; i++ {
 	sim.GenerateBlock().NextRound()
-	sim.GenerateBlock().NextRound()
-
+	// }
+	// blx, _ := sim.RPC.API_GetBalance(acc1)
+	// fmt.Println("ACC1", blx)
+	// return
 	//Create custom token
 	result1, err := sim.RPC.API_SendTxCreateCustomToken(sim.GenesisAccount.PrivateKey, sim.GenesisAccount.PaymentAddress, true, "pTest", "TES", 30000000000)
 	if err != nil {
