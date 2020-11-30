@@ -461,3 +461,78 @@ func (r *RPCClient) API_GetCommitteeList() (*jsonresult.CommitteeListsResult, er
 	}
 	return result, nil
 }
+
+func (r *RPCClient) API_GetBlockHash(chainID int, height uint64) ([]common.Hash, error) {
+	result, err := r.client.GetBlockHash(float64(chainID), float64(height))
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (r *RPCClient) API_RetrieveBlock(hash string, verbosity string) (*jsonresult.GetShardBlockResult, error) {
+	// var result *jsonresult.GetShardBlockResult
+	result, err := r.client.RetrieveBlock(hash, verbosity)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (r *RPCClient) API_RetrieveBlockByHeight(shardID byte, height uint64, verbosity string) ([]*jsonresult.GetShardBlockResult, error) {
+	result := []*jsonresult.GetShardBlockResult{}
+	result, err := r.client.RetrieveBlockByHeight(float64(shardID), float64(height), verbosity)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (r *RPCClient) API_RetrieveBeaconBlock(hash string) (*jsonresult.GetBeaconBlockResult, error) {
+	var result *jsonresult.GetBeaconBlockResult
+	result, err := r.client.RetrieveBeaconBlock(hash)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (r *RPCClient) API_RetrieveBeaconBlockByHeight(height uint64) ([]*jsonresult.GetBeaconBlockResult, error) {
+	result := []*jsonresult.GetBeaconBlockResult{}
+	result, err := r.client.RetrieveBeaconBlockByHeight(float64(height))
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (r *RPCClient) API_GetRewardAmountByEpoch(shardID byte, epoch uint64) (uint64, error) {
+	return r.client.GetRewardAmountByEpoch(float64(shardID), float64(epoch))
+}
+func (r *RPCClient) API_DefragmentAccount(privateKey string, maxValue uint64, fee uint64, privacy bool) (*jsonresult.CreateTransactionResult, error) {
+	var result jsonresult.CreateTransactionResult
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+	result, err := r.client.DefragmentAccount(privateKey, float64(maxValue), float64(fee), privacyTx)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+func (r *RPCClient) API_DefragmentAccountToken(privateKey string, tokenID string, fee uint64, privacy bool) (*jsonresult.CreateTransactionTokenResult, error) {
+	var result jsonresult.CreateTransactionTokenResult
+	privacyTx := float64(0)
+	if privacy {
+		privacyTx = 1
+	}
+	result, err := r.client.DefragmentAccountToken(privateKey, map[string]interface{}{}, float64(fee), privacyTx, map[string]interface{}{
+		"Privacy":     true,
+		"TokenID":     tokenID,
+		"TokenName":   "",
+		"TokenSymbol": "",
+		"TokenTxType": 1,
+		"TokenAmount": 0,
+		"TokenFee":    0,
+	}, "", privacyTx)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}

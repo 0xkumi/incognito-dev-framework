@@ -1,6 +1,7 @@
 package rpcclient //This file is auto generated. Please do not change if you dont know what you are doing
 
 import (
+	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/rpcserver/jsonresult"
 )
 
@@ -31,4 +32,12 @@ type ClientInterface interface {
 	GetBlockChainInfo() (*jsonresult.GetBlockChainInfoResult, error)
 	GetCandidateList() (*jsonresult.CandidateListsResult, error)
 	GetCommitteeList() (*jsonresult.CommitteeListsResult, error)
+	GetBlockHash(chainID float64, height float64) ([]common.Hash, error)
+	RetrieveBlock(hash string, verbosity string) (*jsonresult.GetShardBlockResult, error)
+	RetrieveBlockByHeight(shardID float64, height float64, verbosity string) ([]*jsonresult.GetShardBlockResult, error)
+	RetrieveBeaconBlock(hash string) (*jsonresult.GetBeaconBlockResult, error)
+	RetrieveBeaconBlockByHeight(height float64) ([]*jsonresult.GetBeaconBlockResult, error)
+	GetRewardAmountByEpoch(shard float64, epoch float64) (uint64, error)
+	DefragmentAccount(privateKey string, maxValue float64, fee float64, privacy float64) (jsonresult.CreateTransactionResult, error)
+	DefragmentAccountToken(privateKey string, receiver map[string]interface{}, fee float64, privacy float64, reqInfo map[string]interface{}, p1 string, pPrivacy float64) (jsonresult.CreateTransactionTokenResult, error)
 }
