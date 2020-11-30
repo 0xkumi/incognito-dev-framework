@@ -42,6 +42,7 @@ func main() {
 //This file is auto generated. Please do not change if you dont know what you are doing
 import (
 	"errors"
+	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/rpcserver/jsonresult"
 )

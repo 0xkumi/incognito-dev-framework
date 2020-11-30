@@ -57,6 +57,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/rpcserver/jsonresult"
 )
 

@@ -2,6 +2,7 @@ package devframework
 //This file is auto generated. Please do not change if you dont know what you are doing
 import (
 	"errors"
+	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/rpcserver/jsonresult"
 )
@@ -241,4 +242,76 @@ func (r *LocalRPCClient) GetCommitteeList() (res *jsonresult.CommitteeListsResul
 		return res,errors.New(rpcERR.Error())
 	}
 	return resI.(*jsonresult.CommitteeListsResult),nil
+}
+func (r *LocalRPCClient) GetBlockHash(chainID float64, height float64) (res []common.Hash,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getblockhash"]
+	resI, rpcERR := c(httpServer, []interface{}{chainID,height}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.([]common.Hash),nil
+}
+func (r *LocalRPCClient) RetrieveBlock(hash string, verbosity string) (res *jsonresult.GetShardBlockResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["retrieveblock"]
+	resI, rpcERR := c(httpServer, []interface{}{hash,verbosity}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.GetShardBlockResult),nil
+}
+func (r *LocalRPCClient) RetrieveBlockByHeight(shardID float64, height float64, verbosity string) (res []*jsonresult.GetShardBlockResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["retrieveblockbyheight"]
+	resI, rpcERR := c(httpServer, []interface{}{shardID,height,verbosity}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.([]*jsonresult.GetShardBlockResult),nil
+}
+func (r *LocalRPCClient) RetrieveBeaconBlock(hash string) (res *jsonresult.GetBeaconBlockResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["retrievebeaconblock"]
+	resI, rpcERR := c(httpServer, []interface{}{hash}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.GetBeaconBlockResult),nil
+}
+func (r *LocalRPCClient) RetrieveBeaconBlockByHeight(height float64) (res []*jsonresult.GetBeaconBlockResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["retrievebeaconblockbyheight"]
+	resI, rpcERR := c(httpServer, []interface{}{height}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.([]*jsonresult.GetBeaconBlockResult),nil
+}
+func (r *LocalRPCClient) GetRewardAmountByEpoch(shard float64, epoch float64) (res uint64,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getrewardamountbyepoch"]
+	resI, rpcERR := c(httpServer, []interface{}{shard,epoch}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(uint64),nil
+}
+func (r *LocalRPCClient) DefragmentAccount(privateKey string, maxValue float64, fee float64, privacy float64) (res jsonresult.CreateTransactionResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["defragmentaccount"]
+	resI, rpcERR := c(httpServer, []interface{}{privateKey,maxValue,fee,privacy}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(jsonresult.CreateTransactionResult),nil
+}
+func (r *LocalRPCClient) DefragmentAccountToken(privateKey string, receiver map[string]interface{}, fee float64, privacy float64, reqInfo map[string]interface{}, p1 string, pPrivacy float64) (res jsonresult.CreateTransactionTokenResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["defragmentaccounttoken"]
+	resI, rpcERR := c(httpServer, []interface{}{privateKey,receiver,fee,privacy,reqInfo,p1,pPrivacy}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(jsonresult.CreateTransactionTokenResult),nil
 }
