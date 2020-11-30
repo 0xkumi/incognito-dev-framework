@@ -11,6 +11,7 @@ import (
 )
 
 type Account struct {
+	Name string
 	PublicKey           string
 	PrivateKey          string
 	MiningKey           string
@@ -49,6 +50,10 @@ func (acc *Account) ShardID(_numShard ...interface{}) int {
 		return -1
 	}
 	return int(sid[len(sid)-1]) % numShard
+}
+
+func (acc *Account) SetName(n string) {
+	acc.Name = n
 }
 
 func NewAccountFromCommitteePublicKey(committeePK string) (*Account, error) {
