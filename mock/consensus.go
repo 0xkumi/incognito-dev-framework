@@ -1,9 +1,9 @@
 package mock
 
 import (
-	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/common/consensus"
+	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 )
 
@@ -22,7 +22,7 @@ type ConsensusInterface interface {
 }
 
 type Consensus struct {
-	Blockchain *blockchain.BlockChain
+	consensusEngine *consensus_v2.Engine
 }
 
 func (c *Consensus) GetOneValidator() *consensus.Validator {
@@ -34,17 +34,17 @@ func (c *Consensus) GetOneValidatorForEachConsensusProcess() map[int]*consensus.
 }
 
 func (c *Consensus) ValidateProducerPosition(blk common.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error {
-	return nil
+	return c.consensusEngine.ValidateProducerPosition(blk, lastProposerIdx,committee, minCommitteeSize)
 }
 
 func (c *Consensus) ValidateProducerSig(block common.BlockInterface, consensusType string) error {
-	return nil
+	return c.consensusEngine.ValidateProducerSig(block, consensusType)
 }
 
 func (c *Consensus) ValidateBlockCommitteSig(block common.BlockInterface, committee []incognitokey.CommitteePublicKey) error {
-	return nil
+	return c.consensusEngine.ValidateBlockCommitteSig(block, committee)
 }
 
-func (c *Consensus) IsCommitteeInShard(byte) bool {
+func (c *Consensus) IsCommitteeInShard(sid byte) bool {
 	return true
 }

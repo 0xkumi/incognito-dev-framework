@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
+	"github.com/incognitochain/incognito-chain/common/consensus"
+	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/syncker"
 )
 
@@ -36,6 +38,15 @@ type Syncker interface {
 	SyncMissingShardBlock(ctx context.Context, peerID string, sid byte, fromHash common.Hash)
 	Init(*syncker.SynckerManagerConfig)
 	InsertCrossShardBlock(block *blockchain.CrossShardBlock)
+}
+
+type Consensus interface {
+	GetOneValidator() *consensus.Validator
+	GetOneValidatorForEachConsensusProcess() map[int]*consensus.Validator
+	ValidateProducerPosition(blk common.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error
+	ValidateProducerSig(block common.BlockInterface, consensusType string) error
+	ValidateBlockCommitteSig(block common.BlockInterface, committee []incognitokey.CommitteePublicKey) error
+	IsCommitteeInShard(byte) bool
 }
 
 const (

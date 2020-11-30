@@ -16,7 +16,7 @@ type Account struct {
 	MiningKey           string
 	MiningPubkey        string
 	PaymentAddress      string
-	keyset              *incognitokey.KeySet
+	Keyset              *incognitokey.KeySet
 	SelfCommitteePubkey string
 }
 
@@ -78,7 +78,7 @@ func NewAccountFromPrivatekey(privateKey string) (Account, error) {
 	committeeKey, _ := incognitokey.NewCommitteeKeyFromSeed(common.HashB(common.HashB(wl.KeySet.PrivateKey)), wl.KeySet.PaymentAddress.Pk)
 	acc.MiningPubkey = committeeKey.GetMiningKeyBase58("bls")
 	acc.SelfCommitteePubkey, _ = committeeKey.ToBase58()
-	acc.keyset = &wl.KeySet
+	acc.Keyset = &wl.KeySet
 	return acc, nil
 }
 

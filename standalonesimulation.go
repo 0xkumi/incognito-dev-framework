@@ -3,6 +3,10 @@ package devframework
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/incognitochain/incognito-chain/consensus_v2"
+	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
+	"github.com/incognitochain/incognito-chain/consensus_v2/signatureschemes"
+	"github.com/incognitochain/incognito-chain/incognitokey"
 	"log"
 	"net"
 	"os"
@@ -44,8 +48,10 @@ type Config struct {
 type Hook struct {
 	Create     func(chainID int, doCreate func() (blk common.BlockInterface, err error))
 	Validation func(chainID int, block common.BlockInterface, doValidation func(blk common.BlockInterface) error)
+	CombineVotes func(chainID int) []int
 	Insert     func(chainID int, block common.BlockInterface, doInsert func(blk common.BlockInterface) error)
 }
+
 type SimulationEngine struct {
 	config  Config
 	simName string
@@ -391,42 +397,46 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 
 	//Create blocks for apply chain
 	for _, chainID := range chainArray {
+		proposerPK,proposerIndex := chain.GetChain(chainID).GetBestView().GetProposerByTimeSlot((sim.timer.Now()/10) , 2)
+		proposerPkStr,_ := proposerPK.ToBase58()
+		fmt.Println("produce with id",proposerIndex)
+
 		if h != nil && h.Create != nil {
 			h.Create(chainID, func() (blk common.BlockInterface, err error) {
 				if chainID == -1 {
-					block, err = chain.BeaconChain.CreateNewBlock(2, "", 1, sim.timer.Now())
+					block, err = chain.BeaconChain.CreateNewBlock(2, proposerPkStr, 1, sim.timer.Now())
 					if err != nil {
 						block = nil
 						return nil, err
 					}
-					block.(mock.BlockValidation).AddValidationField("test")
 					return block, nil
 				} else {
-					block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(2, "", 1, sim.timer.Now())
+					block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(2, proposerPkStr, 1, sim.timer.Now())
 					if err != nil {
 						return nil, err
 					}
-					block.(mock.BlockValidation).AddValidationField("test")
 					return block, nil
 				}
 			})
 		} else {
 			if chainID == -1 {
-				block, err = chain.BeaconChain.CreateNewBlock(2, "", 1, sim.timer.Now())
+				block, err = chain.BeaconChain.CreateNewBlock(2, proposerPkStr, 1, sim.timer.Now())
 				if err != nil {
 					block = nil
 					fmt.Println("NewBlockError", err)
 				}
-				block.(mock.BlockValidation).AddValidationField("test")
 			} else {
-				block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(2, "", 1, sim.timer.Now())
+				block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(2, proposerPkStr, 1, sim.timer.Now())
 				if err != nil {
 					block = nil
 					fmt.Println("NewBlockError", err)
 				}
-				block.(mock.BlockValidation).AddValidationField("test")
 			}
 		}
+
+		//SignBlock
+		userKey,_ := consensus_v2.GetMiningKeyFromPrivateSeed(sim.committeeAccount[chainID][proposerIndex].MiningKey)
+		sim.SignBlock(userKey,block)
 
 		//Validation
 		if h != nil && h.Validation != nil {
@@ -465,6 +475,16 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 				}
 			}
 
+		}
+		//Combine
+		if h != nil && h.CombineVotes != nil {
+			nCombine := h.CombineVotes(chainID)
+			if nCombine == nil {
+				nCombine = GenerateCommitteeIndex(len(sim.committeeAccount[chainID]))
+			}
+			sim.SignBlockWithCommittee(block, sim.committeeAccount[chainID], nCombine)
+		} else {
+			sim.SignBlockWithCommittee(block, sim.committeeAccount[chainID], GenerateCommitteeIndex(len(sim.committeeAccount[chainID])))
 		}
 
 		//Insert
@@ -553,3 +573,45 @@ func (s *SimulationEngine) GetUserDatabase() *leveldb.DB {
 func (s *SimulationEngine) DisableChainLog(b bool) {
 	disableStdoutLog = b
 }
+
+func (s *SimulationEngine) SignBlockWithCommittee(block common.BlockInterface, committees []account.Account, committeeIndex []int) error{
+	committeePubKey := []incognitokey.CommitteePublicKey{}
+	miningKeys := []*signatureschemes.MiningKey{}
+	if block.GetVersion() == 2 {
+		votes := make(map[string]*blsbftv2.BFTVote)
+		for _, committee := range committees {
+			miningKey,_ := consensus_v2.GetMiningKeyFromPrivateSeed(committee.MiningKey)
+			committeePubKey = append(committeePubKey, *miningKey.GetPublicKey())
+			miningKeys = append(miningKeys, miningKey)
+		}
+		for _, committeeID := range committeeIndex {
+			vote, _ := blsbftv2.CreateVote(miningKeys[committeeID], block, committeePubKey)
+			vote.IsValid = 1
+			votes[vote.Validator] = vote
+		}
+		committeeBLSString, _ := incognitokey.ExtractPublickeysFromCommitteeKeyList(committeePubKey, common.BlsConsensus)
+		aggSig, brigSigs, validatorIdx, err := blsbftv2.CombineVotes(votes, committeeBLSString)
+
+		valData, err := blsbftv2.DecodeValidationData(block.GetValidationField())
+		if err != nil {
+			return errors.New("decode validation data")
+		}
+		valData.AggSig = aggSig
+		valData.BridgeSig = brigSigs
+		valData.ValidatiorsIdx = validatorIdx
+		validationDataString, _ := blsbftv2.EncodeValidationData(*valData)
+		if err := block.(mock.BlockValidation).AddValidationField(validationDataString); err != nil {
+			return errors.New("Add validation error")
+		}
+	}
+	return nil
+}
+
+func (s *SimulationEngine) SignBlock(userMiningKey *signatureschemes.MiningKey, block common.BlockInterface) {
+	var validationData blsbftv2.ValidationData
+	validationData.ProducerBLSSig, _ = userMiningKey.BriSignData(block.Hash().GetBytes())
+	validationDataString, _ := blsbftv2.EncodeValidationData(validationData)
+	block.(mock.BlockValidation).AddValidationField(validationDataString)
+}
+
+

@@ -194,3 +194,11 @@ func (sim *SimulationEngine) ShowBalance(acc account.Account) {
 	}
 	fmt.Println(res)
 }
+
+func GenerateCommitteeIndex(nCommittee int) []int {
+	res := []int{}
+	for i := 0; i < nCommittee; i++ {
+		res = append(res, i)
+	}
+	return res
+}
