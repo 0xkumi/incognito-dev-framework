@@ -469,7 +469,7 @@ func (r *RPCClient) API_GetBlockHash(chainID int, height uint64) ([]common.Hash,
 	}
 	return result, nil
 }
-func (r *RPCClient) API_RetrieveBlock(hash string, verbosity string) (*jsonresult.GetShardBlockResult, error) {
+func (r *RPCClient) API_RetrieveShardBlock(hash string, verbosity string) (*jsonresult.GetShardBlockResult, error) {
 	// var result *jsonresult.GetShardBlockResult
 	result, err := r.client.RetrieveBlock(hash, verbosity)
 	if err != nil {
@@ -477,7 +477,7 @@ func (r *RPCClient) API_RetrieveBlock(hash string, verbosity string) (*jsonresul
 	}
 	return result, nil
 }
-func (r *RPCClient) API_RetrieveBlockByHeight(shardID byte, height uint64, verbosity string) ([]*jsonresult.GetShardBlockResult, error) {
+func (r *RPCClient) API_RetrieveShardBlockByHeight(shardID byte, height uint64, verbosity string) ([]*jsonresult.GetShardBlockResult, error) {
 	result := []*jsonresult.GetShardBlockResult{}
 	result, err := r.client.RetrieveBlockByHeight(float64(shardID), float64(height), verbosity)
 	if err != nil {
@@ -504,7 +504,7 @@ func (r *RPCClient) API_RetrieveBeaconBlockByHeight(height uint64) ([]*jsonresul
 func (r *RPCClient) API_GetRewardAmountByEpoch(shardID byte, epoch uint64) (uint64, error) {
 	return r.client.GetRewardAmountByEpoch(float64(shardID), float64(epoch))
 }
-func (r *RPCClient) API_DefragmentAccount(privateKey string, maxValue uint64, fee uint64, privacy bool) (*jsonresult.CreateTransactionResult, error) {
+func (r *RPCClient) API_DefragmentAccountPRV(privateKey string, maxValue uint64, fee uint64, privacy bool) (*jsonresult.CreateTransactionResult, error) {
 	var result jsonresult.CreateTransactionResult
 	privacyTx := float64(0)
 	if privacy {
