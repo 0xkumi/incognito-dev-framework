@@ -15,8 +15,9 @@ import (
 
 func Test_SendTX(t *testing.T) {
 	sim := F.NewStandaloneSimulation("newsim", F.Config{
-		ChainParam: F.NewChainParam(F.ID_TESTNET2).SetActiveShardNumber(2),
-		DisableLog: true,
+		ConsensusVersion: 2,
+		ChainParam:       F.NewChainParam(F.ID_TESTNET2).SetActiveShardNumber(2),
+		DisableLog:       true,
 	})
 	sim.GenerateBlock().NextRound()
 	acc1 := sim.NewAccountFromShard(1)
@@ -102,8 +103,9 @@ func Test_SendTX(t *testing.T) {
 
 func Test_CrossShard(t *testing.T) {
 	node := F.NewStandaloneSimulation("newsim", F.Config{
-		ChainParam: F.NewChainParam(F.ID_TESTNET2).SetActiveShardNumber(2),
-		DisableLog: true,
+		ConsensusVersion: 2,
+		ChainParam:       F.NewChainParam(F.ID_TESTNET2).SetActiveShardNumber(2),
+		DisableLog:       true,
 	})
 
 	node.GenerateBlock().NextRound()

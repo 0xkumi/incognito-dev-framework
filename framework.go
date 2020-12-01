@@ -14,6 +14,10 @@ func NewRPCClient(endpoint string) *rpcclient.RPCClient {
 
 func NewStandaloneSimulation(name string, config Config) *SimulationEngine {
 	os.RemoveAll(name)
+	// if config.ConsensusVersion < 1 || config.ConsensusVersion > 2 {
+	if config.ConsensusVersion != 2 {
+		config.ConsensusVersion = 2
+	}
 	sim := &SimulationEngine{
 		config:            config,
 		simName:           name,

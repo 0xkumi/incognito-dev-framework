@@ -3,15 +3,16 @@ package devframework
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/incognitochain/incognito-chain/consensus_v2"
-	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
-	"github.com/incognitochain/incognito-chain/consensus_v2/signatureschemes"
-	"github.com/incognitochain/incognito-chain/incognitokey"
 	"log"
 	"net"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/incognitochain/incognito-chain/consensus_v2"
+	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
+	"github.com/incognitochain/incognito-chain/consensus_v2/signatureschemes"
+	"github.com/incognitochain/incognito-chain/incognitokey"
 
 	"github.com/0xkumi/incognito-dev-framework/account"
 	"github.com/0xkumi/incognito-dev-framework/mock"
@@ -41,15 +42,16 @@ import (
 )
 
 type Config struct {
-	ChainParam *ChainParam
-	DisableLog bool
+	ConsensusVersion int
+	ChainParam       *ChainParam
+	DisableLog       bool
 }
 
 type Hook struct {
-	Create     func(chainID int, doCreate func() (blk common.BlockInterface, err error))
-	Validation func(chainID int, block common.BlockInterface, doValidation func(blk common.BlockInterface) error)
+	Create       func(chainID int, doCreate func() (blk common.BlockInterface, err error))
+	Validation   func(chainID int, block common.BlockInterface, doValidation func(blk common.BlockInterface) error)
 	CombineVotes func(chainID int) []int
-	Insert     func(chainID int, block common.BlockInterface, doInsert func(blk common.BlockInterface) error)
+	Insert       func(chainID int, block common.BlockInterface, doInsert func(blk common.BlockInterface) error)
 }
 
 type SimulationEngine struct {
@@ -61,9 +63,9 @@ type SimulationEngine struct {
 	accountSeed       string
 	accountGenHistory map[int]int
 	committeeAccount  map[int][]account.Account
-	accounts []*account.Account
+	accounts          []*account.Account
 
-	GenesisAccount    account.Account
+	GenesisAccount account.Account
 
 	//blockchain dependency object
 	Network     *HighwayConnection
@@ -92,7 +94,7 @@ func (sim *SimulationEngine) NewAccountFromShard(sid int) account.Account {
 	lastID++
 	sim.accountGenHistory[sid] = lastID
 	acc, _ := account.GenerateAccountByShard(sid, lastID, sim.accountSeed)
-	acc.SetName(fmt.Sprintf("ACC_%v",len(sim.accounts) - len(sim.committeeAccount) + 1))
+	acc.SetName(fmt.Sprintf("ACC_%v", len(sim.accounts)-len(sim.committeeAccount)+1))
 	sim.accounts = append(sim.accounts, &acc)
 	return acc
 }
@@ -401,19 +403,35 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 
 	//Create blocks for apply chain
 	for _, chainID := range chainArray {
-		proposerPK,_ := chain.GetChain(chainID).GetBestView().GetProposerByTimeSlot((sim.timer.Now()/10) , 2)
-		proposerPkStr,_ := proposerPK.ToBase58()
+		var proposerPK incognitokey.CommitteePublicKey
+
+		switch sim.config.ConsensusVersion {
+		case 1:
+			var producerPosition int
+			// if chainID == -1 {
+			// 	lastProposerIdx := chain.BeaconChain.GetBestView().(*blockchain.BeaconBestState).BeaconProposerIndex
+			// 	producerPosition = lastProposerIdx + 1%len(chain.BeaconChain.GetBestView().GetCommittee())
+			// } else {
+			// 	lastProposerIdx := chain.ShardChain[chainID].GetBestState().ShardProposerIdx
+			// 	producerPosition = lastProposerIdx + 1%len(chain.GetChain(chainID).GetBestView().GetCommittee())
+			// }
+			proposerPK = chain.GetChain(chainID).GetBestView().GetCommittee()[producerPosition]
+		case 2:
+			proposerPK, _ = chain.GetChain(chainID).GetBestView().GetProposerByTimeSlot((sim.timer.Now() / 10), 2)
+		}
+
+		proposerPkStr, _ := proposerPK.ToBase58()
 		if h != nil && h.Create != nil {
 			h.Create(chainID, func() (blk common.BlockInterface, err error) {
 				if chainID == -1 {
-					block, err = chain.BeaconChain.CreateNewBlock(2, proposerPkStr, 1, sim.timer.Now())
+					block, err = chain.BeaconChain.CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
 					if err != nil {
 						block = nil
 						return nil, err
 					}
 					return block, nil
 				} else {
-					block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(2, proposerPkStr, 1, sim.timer.Now())
+					block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
 					if err != nil {
 						return nil, err
 					}
@@ -422,13 +440,13 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 			})
 		} else {
 			if chainID == -1 {
-				block, err = chain.BeaconChain.CreateNewBlock(2, proposerPkStr, 1, sim.timer.Now())
+				block, err = chain.BeaconChain.CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
 				if err != nil {
 					block = nil
 					fmt.Println("NewBlockError", err)
 				}
 			} else {
-				block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(2, proposerPkStr, 1, sim.timer.Now())
+				block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
 				if err != nil {
 					block = nil
 					fmt.Println("NewBlockError", err)
@@ -438,8 +456,8 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 
 		//SignBlock
 		proposeAcc := sim.GetAccountByCommitteePubkey(&proposerPK)
-		userKey,_ := consensus_v2.GetMiningKeyFromPrivateSeed(proposeAcc.MiningKey)
-		sim.SignBlock(userKey,block)
+		userKey, _ := consensus_v2.GetMiningKeyFromPrivateSeed(proposeAcc.MiningKey)
+		sim.SignBlock(userKey, block)
 
 		//Validation
 		if h != nil && h.Validation != nil {
@@ -481,7 +499,7 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 		}
 
 		//Combine votes
-		accs,err :=  sim.GetListAccountsByChainID(chainID)
+		accs, err := sim.GetListAccountsByChainID(chainID)
 		if err != nil {
 			panic(err)
 		}
@@ -582,13 +600,13 @@ func (s *SimulationEngine) DisableChainLog(b bool) {
 	disableStdoutLog = b
 }
 
-func (s *SimulationEngine) SignBlockWithCommittee(block common.BlockInterface, committees []account.Account, committeeIndex []int) error{
+func (s *SimulationEngine) SignBlockWithCommittee(block common.BlockInterface, committees []account.Account, committeeIndex []int) error {
 	committeePubKey := []incognitokey.CommitteePublicKey{}
 	miningKeys := []*signatureschemes.MiningKey{}
 	if block.GetVersion() == 2 {
 		votes := make(map[string]*blsbftv2.BFTVote)
 		for _, committee := range committees {
-			miningKey,_ := consensus_v2.GetMiningKeyFromPrivateSeed(committee.MiningKey)
+			miningKey, _ := consensus_v2.GetMiningKeyFromPrivateSeed(committee.MiningKey)
 			committeePubKey = append(committeePubKey, *miningKey.GetPublicKey())
 			miningKeys = append(miningKeys, miningKey)
 		}
@@ -622,9 +640,9 @@ func (s *SimulationEngine) SignBlock(userMiningKey *signatureschemes.MiningKey, 
 	block.(mock.BlockValidation).AddValidationField(validationDataString)
 }
 
-func (s *SimulationEngine) GetAccountByCommitteePubkey(cpk *incognitokey.CommitteePublicKey) *account.Account{
+func (s *SimulationEngine) GetAccountByCommitteePubkey(cpk *incognitokey.CommitteePublicKey) *account.Account {
 	miningPK := cpk.GetMiningKeyBase58(common.BlsConsensus)
-	for _, acc := range  s.accounts {
+	for _, acc := range s.accounts {
 		if acc.MiningPubkey == miningPK {
 			return acc
 		}
@@ -632,21 +650,20 @@ func (s *SimulationEngine) GetAccountByCommitteePubkey(cpk *incognitokey.Committ
 	return nil
 }
 
-func (s *SimulationEngine) GetListAccountByCommitteePubkey(cpks []incognitokey.CommitteePublicKey) ([]account.Account,error){
+func (s *SimulationEngine) GetListAccountByCommitteePubkey(cpks []incognitokey.CommitteePublicKey) ([]account.Account, error) {
 	accounts := []account.Account{}
-	for _, cpk := range cpks{
-		if acc :=s.GetAccountByCommitteePubkey(&cpk); acc != nil {
+	for _, cpk := range cpks {
+		if acc := s.GetAccountByCommitteePubkey(&cpk); acc != nil {
 			accounts = append(accounts, *acc)
 		}
 	}
 	if len(accounts) != len(cpks) {
 		return nil, errors.New("Mismatch number of committee pubkey in beststate")
 	}
-	return accounts,nil
+	return accounts, nil
 }
 
-func (sim *SimulationEngine) GetListAccountsByChainID(chainID int) ([]account.Account,error){
+func (sim *SimulationEngine) GetListAccountsByChainID(chainID int) ([]account.Account, error) {
 	committees := sim.bc.GetChain(chainID).GetBestView().GetCommittee()
 	return sim.GetListAccountByCommitteePubkey(committees)
 }
-

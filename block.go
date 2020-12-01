@@ -14,7 +14,6 @@ import (
 
 //this function used to update several field that need recalculated in block header (in case there is change of body content)
 func UpdateShardHeaderOnBodyChange(block *blockchain.ShardBlock, bc *blockchain.BlockChain) error {
-	//TODO: @lam add more (crossshard bitmap, and any field that need recalculated when body change)
 	totalTxsFee := make(map[common.Hash]uint64)
 	for _, tx := range block.Body.Transactions {
 		totalTxsFee[*tx.GetTokenID()] += tx.GetTxFee()
