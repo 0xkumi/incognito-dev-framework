@@ -1,8 +1,10 @@
 package devframework
 
 import (
+	"fmt"
 	"net"
 	"path/filepath"
+	"time"
 
 	"github.com/0xkumi/incognito-dev-framework/mock"
 	"github.com/0xkumi/incognito-dev-framework/rpcclient"
@@ -23,7 +25,6 @@ import (
 	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/syncker"
 )
-
 
 type AppNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
@@ -51,10 +52,15 @@ var (
 	}
 )
 
-func NewAppNode(name string, networkParam NetworkParam, enableRPC bool) AppNodeInterface {
+func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enableRPC bool) AppNodeInterface {
 	// os.RemoveAll(name)
+	nodeMode := "full"
+	if isLightNode {
+		nodeMode = "light"
+	}
 	sim := &SimulationEngine{
-		simName: name,
+		simName:     name,
+		appNodeMode: nodeMode,
 	}
 	chainParam := &blockchain.Params{}
 	switch networkParam {
@@ -87,8 +93,12 @@ func NewAppNode(name string, networkParam NetworkParam, enableRPC bool) AppNodeI
 	}
 	sim.initNode(chainParam, enableRPC)
 	relayShards := []byte{}
-	for index := 0; index < common.MaxShardNumber; index++ {
-		relayShards = append(relayShards, byte(index))
+	if isLightNode {
+		go sim.startLightSyncProcess()
+	} else {
+		for index := 0; index < common.MaxShardNumber; index++ {
+			relayShards = append(relayShards, byte(index))
+		}
 	}
 	sim.ConnectNetwork(networkParam.HighwayAddress, relayShards)
 	return sim
@@ -288,4 +298,20 @@ func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, enableRPC b
 
 func (sim *SimulationEngine) GetRPC() *rpcclient.RPCClient {
 	return sim.RPC
+}
+
+func (sim *SimulationEngine) startLightSyncProcess() {
+	time.Sleep(10 * time.Second)
+	fmt.Println("start light sync process")
+	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
+		go sim.syncShardLight(byte(i))
+	}
+}
+
+func (sim *SimulationEngine) syncShardLight(shardID byte) {
+	for {
+		bestHeight := sim.bc.BeaconChain.GetShardBestViewHeight()[shardID]
+		sim.userDB.
+			time.Sleep(5 * time.Second)
+	}
 }

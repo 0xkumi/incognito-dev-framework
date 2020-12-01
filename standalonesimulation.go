@@ -55,9 +55,10 @@ type Hook struct {
 }
 
 type SimulationEngine struct {
-	config  Config
-	simName string
-	timer   *TimeEngine
+	config      Config
+	appNodeMode string
+	simName     string
+	timer       *TimeEngine
 
 	//for account manager
 	accountSeed       string
@@ -86,7 +87,8 @@ type SimulationEngine struct {
 	RPC               *rpcclient.RPCClient
 	listennerRegister map[int][]func(msg interface{})
 
-	userDB *leveldb.DB
+	userDB        *leveldb.DB
+	lightNodeData struct{}
 }
 
 func (sim *SimulationEngine) NewAccountFromShard(sid int) account.Account {

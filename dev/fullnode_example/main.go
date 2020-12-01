@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	node := devframework.NewAppNode("fullnode", devframework.MainNetParam, true)
+	node := devframework.NewAppNode("fullnode", devframework.MainNetParam, false)
 
 	//update blkHeight that want to process from
 	//blkHeight = -1, start from current best view height
