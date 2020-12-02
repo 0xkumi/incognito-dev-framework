@@ -88,7 +88,16 @@ type SimulationEngine struct {
 	listennerRegister map[int][]func(msg interface{})
 
 	userDB        *leveldb.DB
-	lightNodeData struct{}
+	lightNodeData struct {
+		Shards map[byte]*currentShardState
+	}
+}
+
+type currentShardState struct {
+	BestHeight  uint64
+	BestHash    *common.Hash
+	LocalHeight uint64
+	LocalHash   *common.Hash
 }
 
 func (sim *SimulationEngine) NewAccountFromShard(sid int) account.Account {

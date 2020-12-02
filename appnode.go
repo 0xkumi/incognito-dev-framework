@@ -1,8 +1,11 @@
 package devframework
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -101,16 +104,17 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 		}
 	}
 	sim.ConnectNetwork(networkParam.HighwayAddress, relayShards)
+	sim.DisableChainLog(true)
 	return sim
 }
 
 func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, enableRPC bool) {
 	simName := sim.simName
-	//path, err := os.Getwd()
-	//if err != nil {
-	//	log.Println(err)
-	//}
-	//initLogRotator(filepath.Join(path, simName+".log"))
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+	initLogRotator(filepath.Join(path, simName+".log"))
 	dbLogger.SetLevel(common.LevelTrace)
 	blockchainLogger.SetLevel(common.LevelTrace)
 	bridgeLogger.SetLevel(common.LevelTrace)
@@ -303,15 +307,74 @@ func (sim *SimulationEngine) GetRPC() *rpcclient.RPCClient {
 func (sim *SimulationEngine) startLightSyncProcess() {
 	time.Sleep(10 * time.Second)
 	fmt.Println("start light sync process")
+	sim.lightNodeData.Shards = make(map[byte]*currentShardState)
 	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
-		go sim.syncShardLight(byte(i))
+		sim.lightNodeData.Shards[byte(i)] = &currentShardState{}
+	}
+	sim.loadLightShardsState()
+	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
+		go sim.syncShardLight(byte(i), sim.lightNodeData.Shards[byte(i)])
 	}
 }
 
-func (sim *SimulationEngine) syncShardLight(shardID byte) {
+func (sim *SimulationEngine) loadLightShardsState() {
+	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
+		statePrefix := fmt.Sprintf("state-%v", i)
+		v, err := sim.userDB.Get([]byte(statePrefix), nil)
+		if err != nil && err != leveldb.ErrNotFound {
+			panic(err)
+		}
+		if err == leveldb.ErrNotFound {
+			continue
+		}
+		shardState := &currentShardState{}
+		if err := json.Unmarshal(v, shardState); err != nil {
+			panic(err)
+		}
+		sim.lightNodeData.Shards[byte(i)] = shardState
+	}
+}
+
+func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardState) {
 	for {
 		bestHeight := sim.bc.BeaconChain.GetShardBestViewHeight()[shardID]
-		sim.userDB.
+		bestHash := sim.bc.BeaconChain.GetShardBestViewHash()[shardID]
+		state.BestHeight = bestHeight
+		state.BestHash = &bestHash
+		blkCh, err := sim.Network.GetShardBlock(int(shardID), state.LocalHeight, state.BestHeight)
+		if err != nil && err.Error() != "requester not ready" {
+			panic(err)
+		}
+		if err != nil && err.Error() == "requester not ready" {
 			time.Sleep(5 * time.Second)
+			continue
+		}
+		for blk := range blkCh {
+			blkBytes, err := json.Marshal(blk)
+			if err != nil {
+				panic(err)
+			}
+			blkHash := blk.(*blockchain.ShardBlock).Hash()
+			prefix := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
+			if err := sim.userDB.Put([]byte(prefix), blkHash.Bytes(), nil); err != nil {
+				panic(err)
+			}
+			if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
+				panic(err)
+			}
+			state.LocalHeight = blk.GetHeight()
+			state.LocalHash = blkHash
+			fmt.Println("blk", blk.GetHeight())
+		}
+		stateBytes, err := json.Marshal(state)
+		if err != nil {
+			panic(err)
+		}
+		statePrefix := fmt.Sprintf("state-%v", shardID)
+		if err := sim.userDB.Put([]byte(statePrefix), stateBytes, nil); err != nil {
+			panic(err)
+		}
+		fmt.Printf("shard %v synced from %v to %v \n", shardID, state.LocalHeight, state.BestHeight)
+		time.Sleep(5 * time.Second)
 	}
 }

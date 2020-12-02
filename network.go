@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/incognitochain/incognito-chain/blockchain"
+	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/peer"
 	"github.com/incognitochain/incognito-chain/peerv2"
@@ -183,28 +184,20 @@ func (s *HighwayConnection) onPeerState(p *peer.PeerConn, msg *wire.MessagePeerS
 /*
 	Framework Network interface
 */
-func (s *HighwayConnection) GetBeaconBlock(from, to uint64) []*blockchain.BeaconBlock {
+func (s *HighwayConnection) GetBeaconBlock(from, to uint64) (chan common.BlockInterface, error) {
 	blkCh, err := s.conn.RequestBeaconBlocksViaStream(context.Background(), "", from, to)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	result := []*blockchain.BeaconBlock{}
-	for block := range blkCh {
-		result = append(result, block.(*blockchain.BeaconBlock))
-	}
-	return result
+	return blkCh, nil
 }
 
-func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) []*blockchain.ShardBlock {
+func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) (chan common.BlockInterface, error) {
 	blkCh, err := s.conn.RequestShardBlocksViaStream(context.Background(), "", sid, from, to)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	result := []*blockchain.ShardBlock{}
-	for block := range blkCh {
-		result = append(result, block.(*blockchain.ShardBlock))
-	}
-	return result
+	return blkCh, nil
 }
 
 //func (s *HighwayConnection) GetCrossShardBlock(fromsid, tosid, from, to int) *blockchain.CrossShardBlock {
