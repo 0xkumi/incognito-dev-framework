@@ -36,8 +36,11 @@ type AppNodeInterface interface {
 	GetBlockchain() *blockchain.BlockChain
 	GetRPC() *rpcclient.RPCClient
 	GetUserDatabase() *leveldb.DB
+	// LightNode() LightNodeInterface
 }
 
+type LightNodeInterface interface {
+}
 type NetworkParam struct {
 	ChainParam     *blockchain.Params
 	HighwayAddress string
@@ -365,6 +368,8 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 			state.LocalHeight = blk.GetHeight()
 			state.LocalHash = blkHash
 			fmt.Println("blk", blk.GetHeight())
+
+			go sim.ps.PublishMessage(pubsub.NewMessage(pubsub.NewShardblockTopic, blk.(*blockchain.ShardBlock)))
 		}
 		stateBytes, err := json.Marshal(state)
 		if err != nil {
@@ -377,4 +382,12 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 		fmt.Printf("shard %v synced from %v to %v \n", shardID, state.LocalHeight, state.BestHeight)
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func (sim *SimulationEngine) GetShardBlockByHeight(shardID byte, height uint64) *blockchain.ShardBlock {
+
+}
+
+func (sim *SimulationEngine) GetShardBlockByHash(shardID byte, blockHash []byte) *blockchain.ShardBlock {
+
 }
