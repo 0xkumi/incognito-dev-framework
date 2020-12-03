@@ -384,10 +384,59 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 	}
 }
 
-func (sim *SimulationEngine) GetShardBlockByHeight(shardID byte, height uint64) *blockchain.ShardBlock {
+func (sim *SimulationEngine) GetShardBlockByHeight(shardID byte, height uint64) (*blockchain.ShardBlock, error) {
+	var shardBlk *blockchain.ShardBlock
+	if sim.appNodeMode == "full" {
+		prefix := fmt.Sprintf("s-%v-%v", shardID, height)
+		blkHash, err := sim.userDB.Get([]byte(prefix), nil)
+		if err != nil {
+			return nil, err
+		}
+		blkBytes, err := sim.userDB.Get(blkHash, nil)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(blkBytes, shardBlk); err != nil {
+			return nil, err
+		}
+	} else {
 
+	}
+	return shardBlk, nil
 }
 
-func (sim *SimulationEngine) GetShardBlockByHash(shardID byte, blockHash []byte) *blockchain.ShardBlock {
+func (sim *SimulationEngine) GetShardBlockByHash(shardID byte, blockHash common.Hash) (*blockchain.ShardBlock, error) {
+	var shardBlk *blockchain.ShardBlock
+	var err error
+	if sim.appNodeMode == "full" {
+		blkBytes, err := sim.userDB.Get(blockHash.Bytes(), nil)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(blkBytes, shardBlk); err != nil {
+			return nil, err
+		}
+	} else {
+		shardBlk, _, err = sim.GetBlockchain().GetShardBlockByHashWithShardID(blockHash, shardID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return shardBlk, nil
+}
 
+func (sim *SimulationEngine) GetBeaconBlockByHeight(height uint64) (*blockchain.BeaconBlock, error) {
+	blks, err := sim.GetBlockchain().GetBeaconBlockByHeight(height)
+	if err != nil {
+		return nil, err
+	}
+	return blks[0], nil
+}
+
+func (sim *SimulationEngine) GetBeaconBlockByHash(blockHash common.Hash) (*blockchain.BeaconBlock, error) {
+	blk, _, err := sim.GetBlockchain().GetBeaconBlockByHash(blockHash)
+	if err != nil {
+		return nil, err
+	}
+	return blk, nil
 }
