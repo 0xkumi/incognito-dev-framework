@@ -358,6 +358,11 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 				panic(err)
 			}
 			blkHash := blk.(*blockchain.ShardBlock).Hash()
+			if blk.GetHeight() == state.BestHeight {
+				if !blkHash.IsEqual(state.BestHash) {
+					panic(errors.New("Synced block has wrong block hash 🙀"))
+				}
+			}
 			prefix := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
 			if err := sim.userDB.Put([]byte(prefix), blkHash.Bytes(), nil); err != nil {
 				panic(err)
