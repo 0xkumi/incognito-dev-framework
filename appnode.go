@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"reflect"
 	"time"
 
 	"github.com/0xkumi/incognito-dev-framework/mock"
@@ -32,6 +33,7 @@ import (
 type AppNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
 	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
+	OnInserted(blkType int, f func(msg interface{}))
 	DisableChainLog(bool)
 	GetBlockchain() *blockchain.BlockChain
 	GetRPC() *rpcclient.RPCClient
@@ -65,8 +67,9 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 		nodeMode = "light"
 	}
 	sim := &SimulationEngine{
-		simName:     name,
-		appNodeMode: nodeMode,
+		simName:           name,
+		appNodeMode:       nodeMode,
+		listennerRegister: make(map[int][]func(msg interface{})),
 	}
 	chainParam := &blockchain.Params{}
 	switch networkParam {
@@ -97,9 +100,12 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 		chainParam = networkParam.ChainParam
 		break
 	}
-	sim.initNode(chainParam, enableRPC)
+	sim.initNode(chainParam, isLightNode, enableRPC)
 	relayShards := []byte{}
 	if isLightNode {
+		for index := 0; index < common.MaxShardNumber; index++ {
+			relayShards = append(relayShards, byte(index))
+		}
 		go sim.startLightSyncProcess()
 	} else {
 		for index := 0; index < common.MaxShardNumber; index++ {
@@ -111,7 +117,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 	return sim
 }
 
-func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, enableRPC bool) {
+func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, isLightNode bool, enableRPC bool) {
 	simName := sim.simName
 	path, err := os.Getwd()
 	if err != nil {
@@ -226,8 +232,10 @@ func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, enableRPC b
 	go txpool.Start(cQuit)
 
 	relayShards := []byte{}
-	for index := 0; index < common.MaxShardNumber; index++ {
-		relayShards = append(relayShards, byte(index))
+	if !isLightNode {
+		for index := 0; index < common.MaxShardNumber; index++ {
+			relayShards = append(relayShards, byte(index))
+		}
 	}
 	err = bc.Init(&blockchain.Config{
 		BTCChain:        btcChain,
@@ -312,7 +320,10 @@ func (sim *SimulationEngine) startLightSyncProcess() {
 	fmt.Println("start light sync process")
 	sim.lightNodeData.Shards = make(map[byte]*currentShardState)
 	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
-		sim.lightNodeData.Shards[byte(i)] = &currentShardState{}
+		sim.lightNodeData.Shards[byte(i)] = &currentShardState{
+			LocalHeight: 1,
+			LocalHash:   &common.Hash{},
+		}
 	}
 	sim.loadLightShardsState()
 	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
@@ -339,6 +350,7 @@ func (sim *SimulationEngine) loadLightShardsState() {
 }
 
 func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardState) {
+	fmt.Println("start sync shard", shardID)
 	for {
 		bestHeight := sim.bc.BeaconChain.GetShardBestViewHeight()[shardID]
 		bestHash := sim.bc.BeaconChain.GetShardBestViewHash()[shardID]
@@ -352,29 +364,37 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 			time.Sleep(5 * time.Second)
 			continue
 		}
-		for blk := range blkCh {
-			blkBytes, err := json.Marshal(blk)
-			if err != nil {
-				panic(err)
-			}
-			blkHash := blk.(*blockchain.ShardBlock).Hash()
-			if blk.GetHeight() == state.BestHeight {
-				if !blkHash.IsEqual(state.BestHash) {
-					panic(errors.New("Synced block has wrong block hash 🙀"))
-				}
-			}
-			prefix := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
-			if err := sim.userDB.Put([]byte(prefix), blkHash.Bytes(), nil); err != nil {
-				panic(err)
-			}
-			if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
-				panic(err)
-			}
-			state.LocalHeight = blk.GetHeight()
-			state.LocalHash = blkHash
-			fmt.Println("blk", blk.GetHeight())
 
-			go sim.ps.PublishMessage(pubsub.NewMessage(pubsub.NewShardblockTopic, blk.(*blockchain.ShardBlock)))
+		for {
+			blk := <-blkCh
+			if !isNil(blk) {
+				blkBytes, err := json.Marshal(blk)
+				if err != nil {
+					panic(err)
+				}
+				blkHash := blk.(*blockchain.ShardBlock).Hash()
+				if blk.GetHeight() == state.BestHeight {
+					if !blkHash.IsEqual(state.BestHash) {
+						panic(errors.New("Synced block has wrong block hash 🙀"))
+					}
+				}
+				prefix := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
+				if err := sim.userDB.Put([]byte(prefix), blkHash.Bytes(), nil); err != nil {
+					panic(err)
+				}
+				if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
+					panic(err)
+				}
+				state.LocalHeight = blk.GetHeight()
+				state.LocalHash = blkHash
+				if ls, ok := sim.listennerRegister[BLK_SHARD]; ok {
+					for _, fn := range ls {
+						go fn(blk)
+					}
+				}
+			} else {
+				break
+			}
 		}
 		stateBytes, err := json.Marshal(state)
 		if err != nil {
@@ -444,4 +464,8 @@ func (sim *SimulationEngine) GetBeaconBlockByHash(blockHash common.Hash) (*block
 		return nil, err
 	}
 	return blk, nil
+}
+
+func isNil(v interface{}) bool {
+	return v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil())
 }
