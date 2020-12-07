@@ -318,7 +318,6 @@ func (sim *SimulationEngine) GetRPC() *rpcclient.RPCClient {
 }
 
 func (sim *SimulationEngine) startLightSyncProcess() {
-	time.Sleep(10 * time.Second)
 	fmt.Println("start light sync process")
 	sim.lightNodeData.ProcessedBeaconHeight = 1
 	k1 := "lightn-beacon-process"
@@ -367,6 +366,8 @@ func (sim *SimulationEngine) startLightSyncProcess() {
 		}
 	}
 	sim.loadLightShardsState()
+
+	time.Sleep(5 * time.Second)
 	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
 		go sim.syncShardLight(byte(i), sim.lightNodeData.Shards[byte(i)])
 	}
@@ -443,11 +444,6 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 				statePrefix := fmt.Sprintf("state-%v", shardID)
 				if err := sim.userDB.Put([]byte(statePrefix), stateBytes, nil); err != nil {
 					panic(err)
-				}
-				if ls, ok := sim.listennerRegister[BLK_SHARD]; ok {
-					for _, fn := range ls {
-						go fn(blk)
-					}
 				}
 			} else {
 				break
