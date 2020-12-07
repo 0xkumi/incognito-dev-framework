@@ -1,6 +1,7 @@
 package devframework
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -114,35 +115,6 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 	}
 	sim.ConnectNetwork(networkParam.HighwayAddress, relayShards)
 	sim.DisableChainLog(true)
-
-	go func() {
-		time.Sleep(2 * time.Second)
-		_, subChan, err := sim.ps.RegisterNewSubscriber(pubsub.NewBeaconBlockTopic)
-		if err != nil {
-			panic(err)
-		}
-		for {
-			select {
-			case msg := <-subChan:
-				{
-					beaconBlk, ok := msg.Value.(*blockchain.BeaconBlock)
-					if !ok {
-						panic("oops")
-					}
-					for shardID, states := range beaconBlk.Body.ShardState {
-						go func(sID byte, sts []blockchain.ShardState) {
-							for _, blk := range sts {
-								key := fmt.Sprintf("s-%v-%v", sID, blk.Height)
-								if err := sim.userDB.Put([]byte(key), blk.Hash.Bytes(), nil); err != nil {
-									panic(err)
-								}
-							}
-						}(shardID, states)
-					}
-				}
-			}
-		}
-	}()
 
 	return sim
 }
@@ -348,6 +320,45 @@ func (sim *SimulationEngine) GetRPC() *rpcclient.RPCClient {
 func (sim *SimulationEngine) startLightSyncProcess() {
 	time.Sleep(10 * time.Second)
 	fmt.Println("start light sync process")
+	sim.lightNodeData.ProcessedBeaconHeight = 1
+	k1 := "lightn-beacon-process"
+	v1, err := sim.userDB.Get([]byte(k1), nil)
+	if err != nil && err != leveldb.ErrNotFound {
+		panic(err)
+	}
+	if err == nil {
+		sim.lightNodeData.ProcessedBeaconHeight = binary.LittleEndian.Uint64(v1)
+	}
+	processBeaconBlk := func(bc *blockchain.BlockChain, h common.Hash, height uint64) {
+		for i := sim.lightNodeData.ProcessedBeaconHeight; i < height; i++ {
+			blks, err := sim.bc.GetBeaconBlockByHeight(i)
+			if err != nil {
+				panic(err)
+			}
+			beaconBlk := blks[0]
+			for shardID, states := range beaconBlk.Body.ShardState {
+				go func(sID byte, sts []blockchain.ShardState) {
+					for _, blk := range sts {
+						key := fmt.Sprintf("s-%v-%v", sID, blk.Height)
+						if err := sim.userDB.Put([]byte(key), blk.Hash.Bytes(), nil); err != nil {
+							panic(err)
+						}
+					}
+				}(shardID, states)
+			}
+			sim.lightNodeData.ProcessedBeaconHeight = height
+			key := "lightn-beacon-process"
+			b := make([]byte, 8)
+			binary.LittleEndian.PutUint64(b, uint64(sim.lightNodeData.ProcessedBeaconHeight))
+			err = sim.userDB.Put([]byte(key), b, nil)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+	}
+	sim.OnNewBlockFromParticularHeight(-1, int64(sim.lightNodeData.ProcessedBeaconHeight), false, processBeaconBlk)
+
 	sim.lightNodeData.Shards = make(map[byte]*currentShardState)
 	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
 		sim.lightNodeData.Shards[byte(i)] = &currentShardState{

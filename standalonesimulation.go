@@ -89,7 +89,8 @@ type SimulationEngine struct {
 
 	userDB        *leveldb.DB
 	lightNodeData struct {
-		Shards map[byte]*currentShardState
+		Shards                map[byte]*currentShardState
+		ProcessedBeaconHeight uint64
 	}
 }
 
