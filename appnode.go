@@ -114,6 +114,36 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 	}
 	sim.ConnectNetwork(networkParam.HighwayAddress, relayShards)
 	sim.DisableChainLog(true)
+
+	go func() {
+		time.Sleep(2 * time.Second)
+		_, subChan, err := sim.ps.RegisterNewSubscriber(pubsub.NewBeaconBlockTopic)
+		if err != nil {
+			panic(err)
+		}
+		for {
+			select {
+			case msg := <-subChan:
+				{
+					beaconBlk, ok := msg.Value.(*blockchain.BeaconBlock)
+					if !ok {
+						panic("oops")
+					}
+					for shardID, states := range beaconBlk.Body.ShardState {
+						go func(sID byte, sts []blockchain.ShardState) {
+							for _, blk := range sts {
+								key := fmt.Sprintf("s-%v-%v", sID, blk.Height)
+								if err := sim.userDB.Put([]byte(key), blk.Hash.Bytes(), nil); err != nil {
+									panic(err)
+								}
+							}
+						}(shardID, states)
+					}
+				}
+			}
+		}
+	}()
+
 	return sim
 }
 
@@ -273,7 +303,7 @@ func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, isLightNode
 	sim.rpcServer = rpcServer
 	sim.RPC = rpcclient.NewRPCClient(rpclocal)
 	sim.cQuit = cQuit
-
+	sim.ps = ps
 	rpcServer.Init(&rpcConfig)
 	go func() {
 		for {
@@ -288,7 +318,7 @@ func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, isLightNode
 	if enableRPC {
 		go rpcServer.Start()
 	}
-
+	sim.startPubSub()
 	//init syncker
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
 
@@ -353,10 +383,10 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 	fmt.Println("start sync shard", shardID)
 	for {
 		bestHeight := sim.bc.BeaconChain.GetShardBestViewHeight()[shardID]
-		bestHash := sim.bc.BeaconChain.GetShardBestViewHash()[shardID]
-		state.BestHeight = bestHeight
-		state.BestHash = &bestHash
-		blkCh, err := sim.Network.GetShardBlock(int(shardID), state.LocalHeight, state.BestHeight)
+		// bestHash := sim.bc.BeaconChain.GetShardBestViewHash()[shardID]
+		// state.BestHeight = bestHeight
+		// state.BestHash = &bestHash
+		blkCh, err := sim.Network.GetShardBlock(int(shardID), state.LocalHeight, bestHeight)
 		if err != nil && err.Error() != "requester not ready" {
 			panic(err)
 		}
@@ -373,14 +403,22 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 					panic(err)
 				}
 				blkHash := blk.(*blockchain.ShardBlock).Hash()
-				if blk.GetHeight() == state.BestHeight {
-					if !blkHash.IsEqual(state.BestHash) {
-						panic(errors.New("Synced block has wrong block hash 🙀"))
+
+				key := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
+				blkHashBytes, err := sim.userDB.Get([]byte(key), nil)
+				if err != nil {
+					if err.Error() == "leveldb: not found" {
+						time.Sleep(5 * time.Second)
+						break
 					}
-				}
-				prefix := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
-				if err := sim.userDB.Put([]byte(prefix), blkHash.Bytes(), nil); err != nil {
 					panic(err)
+				}
+				blkLocalHash, err := common.Hash{}.NewHash(blkHashBytes)
+				if err != nil {
+					panic(err)
+				}
+				if !blkHash.IsEqual(blkLocalHash) {
+					panic(errors.New("Synced block has wrong block hash 🙀"))
 				}
 				if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
 					panic(err)
@@ -404,14 +442,17 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 		if err := sim.userDB.Put([]byte(statePrefix), stateBytes, nil); err != nil {
 			panic(err)
 		}
-		fmt.Printf("shard %v synced from %v to %v \n", shardID, state.LocalHeight, state.BestHeight)
-		time.Sleep(5 * time.Second)
+		if state.LocalHeight == bestHeight {
+			time.Sleep(10 * time.Second)
+		}
+		fmt.Printf("shard %v synced to %v \n", shardID, state.LocalHeight)
+
 	}
 }
 
 func (sim *SimulationEngine) GetShardBlockByHeight(shardID byte, height uint64) (*blockchain.ShardBlock, error) {
 	var shardBlk *blockchain.ShardBlock
-	if sim.appNodeMode == "full" {
+	if sim.appNodeMode == "light" {
 		prefix := fmt.Sprintf("s-%v-%v", shardID, height)
 		blkHash, err := sim.userDB.Get([]byte(prefix), nil)
 		if err != nil {
@@ -433,7 +474,7 @@ func (sim *SimulationEngine) GetShardBlockByHeight(shardID byte, height uint64) 
 func (sim *SimulationEngine) GetShardBlockByHash(shardID byte, blockHash common.Hash) (*blockchain.ShardBlock, error) {
 	var shardBlk *blockchain.ShardBlock
 	var err error
-	if sim.appNodeMode == "full" {
+	if sim.appNodeMode == "light" {
 		blkBytes, err := sim.userDB.Get(blockHash.Bytes(), nil)
 		if err != nil {
 			return nil, err

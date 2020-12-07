@@ -94,8 +94,8 @@ type SimulationEngine struct {
 }
 
 type currentShardState struct {
-	BestHeight  uint64
-	BestHash    *common.Hash
+	// BestHeight  uint64
+	// BestHash    *common.Hash
 	LocalHeight uint64
 	LocalHash   *common.Hash
 }
