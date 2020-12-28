@@ -127,6 +127,7 @@ func (sim *SimulationEngine) init() {
 
 	activeNetParams := sim.config.ChainParam.GetParamData()
 	common.MaxShardNumber = activeNetParams.ActiveShards
+	common.TIMESLOT = activeNetParams.Timeslot
 	sim.GenesisAccount = sim.NewAccount()
 
 	for i := 0; i < activeNetParams.MinBeaconCommitteeSize; i++ {
