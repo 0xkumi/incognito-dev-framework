@@ -61,13 +61,30 @@ var (
 	}
 )
 
+func NewNetworkMonitor(highwayAddr string) *HighwayConnection{
+	config := HighwayConnectionConfig{
+		"127.0.0.1",
+		19876,
+		"2.0.0",
+		highwayAddr,
+		"",
+		nil,
+		nil,
+		nil,
+		"netmonitor",
+	}
+	network := NewHighwayConnection(config)
+	network.Connect()
+	return network
+}
+
 func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enableRPC bool) AppNodeInterface {
 	// os.RemoveAll(name)
 	nodeMode := "full"
 	if isLightNode {
 		nodeMode = "light"
 	}
-	sim := &SimulationEngine{
+	sim := &NodeEngine{
 		simName:           name,
 		appNodeMode:       nodeMode,
 		listennerRegister: make(map[int][]func(msg interface{})),
@@ -113,13 +130,13 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 			relayShards = append(relayShards, byte(index))
 		}
 	}
-	sim.ConnectNetwork(networkParam.HighwayAddress, relayShards)
+	sim.ConnectNetwork(networkParam.HighwayAddress,relayShards)
 	sim.DisableChainLog(true)
 
 	return sim
 }
 
-func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, isLightNode bool, enableRPC bool) {
+func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool, enableRPC bool) {
 	simName := sim.simName
 	path, err := os.Getwd()
 	if err != nil {
@@ -313,11 +330,11 @@ func (sim *SimulationEngine) initNode(chainParam *blockchain.Params, isLightNode
 	}
 }
 
-func (sim *SimulationEngine) GetRPC() *rpcclient.RPCClient {
+func (sim *NodeEngine) GetRPC() *rpcclient.RPCClient {
 	return sim.RPC
 }
 
-func (sim *SimulationEngine) startLightSyncProcess() {
+func (sim *NodeEngine) startLightSyncProcess() {
 	fmt.Println("start light sync process")
 	sim.lightNodeData.ProcessedBeaconHeight = 1
 	k1 := "lightn-beacon-process"
@@ -373,7 +390,7 @@ func (sim *SimulationEngine) startLightSyncProcess() {
 	}
 }
 
-func (sim *SimulationEngine) loadLightShardsState() {
+func (sim *NodeEngine) loadLightShardsState() {
 	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
 		statePrefix := fmt.Sprintf("state-%v", i)
 		v, err := sim.userDB.Get([]byte(statePrefix), nil)
@@ -391,7 +408,7 @@ func (sim *SimulationEngine) loadLightShardsState() {
 	}
 }
 
-func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardState) {
+func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 	fmt.Println("start sync shard", shardID, state.LocalHeight)
 	for {
 		bestHeight := sim.bc.BeaconChain.GetShardBestViewHeight()[shardID]
@@ -458,7 +475,7 @@ func (sim *SimulationEngine) syncShardLight(shardID byte, state *currentShardSta
 	}
 }
 
-func (sim *SimulationEngine) GetShardBlockByHeight(shardID byte, height uint64) (*blockchain.ShardBlock, error) {
+func (sim *NodeEngine) GetShardBlockByHeight(shardID byte, height uint64) (*blockchain.ShardBlock, error) {
 	var shardBlk *blockchain.ShardBlock
 	if sim.appNodeMode == "light" {
 		prefix := fmt.Sprintf("s-%v-%v", shardID, height)
@@ -479,7 +496,7 @@ func (sim *SimulationEngine) GetShardBlockByHeight(shardID byte, height uint64) 
 	return shardBlk, nil
 }
 
-func (sim *SimulationEngine) GetShardBlockByHash(shardID byte, blockHash common.Hash) (*blockchain.ShardBlock, error) {
+func (sim *NodeEngine) GetShardBlockByHash(shardID byte, blockHash common.Hash) (*blockchain.ShardBlock, error) {
 	var shardBlk *blockchain.ShardBlock
 	var err error
 	if sim.appNodeMode == "light" {
@@ -499,7 +516,7 @@ func (sim *SimulationEngine) GetShardBlockByHash(shardID byte, blockHash common.
 	return shardBlk, nil
 }
 
-func (sim *SimulationEngine) GetBeaconBlockByHeight(height uint64) (*blockchain.BeaconBlock, error) {
+func (sim *NodeEngine) GetBeaconBlockByHeight(height uint64) (*blockchain.BeaconBlock, error) {
 	blks, err := sim.GetBlockchain().GetBeaconBlockByHeight(height)
 	if err != nil {
 		return nil, err
@@ -507,7 +524,7 @@ func (sim *SimulationEngine) GetBeaconBlockByHeight(height uint64) (*blockchain.
 	return blks[0], nil
 }
 
-func (sim *SimulationEngine) GetBeaconBlockByHash(blockHash common.Hash) (*blockchain.BeaconBlock, error) {
+func (sim *NodeEngine) GetBeaconBlockByHash(blockHash common.Hash) (*blockchain.BeaconBlock, error) {
 	blk, _, err := sim.GetBlockchain().GetBeaconBlockByHash(blockHash)
 	if err != nil {
 		return nil, err

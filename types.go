@@ -10,7 +10,7 @@ import (
 )
 
 type Execute struct {
-	sim          *SimulationEngine
+	sim          *NodeEngine
 	appliedChain []int
 }
 
@@ -24,7 +24,7 @@ func (exec *Execute) NextRound() {
 	exec.sim.NextRound()
 }
 
-func (sim *SimulationEngine) ApplyChain(chain_array ...int) *Execute {
+func (sim *NodeEngine) ApplyChain(chain_array ...int) *Execute {
 	return &Execute{
 		sim,
 		chain_array,

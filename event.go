@@ -8,16 +8,16 @@ import (
 	"github.com/incognitochain/incognito-chain/common"
 )
 
-func (s *SimulationEngine) OnReceive(msgType int, f func(msg interface{})) {
+func (s *NodeEngine) OnReceive(msgType int, f func(msg interface{})) {
 	s.Network.listennerRegister[msgType] = append(s.Network.listennerRegister[msgType], f)
 }
 
 //note: this function is async, meaning that f function does not lock insert process
-func (s *SimulationEngine) OnInserted(blkType int, f func(msg interface{})) {
+func (s *NodeEngine) OnInserted(blkType int, f func(msg interface{})) {
 	s.listennerRegister[blkType] = append(s.listennerRegister[blkType], f)
 }
 
-func (s *SimulationEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64)) {
+func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64)) {
 	fullmode := func() {
 		chain := s.bc.GetChain(chainID)
 		waitingBlkHeight := uint64(blkHeight)

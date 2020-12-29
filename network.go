@@ -3,7 +3,6 @@ package devframework
 import (
 	"context"
 
-	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/peer"
@@ -33,12 +32,12 @@ type MessageListeners interface {
 
 type NetworkInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
-	GetBeaconBlock(from, to int) []*blockchain.BeaconBlock
-	GetShardBlock(sid, from, to int) *blockchain.ShardBlock
-	GetCrossShardBlock(fromsid, tosid, from, to int) *blockchain.CrossShardBlock
-	SyncChain([]int)
-	StopSync([]int)
-	IsSyncChain(chainID int) bool
+	//GetBeaconBlock(from, to int) []*blockchain.BeaconBlock
+	//GetShardBlock(sid, from, to int) *blockchain.ShardBlock
+	////GetCrossShardBlock(fromsid, tosid, from, to int) *blockchain.CrossShardBlock
+	//SyncChain([]int)
+	//StopSync([]int)
+	//IsSyncChain(chainID int) bool
 }
 
 type HighwayConnection struct {
@@ -56,6 +55,8 @@ type HighwayConnectionConfig struct {
 	ConsensusEngine peerv2.ConsensusData
 	syncker         *syncker.SynckerManager
 	RelayShards     []byte
+	NetMode string
+
 }
 
 func NewHighwayConnection(cfg HighwayConnectionConfig) *HighwayConnection {
@@ -95,6 +96,7 @@ func (s *HighwayConnection) Connect() {
 		&incognitokey.CommitteePublicKey{},
 		s.config.ConsensusEngine,
 		dispatcher,
+		s.config.NetMode,
 		s.config.RelayShards,
 	)
 	go s.conn.Start(nil)
@@ -102,7 +104,7 @@ func (s *HighwayConnection) Connect() {
 }
 
 //framework register function on message event
-func (s *HighwayConnection) onReceive(msgType int, f func(msg interface{})) {
+func (s *HighwayConnection) OnReceive(msgType int, f func(msg interface{})) {
 	s.listennerRegister[msgType] = append(s.listennerRegister[msgType], f)
 }
 
@@ -120,14 +122,19 @@ func (s *HighwayConnection) onTxPrivacyToken(p *peer.PeerConn, msg *wire.Message
 }
 
 func (s *HighwayConnection) onBlockShard(p *peer.PeerConn, msg *wire.MessageBlockShard) {
-	s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+	if s.config.syncker != nil{
+		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+	}
+
 	for _, f := range s.listennerRegister[MSG_BLOCK_SHARD] {
 		f(msg)
 	}
 }
 
 func (s *HighwayConnection) onBlockBeacon(p *peer.PeerConn, msg *wire.MessageBlockBeacon) {
-	s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+	if s.config.syncker != nil {
+		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+	}
 	for _, f := range s.listennerRegister[MSG_BLOCK_BEACON] {
 		f(msg)
 	}
@@ -175,7 +182,10 @@ func (s *HighwayConnection) onBFTMsg(p *peer.PeerConn, msg wire.Message) {
 }
 
 func (s *HighwayConnection) onPeerState(p *peer.PeerConn, msg *wire.MessagePeerState) {
-	s.config.syncker.ReceivePeerState(msg)
+	if s.config.syncker != nil {
+		s.config.syncker.ReceivePeerState(msg)
+	}
+
 	for _, f := range s.listennerRegister[MSG_PEER_STATE] {
 		f(msg)
 	}
