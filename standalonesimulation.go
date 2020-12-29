@@ -54,10 +54,11 @@ type Hook struct {
 	Insert       func(chainID int, block common.BlockInterface, doInsert func(blk common.BlockInterface) error)
 }
 
-type SimulationEngine struct {
-	config  Config
-	simName string
-	timer   *TimeEngine
+type NodeEngine struct {
+	config      Config
+	appNodeMode string
+	simName     string
+	timer       *TimeEngine
 
 	//for account manager
 	accountSeed       string
@@ -86,10 +87,21 @@ type SimulationEngine struct {
 	RPC               *rpcclient.RPCClient
 	listennerRegister map[int][]func(msg interface{})
 
-	userDB *leveldb.DB
+	userDB        *leveldb.DB
+	lightNodeData struct {
+		Shards                map[byte]*currentShardState
+		ProcessedBeaconHeight uint64
+	}
 }
 
-func (sim *SimulationEngine) NewAccountFromShard(sid int) account.Account {
+type currentShardState struct {
+	// BestHeight  uint64
+	// BestHash    *common.Hash
+	LocalHeight uint64
+	LocalHash   *common.Hash
+}
+
+func (sim *NodeEngine) NewAccountFromShard(sid int) account.Account {
 	lastID := sim.accountGenHistory[sid]
 	lastID++
 	sim.accountGenHistory[sid] = lastID
@@ -99,7 +111,7 @@ func (sim *SimulationEngine) NewAccountFromShard(sid int) account.Account {
 	return acc
 }
 
-func (sim *SimulationEngine) NewAccount() account.Account {
+func (sim *NodeEngine) NewAccount() account.Account {
 	lastID := sim.accountGenHistory[0]
 	lastID++
 	sim.accountGenHistory[0] = lastID
@@ -107,7 +119,7 @@ func (sim *SimulationEngine) NewAccount() account.Account {
 	return acc
 }
 
-func (sim *SimulationEngine) init() {
+func (sim *NodeEngine) init() {
 	simName := sim.simName
 	path, err := os.Getwd()
 	if err != nil {
@@ -315,7 +327,7 @@ func (sim *SimulationEngine) init() {
 	}
 }
 
-func (sim *SimulationEngine) startPubSub() {
+func (sim *NodeEngine) startPubSub() {
 	go sim.ps.Start()
 	go func() {
 		_, subChan, err := sim.ps.RegisterNewSubscriber(pubsub.BeaconBeststateTopic)
@@ -344,7 +356,7 @@ func (sim *SimulationEngine) startPubSub() {
 	}()
 }
 
-func (sim *SimulationEngine) ConnectNetwork(highwayAddr string, relayShards []byte) {
+func (sim *NodeEngine) ConnectNetwork(highwayAddr string, relayShards []byte) {
 	config := HighwayConnectionConfig{
 		"127.0.0.1",
 		19876,
@@ -354,6 +366,7 @@ func (sim *SimulationEngine) ConnectNetwork(highwayAddr string, relayShards []by
 		sim.consensus,
 		sim.syncker,
 		relayShards,
+		"",
 	}
 	sim.Network = NewHighwayConnection(config)
 	sim.Network.Connect()
@@ -363,14 +376,14 @@ func (sim *SimulationEngine) ConnectNetwork(highwayAddr string, relayShards []by
 
 }
 
-func (sim *SimulationEngine) Pause() {
+func (sim *NodeEngine) Pause() {
 	fmt.Print("Simulation pause! Press Enter to continue ...")
 	var input string
 	fmt.Scanln(&input)
 	fmt.Print("\n")
 }
 
-func (sim *SimulationEngine) PrintBlockChainInfo() {
+func (sim *NodeEngine) PrintBlockChainInfo() {
 	fmt.Println("Beacon Chain:")
 
 	fmt.Println("Shard Chain:")
@@ -378,7 +391,7 @@ func (sim *SimulationEngine) PrintBlockChainInfo() {
 
 //life cycle of a block generation process:
 //PreCreate -> PreValidation -> PreInsert ->
-func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngine {
+func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 	time.Sleep(time.Nanosecond)
 	var chainArray = []int{-1}
 	for i := 0; i < sim.config.ChainParam.ActiveShards; i++ {
@@ -570,11 +583,11 @@ func (sim *SimulationEngine) GenerateBlock(args ...interface{}) *SimulationEngin
 
 //number of second we want simulation to forward
 //default = round interval
-func (sim *SimulationEngine) NextRound() {
+func (sim *NodeEngine) NextRound() {
 	sim.timer.Forward(10)
 }
 
-func (sim *SimulationEngine) InjectTx(txBase58 string) error {
+func (sim *NodeEngine) InjectTx(txBase58 string) error {
 	rawTxBytes, _, err := base58.Base58Check{}.Decode(txBase58)
 	if err != nil {
 		return err
@@ -589,19 +602,19 @@ func (sim *SimulationEngine) InjectTx(txBase58 string) error {
 	return nil
 }
 
-func (sim *SimulationEngine) GetBlockchain() *blockchain.BlockChain {
+func (sim *NodeEngine) GetBlockchain() *blockchain.BlockChain {
 	return sim.bc
 }
 
-func (s *SimulationEngine) GetUserDatabase() *leveldb.DB {
+func (s *NodeEngine) GetUserDatabase() *leveldb.DB {
 	return s.userDB
 }
 
-func (s *SimulationEngine) DisableChainLog(b bool) {
+func (s *NodeEngine) DisableChainLog(b bool) {
 	disableStdoutLog = b
 }
 
-func (s *SimulationEngine) SignBlockWithCommittee(block common.BlockInterface, committees []account.Account, committeeIndex []int) error {
+func (s *NodeEngine) SignBlockWithCommittee(block common.BlockInterface, committees []account.Account, committeeIndex []int) error {
 	committeePubKey := []incognitokey.CommitteePublicKey{}
 	miningKeys := []*signatureschemes.MiningKey{}
 	if block.GetVersion() == 2 {
@@ -634,14 +647,14 @@ func (s *SimulationEngine) SignBlockWithCommittee(block common.BlockInterface, c
 	return nil
 }
 
-func (s *SimulationEngine) SignBlock(userMiningKey *signatureschemes.MiningKey, block common.BlockInterface) {
+func (s *NodeEngine) SignBlock(userMiningKey *signatureschemes.MiningKey, block common.BlockInterface) {
 	var validationData blsbftv2.ValidationData
 	validationData.ProducerBLSSig, _ = userMiningKey.BriSignData(block.Hash().GetBytes())
 	validationDataString, _ := blsbftv2.EncodeValidationData(validationData)
 	block.(mock.BlockValidation).AddValidationField(validationDataString)
 }
 
-func (s *SimulationEngine) GetAccountByCommitteePubkey(cpk *incognitokey.CommitteePublicKey) *account.Account {
+func (s *NodeEngine) GetAccountByCommitteePubkey(cpk *incognitokey.CommitteePublicKey) *account.Account {
 	miningPK := cpk.GetMiningKeyBase58(common.BlsConsensus)
 	for _, acc := range s.accounts {
 		if acc.MiningPubkey == miningPK {
@@ -651,7 +664,7 @@ func (s *SimulationEngine) GetAccountByCommitteePubkey(cpk *incognitokey.Committ
 	return nil
 }
 
-func (s *SimulationEngine) GetListAccountByCommitteePubkey(cpks []incognitokey.CommitteePublicKey) ([]account.Account, error) {
+func (s *NodeEngine) GetListAccountByCommitteePubkey(cpks []incognitokey.CommitteePublicKey) ([]account.Account, error) {
 	accounts := []account.Account{}
 	for _, cpk := range cpks {
 		if acc := s.GetAccountByCommitteePubkey(&cpk); acc != nil {
@@ -664,7 +677,7 @@ func (s *SimulationEngine) GetListAccountByCommitteePubkey(cpks []incognitokey.C
 	return accounts, nil
 }
 
-func (sim *SimulationEngine) GetListAccountsByChainID(chainID int) ([]account.Account, error) {
+func (sim *NodeEngine) GetListAccountsByChainID(chainID int) ([]account.Account, error) {
 	committees := sim.bc.GetChain(chainID).GetBestView().GetCommittee()
 	return sim.GetListAccountByCommitteePubkey(committees)
 }

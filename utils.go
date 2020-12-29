@@ -159,7 +159,7 @@ func makeRPCDownloadRequest(address string, method string, w io.Writer, params .
 	return nil
 }
 
-func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
+func (sim *NodeEngine) SendPRV(args ...interface{}) (string, error) {
 	var sender string
 	var receivers = make(map[string]uint64)
 	for i, arg := range args {
@@ -187,7 +187,7 @@ func (sim *SimulationEngine) SendPRV(args ...interface{}) (string, error) {
 	return res.TxID, nil
 }
 
-func (sim *SimulationEngine) ShowBalance(acc account.Account) {
+func (sim *NodeEngine) ShowBalance(acc account.Account) {
 	res, err := sim.RPC.API_GetBalance(acc)
 	if err != nil {
 		fmt.Println(err)

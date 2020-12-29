@@ -12,13 +12,13 @@ func NewRPCClient(endpoint string) *rpcclient.RPCClient {
 	return rpcclient.NewRPCClient(&RemoteRPCClient{endpoint: endpoint})
 }
 
-func NewStandaloneSimulation(name string, config Config) *SimulationEngine {
+func NewStandaloneSimulation(name string, config Config) *NodeEngine {
 	os.RemoveAll(name)
 	// if config.ConsensusVersion < 1 || config.ConsensusVersion > 2 {
 	if config.ConsensusVersion != 2 {
 		config.ConsensusVersion = 2
 	}
-	sim := &SimulationEngine{
+	sim := &NodeEngine{
 		config:            config,
 		simName:           name,
 		timer:             NewTimeEngine(),
