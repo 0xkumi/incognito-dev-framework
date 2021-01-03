@@ -56,7 +56,9 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 		if blkHeight == -1 {
 			waitingBlkHeight = chain.LocalHeight
 		}
-
+		if blkHeight == 0 {
+			waitingBlkHeight = 1
+		}
 		go func() {
 			for {
 				chain := s.lightNodeData.Shards[byte(chainID)]

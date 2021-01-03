@@ -137,6 +137,7 @@ func (sim *NodeEngine) init() {
 	privacyLogger.SetLevel(common.LevelTrace)
 	mempoolLogger.SetLevel(common.LevelTrace)
 
+	sim.appNodeMode = "full"
 	activeNetParams := sim.config.ChainParam.GetParamData()
 	common.MaxShardNumber = activeNetParams.ActiveShards
 	common.TIMESLOT = activeNetParams.Timeslot

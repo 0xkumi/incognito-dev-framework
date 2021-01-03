@@ -61,7 +61,7 @@ var (
 	}
 )
 
-func NewNetworkMonitor(highwayAddr string) *HighwayConnection{
+func NewNetworkMonitor(highwayAddr string) *HighwayConnection {
 	config := HighwayConnectionConfig{
 		"127.0.0.1",
 		19876,
@@ -101,7 +101,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 	case TestNetParam:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
-		blockchain.ReadKey(TestnetKeylist, TestnetKeylist)
+		blockchain.ReadKey(TestnetKeylist, Testnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTestParam
 		break
@@ -130,7 +130,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 			relayShards = append(relayShards, byte(index))
 		}
 	}
-	sim.ConnectNetwork(networkParam.HighwayAddress,relayShards)
+	sim.ConnectNetwork(networkParam.HighwayAddress, relayShards)
 	sim.DisableChainLog(true)
 
 	return sim
@@ -385,7 +385,7 @@ func (sim *NodeEngine) startLightSyncProcess() {
 	sim.loadLightShardsState()
 
 	time.Sleep(5 * time.Second)
-	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
+	for i := 0; i < 1; i++ {
 		go sim.syncShardLight(byte(i), sim.lightNodeData.Shards[byte(i)])
 	}
 }

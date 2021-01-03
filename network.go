@@ -55,8 +55,7 @@ type HighwayConnectionConfig struct {
 	ConsensusEngine peerv2.ConsensusData
 	syncker         *syncker.SynckerManager
 	RelayShards     []byte
-	NetMode string
-
+	NetMode         string
 }
 
 func NewHighwayConnection(cfg HighwayConnectionConfig) *HighwayConnection {
@@ -96,7 +95,7 @@ func (s *HighwayConnection) Connect() {
 		&incognitokey.CommitteePublicKey{},
 		s.config.ConsensusEngine,
 		dispatcher,
-		s.config.NetMode,
+		// s.config.NetMode,
 		s.config.RelayShards,
 	)
 	go s.conn.Start(nil)
@@ -122,7 +121,7 @@ func (s *HighwayConnection) onTxPrivacyToken(p *peer.PeerConn, msg *wire.Message
 }
 
 func (s *HighwayConnection) onBlockShard(p *peer.PeerConn, msg *wire.MessageBlockShard) {
-	if s.config.syncker != nil{
+	if s.config.syncker != nil {
 		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
 	}
 
