@@ -55,7 +55,7 @@ type HighwayConnectionConfig struct {
 	ConsensusEngine peerv2.ConsensusData
 	syncker         *syncker.SynckerManager
 	RelayShards     []byte
-	NetMode         string
+	// NetMode         string
 }
 
 func NewHighwayConnection(cfg HighwayConnectionConfig) *HighwayConnection {

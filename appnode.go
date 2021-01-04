@@ -385,7 +385,7 @@ func (sim *NodeEngine) startLightSyncProcess() {
 	sim.loadLightShardsState()
 
 	time.Sleep(5 * time.Second)
-	for i := 0; i < 1; i++ {
+	for i := 0; i < sim.bc.GetActiveShardNumber(); i++ {
 		go sim.syncShardLight(byte(i), sim.lightNodeData.Shards[byte(i)])
 	}
 }
