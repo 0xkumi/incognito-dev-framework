@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/incognitochain/incognito-chain/wire"
+
 	"regexp"
 	"strconv"
 )
@@ -33,7 +34,7 @@ func NewBFTMonitor(chainName string) (b *bftmonitor,err error) {
 }
 
 func (s *bftmonitor) receiveBFTMsg(msg *wire.MessageBFT){
-	fmt.Println("chain", s.chainID, "receive message", string(msg.Content), msg.)
+	fmt.Println("chain", s.chainID, "receive message", string(msg.Content), msg)
 	//if msg.Type == "propose" {
 	//
 	//}
