@@ -71,7 +71,7 @@ func NewNetworkMonitor(highwayAddr string) *HighwayConnection {
 		nil,
 		nil,
 		nil,
-		"netmonitor",
+		// "netmonitor",
 	}
 	network := NewHighwayConnection(config)
 	network.Connect()

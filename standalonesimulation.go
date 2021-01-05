@@ -13,6 +13,7 @@ import (
 	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
 	"github.com/incognitochain/incognito-chain/consensus_v2/signatureschemes"
 	"github.com/incognitochain/incognito-chain/incognitokey"
+	"github.com/incognitochain/incognito-chain/transaction/tx_ver2"
 
 	"github.com/0xkumi/incognito-dev-framework/account"
 	"github.com/0xkumi/incognito-dev-framework/mock"
@@ -34,7 +35,6 @@ import (
 	"github.com/incognitochain/incognito-chain/mempool"
 	"github.com/incognitochain/incognito-chain/metadata"
 	"github.com/incognitochain/incognito-chain/rpcserver"
-	"github.com/incognitochain/incognito-chain/transaction"
 
 	lvdbErrors "github.com/syndtr/goleveldb/leveldb/errors"
 
@@ -367,7 +367,7 @@ func (sim *NodeEngine) ConnectNetwork(highwayAddr string, relayShards []byte) {
 		sim.consensus,
 		sim.syncker,
 		relayShards,
-		"",
+		// "",
 	}
 	sim.Network = NewHighwayConnection(config)
 	sim.Network.Connect()
@@ -593,7 +593,7 @@ func (sim *NodeEngine) InjectTx(txBase58 string) error {
 	if err != nil {
 		return err
 	}
-	var tx transaction.Tx
+	var tx tx_ver2.Tx
 	err = json.Unmarshal(rawTxBytes, &tx)
 	if err != nil {
 		return err

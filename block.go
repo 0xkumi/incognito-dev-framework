@@ -19,7 +19,7 @@ func UpdateShardHeaderOnBodyChange(block *blockchain.ShardBlock, bc *blockchain.
 		totalTxsFee[*tx.GetTokenID()] += tx.GetTxFee()
 		txType := tx.GetType()
 		if txType == common.TxCustomTokenPrivacyType {
-			txCustomPrivacy := tx.(*transaction.TxCustomTokenPrivacy)
+			txCustomPrivacy := tx.(transaction.TransactionToken)
 			totalTxsFee[*txCustomPrivacy.GetTokenID()] = txCustomPrivacy.GetTxFeeToken()
 		}
 	}
@@ -32,7 +32,7 @@ func UpdateShardHeaderOnBodyChange(block *blockchain.ShardBlock, bc *blockchain.
 	if err != nil {
 		fmt.Println(err)
 	}
-	txInstructions, err := blockchain.CreateShardInstructionsFromTransactionAndInstruction(block.Body.Transactions, bc, block.Header.ShardID, block.Header.Height)
+	txInstructions, err := blockchain.CreateShardInstructionsFromTransactionAndInstruction(block.Body.Transactions, bc, block.Header.ShardID)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func UpdateShardHeaderOnBodyChange(block *blockchain.ShardBlock, bc *blockchain.
 	block.Header.TxRoot = *merkleRoot
 	block.Header.ShardTxRoot = shardTxMerkleData[len(shardTxMerkleData)-1]
 	block.Header.CrossTransactionRoot = *crossTransactionRoot
-	block.Header.CrossShardBitMap = blockchain.CreateCrossShardByteArray(block.Body.Transactions, block.Header.ShardID)
+	block.Header.CrossShardBitMap, _ = blockchain.CreateCrossShardByteArray(block.Body.Transactions, block.Header.ShardID)
 	block.Header.InstructionsRoot = instructionsHash
 	copy(block.Header.InstructionMerkleRoot[:], instMerkleRoot)
 	return nil

@@ -15,15 +15,16 @@ import (
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/incognitochain/incognito-chain/blockchain"
+	"github.com/incognitochain/incognito-chain/privacy/coin"
 	bnbrelaying "github.com/incognitochain/incognito-chain/relaying/bnb"
 	btcrelaying "github.com/incognitochain/incognito-chain/relaying/btc"
+	"github.com/incognitochain/incognito-chain/transaction"
 
 	"github.com/0xkumi/incognito-dev-framework/account"
 
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/dataaccessobject/statedb"
 	"github.com/incognitochain/incognito-chain/incdb"
-	"github.com/incognitochain/incognito-chain/transaction"
 	"github.com/incognitochain/incognito-chain/wallet"
 )
 
@@ -84,11 +85,19 @@ func initSalaryTx(amount string, privateKey string, stateDB *statedb.StateDB) []
 	for _, val := range testUserkeyList {
 
 		testUserKey, _ := wallet.Base58CheckDeserialize(val)
-		testSalaryTX := transaction.Tx{}
-		testSalaryTX.InitTxSalary(uint64(initAmount), &testUserKey.KeySet.PaymentAddress, &testUserKey.KeySet.PrivateKey,
-			stateDB,
-			nil,
-		)
+		testUserKey.KeySet.InitFromPrivateKey(&testUserKey.KeySet.PrivateKey)
+		otaCoin, err := coin.NewCoinFromAmountAndReceiver(uint64(initAmount), testUserKey.KeySet.PaymentAddress)
+		if err != nil {
+			panic(err)
+		}
+		// testSalaryTX := tx_ver1.Tx{}
+		// testSalaryTX.InitTxSalary(uint64(initAmount), &testUserKey.KeySet.PaymentAddress, &testUserKey.KeySet.PrivateKey,
+		// 	stateDB,
+		// 	nil,
+		// )
+		testSalaryTX := new(transaction.TxVersion2)
+		testSalaryTX.InitTxSalary(otaCoin, &testUserKey.KeySet.PrivateKey, nil, nil)
+
 		initTx, _ := json.Marshal(testSalaryTX)
 		initTxs = append(initTxs, string(initTx))
 	}
