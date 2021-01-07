@@ -315,3 +315,12 @@ func (r *LocalRPCClient) DefragmentAccountToken(privateKey string, receiver map[
 	}
 	return resI.(jsonresult.CreateTransactionTokenResult),nil
 }
+func (r *LocalRPCClient) ListOutputCoins(min float64, max float64, param []interface{}, tokenID string) (res *jsonresult.ListOutputCoins,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["listoutputcoins"]
+	resI, rpcERR := c(httpServer, []interface{}{min,max,param,tokenID}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.ListOutputCoins),nil
+}

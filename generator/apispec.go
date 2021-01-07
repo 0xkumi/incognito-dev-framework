@@ -40,4 +40,5 @@ type ClientInterface interface {
 	GetRewardAmountByEpoch(shard float64, epoch float64) (uint64, error)
 	DefragmentAccount(privateKey string, maxValue float64, fee float64, privacy float64) (jsonresult.CreateTransactionResult, error)
 	DefragmentAccountToken(privateKey string, receiver map[string]interface{}, fee float64, privacy float64, reqInfo map[string]interface{}, p1 string, pPrivacy float64) (jsonresult.CreateTransactionTokenResult, error)
+	ListOutputCoins(min float64, max float64, param []interface{}, tokenID string) (*jsonresult.ListOutputCoins, error)
 }

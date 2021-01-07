@@ -38,6 +38,8 @@ var (
 	synckerLogger          = backendLog.Logger("Syncker log", false)
 	highwayLogger          = backendLog.Logger("Highway", false)
 	consensusLogger        = backendLog.Logger("Consensus log", false)
+	privacyV1Logger        = backendLog.Logger("Privacy V1 log ", false)
+	privacyV2Logger        = backendLog.Logger("Privacy V2 log ", false)
 	disableStdoutLog       = false
 )
 
@@ -69,6 +71,8 @@ func init() {
 	syncker.Logger.Init(synckerLogger)
 	peerv2.Logger.Init(highwayLogger)
 	consensus.Logger.Init(consensusLogger)
+	privacy.LoggerV1.Init(privacyV1Logger)
+	privacy.LoggerV2.Init(privacyV2Logger)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.

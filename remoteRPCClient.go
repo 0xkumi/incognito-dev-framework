@@ -1086,3 +1086,34 @@ func (r *RemoteRPCClient) DefragmentAccountToken(privateKey string, receiver map
 	}
 	return resp.Result,err
 }
+
+
+func (r *RemoteRPCClient) ListOutputCoins(min float64, max float64, param []interface{}, tokenID string) (res *jsonresult.ListOutputCoins,err error) {
+	requestBody, rpcERR := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "listoutputcoins",
+		"params":   []interface{}{min,max,param,tokenID},
+		"id":      1,
+	})
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	resp := struct {
+		Result  *jsonresult.ListOutputCoins
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resp.Result,err
+}

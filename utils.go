@@ -67,7 +67,10 @@ func createGenesisTx(accounts []account.Account) []string {
 		fmt.Print(err)
 		panic(err)
 	}
-	stateDB, _ := statedb.NewWithPrefixTrie(common.EmptyRoot, statedb.NewDatabaseAccessWarper(db))
+	stateDB, err := statedb.NewWithPrefixTrie(common.EmptyRoot, statedb.NewDatabaseAccessWarper(db))
+	if err != nil {
+		panic(err)
+	}
 	initPRV := int(1000000000000 * math.Pow(10, 9))
 	for _, account := range accounts {
 		txs := initSalaryTx(strconv.Itoa(initPRV), account.PrivateKey, stateDB)
@@ -96,7 +99,7 @@ func initSalaryTx(amount string, privateKey string, stateDB *statedb.StateDB) []
 		// 	nil,
 		// )
 		testSalaryTX := new(transaction.TxVersion2)
-		testSalaryTX.InitTxSalary(otaCoin, &testUserKey.KeySet.PrivateKey, nil, nil)
+		testSalaryTX.InitTxSalary(otaCoin, &testUserKey.KeySet.PrivateKey, stateDB, nil)
 
 		initTx, _ := json.Marshal(testSalaryTX)
 		initTxs = append(initTxs, string(initTx))

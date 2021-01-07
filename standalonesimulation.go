@@ -141,6 +141,9 @@ func (sim *NodeEngine) init() {
 	activeNetParams := sim.config.ChainParam.GetParamData()
 	common.MaxShardNumber = activeNetParams.ActiveShards
 	common.TIMESLOT = activeNetParams.Timeslot
+	if common.TIMESLOT == 0 {
+		common.TIMESLOT = 10
+	}
 	sim.GenesisAccount = sim.NewAccount()
 
 	for i := 0; i < activeNetParams.MinBeaconCommitteeSize; i++ {
@@ -255,22 +258,29 @@ func (sim *NodeEngine) init() {
 	go temppool.Start(cQuit)
 	go txpool.Start(cQuit)
 
+	var outcoinDb *incdb.Database = nil
+	temp, err := incdb.Open("leveldb", filepath.Join("./"+simName, "outcoin"))
+	if err != nil {
+		Logger.log.Error("could not open leveldb instance for coin storing")
+	}
+	outcoinDb = &temp
 	err = bc.Init(&blockchain.Config{
-		BTCChain:        btcChain,
-		BNBChainState:   bnbChainState,
-		ChainParams:     activeNetParams,
-		DataBase:        db,
-		MemCache:        memcache.New(),
-		BlockGen:        blockgen,
-		TxPool:          &txpool,
-		TempTxPool:      &temppool,
-		Server:          &server,
-		Syncker:         sync,
-		PubSubManager:   ps,
-		FeeEstimator:    make(map[byte]blockchain.FeeEstimator),
-		RandomClient:    &btcrd,
-		ConsensusEngine: &cs,
-		GenesisParams:   blockchain.GenesisParam,
+		BTCChain:          btcChain,
+		BNBChainState:     bnbChainState,
+		ChainParams:       activeNetParams,
+		DataBase:          db,
+		MemCache:          memcache.New(),
+		BlockGen:          blockgen,
+		TxPool:            &txpool,
+		TempTxPool:        &temppool,
+		Server:            &server,
+		Syncker:           sync,
+		PubSubManager:     ps,
+		FeeEstimator:      make(map[byte]blockchain.FeeEstimator),
+		RandomClient:      &btcrd,
+		ConsensusEngine:   &cs,
+		GenesisParams:     blockchain.GenesisParam,
+		OutcoinByOTAKeyDb: outcoinDb,
 	})
 	if err != nil {
 		panic(err)
