@@ -373,7 +373,10 @@ func (sim *NodeEngine) ConnectNetwork(highwayAddr string, relayShards []byte) {
 
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Network: sim.Network.conn, Blockchain: sim.bc, Consensus: sim.consensus})
 	sim.syncker.Start()
+}
 
+func (sim *NodeEngine) StopSync() {
+	sim.syncker.Stop()
 }
 
 func (sim *NodeEngine) Pause() {
