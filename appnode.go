@@ -39,6 +39,7 @@ type AppNodeInterface interface {
 	GetBlockchain() *blockchain.BlockChain
 	GetRPC() *rpcclient.RPCClient
 	GetUserDatabase() *leveldb.DB
+	StopSync()
 	// LightNode() LightNodeInterface
 }
 
