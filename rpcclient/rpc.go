@@ -537,10 +537,9 @@ func (r *RPCClient) API_DefragmentAccountToken(privateKey string, tokenID string
 	return &result, nil
 }
 
-func (r *RPCClient) API_ListOutputCoins(privateKey string) (*jsonresult.ListOutputCoins, error) {
+func (r *RPCClient) API_ListOutputCoins(key string) (*jsonresult.ListOutputCoins, error) {
 	var result *jsonresult.ListOutputCoins
-	keyWallet, _ := wallet.Base58CheckDeserialize(privateKey)
-	keyWallet.KeySet.InitFromPrivateKey(&keyWallet.KeySet.PrivateKey)
+	keyWallet, _ := wallet.Base58CheckDeserialize(key)
 	paymentAddStr := keyWallet.Base58CheckSerialize(wallet.PaymentAddressType)
 	otaSecretKey := keyWallet.Base58CheckSerialize(wallet.OTAKeyType)
 	viewingKeyStr := keyWallet.Base58CheckSerialize(wallet.ReadonlyKeyType)
@@ -554,4 +553,12 @@ func (r *RPCClient) API_ListOutputCoins(privateKey string) (*jsonresult.ListOutp
 		return nil, err
 	}
 	return result, nil
+}
+
+func (r *RPCClient) API_HasSerialNumbers(paymentAddr string, serialNums []string, tokenID string) ([]bool, error) {
+	var serialNumsI []interface{}
+	for _, sn := range serialNums {
+		serialNumsI = append(serialNumsI, sn)
+	}
+	return r.client.HasSerialNumbers(paymentAddr, serialNumsI, tokenID)
 }

@@ -324,3 +324,12 @@ func (r *LocalRPCClient) ListOutputCoins(min float64, max float64, param []inter
 	}
 	return resI.(*jsonresult.ListOutputCoins),nil
 }
+func (r *LocalRPCClient) HasSerialNumbers(paymentAddr string, serialNums []interface{}, tokenID string) (res []bool,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["hasserialnumbers"]
+	resI, rpcERR := c(httpServer, []interface{}{paymentAddr,serialNums,tokenID}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.([]bool),nil
+}
