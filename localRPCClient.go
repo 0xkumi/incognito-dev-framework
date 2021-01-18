@@ -333,3 +333,12 @@ func (r *LocalRPCClient) HasSerialNumbers(paymentAddr string, serialNums []inter
 	}
 	return resI.([]bool),nil
 }
+func (r *LocalRPCClient) EstimateFeeWithEstimator(defaultFeePerKb float64, paymentAddress string, numBlock float64, tokenID string) (res *jsonresult.EstimateFeeResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["estimatefeewithestimator"]
+	resI, rpcERR := c(httpServer, []interface{}{defaultFeePerKb,paymentAddress,numBlock,tokenID}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.EstimateFeeResult),nil
+}

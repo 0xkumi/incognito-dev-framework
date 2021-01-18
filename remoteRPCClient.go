@@ -1148,3 +1148,34 @@ func (r *RemoteRPCClient) HasSerialNumbers(paymentAddr string, serialNums []inte
 	}
 	return resp.Result,err
 }
+
+
+func (r *RemoteRPCClient) EstimateFeeWithEstimator(defaultFeePerKb float64, paymentAddress string, numBlock float64, tokenID string) (res *jsonresult.EstimateFeeResult,err error) {
+	requestBody, rpcERR := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "estimatefeewithestimator",
+		"params":   []interface{}{defaultFeePerKb,paymentAddress,numBlock,tokenID},
+		"id":      1,
+	})
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	resp := struct {
+		Result  *jsonresult.EstimateFeeResult
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resp.Result,err
+}

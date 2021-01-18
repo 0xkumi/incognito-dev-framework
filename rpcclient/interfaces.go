@@ -42,4 +42,5 @@ type ClientInterface interface {
 	DefragmentAccountToken(privateKey string, receiver map[string]interface{}, fee float64, privacy float64, reqInfo map[string]interface{}, p1 string, pPrivacy float64) (jsonresult.CreateTransactionTokenResult, error)
 	ListOutputCoins(min float64, max float64, param []interface{}, tokenID string) (*jsonresult.ListOutputCoins, error)
 	HasSerialNumbers(paymentAddr string, serialNums []interface{}, tokenID string) ([]bool, error)
+	EstimateFeeWithEstimator(defaultFeePerKb float64, paymentAddress string, numBlock float64, tokenID string) (*jsonresult.EstimateFeeResult, error)
 }

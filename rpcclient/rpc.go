@@ -562,3 +562,7 @@ func (r *RPCClient) API_HasSerialNumbers(paymentAddr string, serialNums []string
 	}
 	return r.client.HasSerialNumbers(paymentAddr, serialNumsI, tokenID)
 }
+
+func (r *RPCClient) API_EstimateFeeWithEstimator(paymentAddress string, tokenID string) (*jsonresult.EstimateFeeResult, error) {
+	return r.client.EstimateFeeWithEstimator(-1, paymentAddress, 8, tokenID)
+}
