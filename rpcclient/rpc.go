@@ -537,7 +537,7 @@ func (r *RPCClient) API_DefragmentAccountToken(privateKey string, tokenID string
 	return &result, nil
 }
 
-func (r *RPCClient) API_ListOutputCoins(key string) (*jsonresult.ListOutputCoins, error) {
+func (r *RPCClient) API_ListOutputCoins(key string, tokenID string) (*jsonresult.ListOutputCoins, error) {
 	var result *jsonresult.ListOutputCoins
 	keyWallet, _ := wallet.Base58CheckDeserialize(key)
 	paymentAddStr := keyWallet.Base58CheckSerialize(wallet.PaymentAddressType)
@@ -548,7 +548,7 @@ func (r *RPCClient) API_ListOutputCoins(key string) (*jsonresult.ListOutputCoins
 		"OTASecretKey":   otaSecretKey,
 		"ReadonlyKey":    viewingKeyStr,
 		"StartHeight":    float64(0),
-	}}, common.PRVIDStr)
+	}}, tokenID)
 	if err != nil {
 		return nil, err
 	}
