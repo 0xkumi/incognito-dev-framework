@@ -2,7 +2,7 @@ package devframework
 
 import (
 	"context"
-
+	"fmt"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/peer"
@@ -32,6 +32,7 @@ type MessageListeners interface {
 
 type NetworkInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
+	PushMessage(sid byte, msg wire.Message)
 	//GetBeaconBlock(from, to int) []*blockchain.BeaconBlock
 	//GetShardBlock(sid, from, to int) *blockchain.ShardBlock
 	////GetCrossShardBlock(fromsid, tosid, from, to int) *blockchain.CrossShardBlock
@@ -64,6 +65,10 @@ func NewHighwayConnection(cfg HighwayConnectionConfig) *HighwayConnection {
 		config:            cfg,
 		listennerRegister: make(map[int][]func(msg interface{})),
 	}
+}
+
+func (s *HighwayConnection) PushMessage(sid byte, msg wire.Message) {
+	s.conn.PublishMessage(msg)
 }
 
 func (s *HighwayConnection) Connect() {
@@ -132,6 +137,8 @@ func (s *HighwayConnection) onBlockShard(p *peer.PeerConn, msg *wire.MessageBloc
 }
 
 func (s *HighwayConnection) onBlockBeacon(p *peer.PeerConn, msg *wire.MessageBlockBeacon) {
+	cnt++
+	fmt.Println(cnt)
 	if s.config.syncker != nil {
 		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
 	}
@@ -191,6 +198,7 @@ func (s *HighwayConnection) onPeerState(p *peer.PeerConn, msg *wire.MessagePeerS
 	}
 }
 
+var cnt = 0
 /*
 	Framework Network interface
 */
@@ -201,6 +209,7 @@ func (s *HighwayConnection) GetBeaconBlock(from, to uint64) (chan common.BlockIn
 	}
 	return blkCh, nil
 }
+
 
 func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) (chan common.BlockInterface, error) {
 	blkCh, err := s.conn.RequestShardBlocksViaStream(context.Background(), "", sid, from, to)
