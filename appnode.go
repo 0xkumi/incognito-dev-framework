@@ -60,6 +60,9 @@ var (
 	TestNet2Param = NetworkParam{
 		HighwayAddress: "74.207.247.250:9330",
 	}
+	LocalNet = NetworkParam{
+		HighwayAddress: "127.0.0.1:9330",
+	}
 )
 
 func NewNetworkMonitor(highwayAddr string) *HighwayConnection{
@@ -114,11 +117,16 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 		chainParam = &blockchain.ChainTest2Param
 		break
 	default:
-		blockchain.IsTestNet = false
+		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
-		chainParam = networkParam.ChainParam
+		blockchain.ReadKey(TestnetKeylist, Testnetv2Keylist)
+		blockchain.SetupParam()
+		chainParam = &blockchain.ChainTestParam
 		break
 	}
+	common.MaxShardNumber = chainParam.ActiveShards
+	common.TIMESLOT = chainParam.Timeslot
+
 	sim.initNode(chainParam, isLightNode, enableRPC)
 	relayShards := []byte{}
 	if isLightNode {
@@ -131,6 +139,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 			relayShards = append(relayShards, byte(index))
 		}
 	}
+
 	sim.ConnectNetwork(networkParam.HighwayAddress,relayShards)
 	sim.DisableChainLog(true)
 
