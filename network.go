@@ -2,7 +2,6 @@ package devframework
 
 import (
 	"context"
-	"fmt"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/peer"
@@ -126,19 +125,18 @@ func (s *HighwayConnection) onTxPrivacyToken(p *peer.PeerConn, msg *wire.Message
 	}
 }
 
+
 func (s *HighwayConnection) onBlockShard(p *peer.PeerConn, msg *wire.MessageBlockShard) {
+
 	if s.config.syncker != nil{
 		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
 	}
-
 	for _, f := range s.listennerRegister[MSG_BLOCK_SHARD] {
 		f(msg)
 	}
 }
 
 func (s *HighwayConnection) onBlockBeacon(p *peer.PeerConn, msg *wire.MessageBlockBeacon) {
-	cnt++
-	fmt.Println(cnt)
 	if s.config.syncker != nil {
 		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
 	}
@@ -148,7 +146,9 @@ func (s *HighwayConnection) onBlockBeacon(p *peer.PeerConn, msg *wire.MessageBlo
 }
 
 func (s *HighwayConnection) onCrossShard(p *peer.PeerConn, msg *wire.MessageCrossShard) {
-	s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+	if s.config.syncker != nil {
+		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+	}
 	for _, f := range s.listennerRegister[MSG_BLOCK_XSHARD] {
 		f(msg)
 	}
@@ -184,7 +184,7 @@ func (s *HighwayConnection) onAddr(p *peer.PeerConn, msg *wire.MessageAddr) {
 
 func (s *HighwayConnection) onBFTMsg(p *peer.PeerConn, msg wire.Message) {
 	for _, f := range s.listennerRegister[MSG_BFT] {
-		f(msg)
+		go f(msg)
 	}
 }
 
@@ -198,7 +198,6 @@ func (s *HighwayConnection) onPeerState(p *peer.PeerConn, msg *wire.MessagePeerS
 	}
 }
 
-var cnt = 0
 /*
 	Framework Network interface
 */
