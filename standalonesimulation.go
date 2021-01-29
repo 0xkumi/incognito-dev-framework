@@ -134,7 +134,7 @@ func (sim *NodeEngine) init() {
 	rpcServiceLogger.SetLevel(common.LevelTrace)
 	rpcServiceBridgeLogger.SetLevel(common.LevelTrace)
 	transactionLogger.SetLevel(common.LevelTrace)
-	privacyLogger.SetLevel(common.LevelTrace)
+	// privacyLogger.SetLevel(common.LevelTrace)
 	mempoolLogger.SetLevel(common.LevelTrace)
 
 	sim.appNodeMode = "full"

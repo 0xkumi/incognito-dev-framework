@@ -150,7 +150,7 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	rpcServiceLogger.SetLevel(common.LevelTrace)
 	rpcServiceBridgeLogger.SetLevel(common.LevelTrace)
 	transactionLogger.SetLevel(common.LevelTrace)
-	privacyLogger.SetLevel(common.LevelTrace)
+	// privacyLogger.SetLevel(common.LevelTrace)
 	mempoolLogger.SetLevel(common.LevelTrace)
 	activeNetParams := chainParam
 	activeNetParams.CreateGenesisBlocks()

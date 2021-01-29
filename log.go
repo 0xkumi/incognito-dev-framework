@@ -33,14 +33,14 @@ var (
 	rpcServiceLogger       = backendLog.Logger("RPC service log", false)
 	rpcServiceBridgeLogger = backendLog.Logger("RPC service DeBridge log", false)
 	transactionLogger      = backendLog.Logger("Transaction log", false)
-	privacyLogger          = backendLog.Logger("Privacy log", false)
-	mempoolLogger          = backendLog.Logger("Mempool log", false)
-	synckerLogger          = backendLog.Logger("Syncker log", false)
-	highwayLogger          = backendLog.Logger("Highway", false)
-	consensusLogger        = backendLog.Logger("Consensus log", false)
-	privacyV1Logger        = backendLog.Logger("Privacy V1 log ", false)
-	privacyV2Logger        = backendLog.Logger("Privacy V2 log ", false)
-	disableStdoutLog       = false
+	// privacyLogger          = backendLog.Logger("Privacy log", false)
+	mempoolLogger    = backendLog.Logger("Mempool log", false)
+	synckerLogger    = backendLog.Logger("Syncker log", false)
+	highwayLogger    = backendLog.Logger("Highway", false)
+	consensusLogger  = backendLog.Logger("Consensus log", false)
+	privacyV1Logger  = backendLog.Logger("Privacy V1 log ", false)
+	privacyV2Logger  = backendLog.Logger("Privacy V2 log ", false)
+	disableStdoutLog = false
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -66,7 +66,7 @@ func init() {
 	rpcservice.Logger.Init(rpcServiceLogger)
 	rpcservice.BLogger.Init(rpcServiceBridgeLogger)
 	transaction.Logger.Init(transactionLogger)
-	privacy.Logger.Init(privacyLogger)
+	// privacy.Logger.Init(privacyLogger)
 	mempool.Logger.Init(mempoolLogger)
 	syncker.Logger.Init(synckerLogger)
 	peerv2.Logger.Init(highwayLogger)
@@ -84,9 +84,9 @@ var subsystemLoggers = map[string]common.Logger{
 	"RPCSservice":       rpcServiceLogger,
 	"RPCSbridgeservice": rpcServiceBridgeLogger,
 	"TRAN":              transactionLogger,
-	"PRIV":              privacyLogger,
-	"MEMP":              mempoolLogger,
-	"CONS":              consensusLogger,
+	// "PRIV":              privacyLogger,
+	"MEMP": mempoolLogger,
+	"CONS": consensusLogger,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
