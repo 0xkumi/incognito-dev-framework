@@ -598,18 +598,28 @@ func (sim *NodeEngine) NextRound() {
 	sim.timer.Forward(10)
 }
 
-func (sim *NodeEngine) InjectTx(txBase58 string) error {
+func (sim *NodeEngine) InjectTx(txBase58 string, isTxToken bool) error {
 	rawTxBytes, _, err := base58.Base58Check{}.Decode(txBase58)
 	if err != nil {
 		return err
 	}
-	var tx tx_ver2.Tx
-	err = json.Unmarshal(rawTxBytes, &tx)
-	if err != nil {
-		return err
-	}
-	sim.cPendingTxs <- &tx
+	if isTxToken {
+		var tx tx_ver2.TxToken
+		err = json.Unmarshal(rawTxBytes, &tx)
+		if err != nil {
+			return err
+		}
+		sim.cPendingTxs <- &tx
 
+	} else {
+		var tx tx_ver2.Tx
+		err = json.Unmarshal(rawTxBytes, &tx)
+		if err != nil {
+			return err
+		}
+		sim.cPendingTxs <- &tx
+
+	}
 	return nil
 }
 

@@ -561,7 +561,7 @@ func (r *RemoteRPCClient) GetPDEState(data map[string]interface{}) (res jsonresu
 }
 
 
-func (r *RemoteRPCClient) GetBeaconBestState() (res jsonresult.GetBeaconBestState,err error) {
+func (r *RemoteRPCClient) GetBeaconBestState() (res *jsonresult.GetBeaconBestState,err error) {
 	requestBody, rpcERR := json.Marshal(map[string]interface{}{
 		"jsonrpc": "1.0",
 		"method":  "getbeaconbeststate",
@@ -576,7 +576,7 @@ func (r *RemoteRPCClient) GetBeaconBestState() (res jsonresult.GetBeaconBestStat
 		return res,errors.New(rpcERR.Error())
 	}
 	resp := struct {
-		Result  jsonresult.GetBeaconBestState
+		Result  *jsonresult.GetBeaconBestState
 		Error *ErrMsg
 	}{}
 	err = json.Unmarshal(body, &resp)
@@ -592,7 +592,7 @@ func (r *RemoteRPCClient) GetBeaconBestState() (res jsonresult.GetBeaconBestStat
 }
 
 
-func (r *RemoteRPCClient) GetShardBestState(sid int) (res jsonresult.GetShardBestState,err error) {
+func (r *RemoteRPCClient) GetShardBestState(sid int) (res *jsonresult.GetShardBestState,err error) {
 	requestBody, rpcERR := json.Marshal(map[string]interface{}{
 		"jsonrpc": "1.0",
 		"method":  "getshardbeststate",
@@ -607,7 +607,7 @@ func (r *RemoteRPCClient) GetShardBestState(sid int) (res jsonresult.GetShardBes
 		return res,errors.New(rpcERR.Error())
 	}
 	resp := struct {
-		Result  jsonresult.GetShardBestState
+		Result  *jsonresult.GetShardBestState
 		Error *ErrMsg
 	}{}
 	err = json.Unmarshal(body, &resp)
@@ -1166,6 +1166,68 @@ func (r *RemoteRPCClient) EstimateFeeWithEstimator(defaultFeePerKb float64, paym
 	}
 	resp := struct {
 		Result  *jsonresult.EstimateFeeResult
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resp.Result,err
+}
+
+
+func (r *RemoteRPCClient) ListPrivacyCustomToken() (res jsonresult.ListCustomToken,err error) {
+	requestBody, rpcERR := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "listprivacycustomtoken",
+		"params":   []interface{}{},
+		"id":      1,
+	})
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	resp := struct {
+		Result  jsonresult.ListCustomToken
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resp.Result,err
+}
+
+
+func (r *RemoteRPCClient) GetAllBridgeTokens() (res interface{},err error) {
+	requestBody, rpcERR := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "getallbridgetokens",
+		"params":   []interface{}{},
+		"id":      1,
+	})
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	resp := struct {
+		Result  interface{}
 		Error *ErrMsg
 	}{}
 	err = json.Unmarshal(body, &resp)

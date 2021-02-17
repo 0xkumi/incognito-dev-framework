@@ -9,6 +9,7 @@ import (
 
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/common/base58"
+	"github.com/incognitochain/incognito-chain/dataaccessobject/rawdbv2"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/rpcserver/jsonresult"
 	"github.com/incognitochain/incognito-chain/wallet"
@@ -48,7 +49,7 @@ func (r *RPCClient) API_SendTxCreateCustomToken(privateKey string, receiverPayme
 	if privacy {
 		privacyTx = 1
 	}
-	result, err := r.client.CreateAndSendPrivacyCustomTokenTransaction(privateKey, nil, -1, privacyTx, map[string]interface{}{
+	result, err := r.client.CreateAndSendPrivacyCustomTokenTransaction(privateKey, nil, 8, privacyTx, map[string]interface{}{
 		"Privacy":     true,
 		"TokenID":     "",
 		"TokenName":   tokenName,
@@ -68,7 +69,7 @@ func (r *RPCClient) API_SendTxCustomToken(privateKey string, tokenID string, rec
 	if privacy {
 		privacyTx = 1
 	}
-	result, err := r.client.CreateAndSendPrivacyCustomTokenTransaction(privateKey, mapUintToInterface(receivers), float64(fee), privacyTx, map[string]interface{}{
+	result, err := r.client.CreateAndSendPrivacyCustomTokenTransaction(privateKey, nil, float64(fee), privacyTx, map[string]interface{}{
 		"Privacy":        true,
 		"TokenID":        tokenID,
 		"TokenName":      "",
@@ -76,7 +77,7 @@ func (r *RPCClient) API_SendTxCustomToken(privateKey string, tokenID string, rec
 		"TokenFee":       float64(0),
 		"TokenTxType":    float64(1),
 		"TokenAmount":    float64(0),
-		"TokenReceivers": receivers,
+		"TokenReceivers": mapUintToInterface(receivers),
 	}, "", privacyTx)
 	return &result, err
 }
@@ -236,12 +237,12 @@ func (sim *RPCClient) ShowBalance(acc account.Account) {
 	fmt.Println(res)
 }
 
-func (r *RPCClient) API_GetBeaconBestState() (jsonresult.GetBeaconBestState, error) {
+func (r *RPCClient) API_GetBeaconBestState() (*jsonresult.GetBeaconBestState, error) {
 	result, err := r.client.GetBeaconBestState()
 	return result, err
 }
 
-func (r *RPCClient) API_GetShardBestState(sid int) (jsonresult.GetShardBestState, error) {
+func (r *RPCClient) API_GetShardBestState(sid int) (*jsonresult.GetShardBestState, error) {
 	result, err := r.client.GetShardBestState(sid)
 	return result, err
 }
@@ -565,4 +566,16 @@ func (r *RPCClient) API_HasSerialNumbers(paymentAddr string, serialNums []string
 
 func (r *RPCClient) API_EstimateFeeWithEstimator(paymentAddress string, tokenID string) (*jsonresult.EstimateFeeResult, error) {
 	return r.client.EstimateFeeWithEstimator(-1, paymentAddress, 8, tokenID)
+}
+
+func (r *RPCClient) API_ListPrivacyCustomToken() (jsonresult.ListCustomToken, error) {
+	return r.client.ListPrivacyCustomToken()
+}
+
+func (r *RPCClient) API_GetAllBridgeTokens() ([]*rawdbv2.BridgeTokenInfo, error) {
+	tokens, err := r.client.GetAllBridgeTokens()
+	if err != nil {
+		return nil, err
+	}
+	return tokens.([]*rawdbv2.BridgeTokenInfo), nil
 }

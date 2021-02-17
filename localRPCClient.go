@@ -162,23 +162,23 @@ func (r *LocalRPCClient) GetPDEState(data map[string]interface{}) (res jsonresul
 	}
 	return resI.(jsonresult.CurrentPDEState),nil
 }
-func (r *LocalRPCClient) GetBeaconBestState() (res jsonresult.GetBeaconBestState,err error) {
+func (r *LocalRPCClient) GetBeaconBestState() (res *jsonresult.GetBeaconBestState,err error) {
 	httpServer := r.rpcServer.HttpServer
 	c := rpcserver.HttpHandler["getbeaconbeststate"]
 	resI, rpcERR := c(httpServer, []interface{}{}, nil)
 	if rpcERR != nil {
 		return res,errors.New(rpcERR.Error())
 	}
-	return resI.(jsonresult.GetBeaconBestState),nil
+	return resI.(*jsonresult.GetBeaconBestState),nil
 }
-func (r *LocalRPCClient) GetShardBestState(sid int) (res jsonresult.GetShardBestState,err error) {
+func (r *LocalRPCClient) GetShardBestState(sid int) (res *jsonresult.GetShardBestState,err error) {
 	httpServer := r.rpcServer.HttpServer
 	c := rpcserver.HttpHandler["getshardbeststate"]
 	resI, rpcERR := c(httpServer, []interface{}{sid}, nil)
 	if rpcERR != nil {
 		return res,errors.New(rpcERR.Error())
 	}
-	return resI.(jsonresult.GetShardBestState),nil
+	return resI.(*jsonresult.GetShardBestState),nil
 }
 func (r *LocalRPCClient) GetTransactionByHash(transactionHash string) (res *jsonresult.TransactionDetail,err error) {
 	httpServer := r.rpcServer.HttpServer
@@ -341,4 +341,22 @@ func (r *LocalRPCClient) EstimateFeeWithEstimator(defaultFeePerKb float64, payme
 		return res,errors.New(rpcERR.Error())
 	}
 	return resI.(*jsonresult.EstimateFeeResult),nil
+}
+func (r *LocalRPCClient) ListPrivacyCustomToken() (res jsonresult.ListCustomToken,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["listprivacycustomtoken"]
+	resI, rpcERR := c(httpServer, []interface{}{}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(jsonresult.ListCustomToken),nil
+}
+func (r *LocalRPCClient) GetAllBridgeTokens() (res interface{},err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getallbridgetokens"]
+	resI, rpcERR := c(httpServer, []interface{}{}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(interface{}),nil
 }
