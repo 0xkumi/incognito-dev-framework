@@ -35,17 +35,19 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 						hash, err := s.bc.GetBeaconBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
 						if err == nil {
 							f(s.bc, *hash, waitingBlkHeight)
+							waitingBlkHeight++
 						}
 					} else {
 						hash, err := s.bc.GetShardBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
 						if err == nil {
 							f(s.bc, *hash, waitingBlkHeight)
+							waitingBlkHeight++
 						}
 					}
+
 				} else {
 					time.Sleep(500 * time.Millisecond)
 				}
-				waitingBlkHeight++
 			}
 		}()
 		return
@@ -71,11 +73,13 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 					hash, err := common.Hash{}.NewHash(blkHash)
 					if err == nil {
 						f(s.bc, *hash, waitingBlkHeight)
+						waitingBlkHeight++
 					}
+
 				} else {
 					time.Sleep(500 * time.Millisecond)
 				}
-				waitingBlkHeight++
+
 			}
 		}()
 		return
