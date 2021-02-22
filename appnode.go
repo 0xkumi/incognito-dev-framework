@@ -105,7 +105,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 	case TestNetParam:
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
-		blockchain.ReadKey(TestnetKeylist, TestnetKeylist)
+		blockchain.ReadKey(TestnetKeylist, Testnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTestParam
 		break
