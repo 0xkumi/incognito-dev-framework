@@ -579,3 +579,7 @@ func (r *RPCClient) API_GetAllBridgeTokens() ([]*rawdbv2.BridgeTokenInfo, error)
 	}
 	return tokens.([]*rawdbv2.BridgeTokenInfo), nil
 }
+
+func (r *RPCClient) API_SubmitKey(key string) (interface{}, error) {
+	return r.client.SubmitKey(key)
+}

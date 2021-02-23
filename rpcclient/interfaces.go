@@ -45,4 +45,5 @@ type ClientInterface interface {
 	EstimateFeeWithEstimator(defaultFeePerKb float64, paymentAddress string, numBlock float64, tokenID string) (*jsonresult.EstimateFeeResult, error)
 	ListPrivacyCustomToken() (jsonresult.ListCustomToken, error)
 	GetAllBridgeTokens() (interface{}, error)
+	SubmitKey(key string) (interface{}, error)
 }

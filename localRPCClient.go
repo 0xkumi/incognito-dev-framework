@@ -360,3 +360,12 @@ func (r *LocalRPCClient) GetAllBridgeTokens() (res interface{},err error) {
 	}
 	return resI.(interface{}),nil
 }
+func (r *LocalRPCClient) SubmitKey(key string) (res interface{},err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.LimitedHttpHandler["submitkey"]
+	resI, rpcERR := c(httpServer, []interface{}{key}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(interface{}),nil
+}
