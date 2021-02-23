@@ -15,7 +15,7 @@ func (r *RemoteRPCClient) %APINAME%(%APIPARAMS%) (%APIRESULT%) {
 }
 `
 
-const RPC_REQUEST_TEMPLATE = `requestBody, rpcERR := json.Marshal(map[string]interface{}{
+const RPC_REQUEST_TEMPLATE = `requestBody, err := json.Marshal(map[string]interface{}{
 		"jsonrpc": "1.0",
 		"method":  "%API_REQ_NAME%",
 		"params":   []interface{}{%API_REQ_PARAMS%},
@@ -114,7 +114,7 @@ func (r *RemoteRPCClient) sendRequest(requestBody []byte) ([]byte, error) {
 		hasResType := false
 		resType := ""
 		if len(strings.Split(res[0][3], ",")) > 1 {
-			errstr = "return res,errors.New(rpcERR.Error())"
+			errstr = "return res,err"
 			hasResType = true
 			resType = strings.Split(res[0][3], ",")[0]
 		}
