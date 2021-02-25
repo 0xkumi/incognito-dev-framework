@@ -580,7 +580,7 @@ func (r *RPCClient) API_SubmitKey(key string) (interface{}, error) {
 	return r.client.SubmitKey(key)
 }
 
-func (r *RPCClient) RandomCommitmentsAndPublicKeys(shardID byte, lenDecoy int, tokenID string) (*jsonresult.RandomCommitmentAndPublicKeyResult, error) {
+func (r *RPCClient) API_RandomCommitmentsAndPublicKeys(shardID byte, lenDecoy int, tokenID string) (*jsonresult.RandomCommitmentAndPublicKeyResult, error) {
 	result, err := r.client.RandomCommitmentsAndPublicKeys(float64(shardID), float64(lenDecoy), tokenID)
 	if err != nil {
 		return nil, err
