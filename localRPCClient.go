@@ -369,3 +369,12 @@ func (r *LocalRPCClient) SubmitKey(key string) (res interface{},err error) {
 	}
 	return resI.(interface{}),nil
 }
+func (r *LocalRPCClient) RandomCommitmentsAndPublicKeys(shardID float64, lenDecoy float64, tokenID string) (res interface{},err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["randomcommitmentsandpublickeys"]
+	resI, rpcERR := c(httpServer, []interface{}{shardID,lenDecoy,tokenID}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(interface{}),nil
+}
