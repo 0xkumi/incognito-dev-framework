@@ -581,9 +581,19 @@ func (r *RPCClient) API_SubmitKey(key string) (interface{}, error) {
 }
 
 func (r *RPCClient) API_RandomCommitmentsAndPublicKeys(shardID byte, lenDecoy int, tokenID string) (*jsonresult.RandomCommitmentAndPublicKeyResult, error) {
+	fmt.Println(shardID, lenDecoy, tokenID)
 	result, err := r.client.RandomCommitmentsAndPublicKeys(float64(shardID), float64(lenDecoy), tokenID)
 	if err != nil {
 		return nil, err
 	}
-	return result.(*jsonresult.RandomCommitmentAndPublicKeyResult), nil
+	fmt.Println("result", result)
+	return &result, nil
+}
+
+func (r *RPCClient) SendRawTransaction(txBase58 string) (*jsonresult.CreateTransactionResult, error) {
+	result, err := r.client.SendRawTransaction(txBase58)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }

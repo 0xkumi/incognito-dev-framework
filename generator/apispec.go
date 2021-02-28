@@ -46,5 +46,6 @@ type ClientInterface interface {
 	ListPrivacyCustomToken() (jsonresult.ListCustomToken, error)
 	GetAllBridgeTokens() (interface{}, error)
 	SubmitKey(key string) (interface{}, error)
-	RandomCommitmentsAndPublicKeys(shardID float64, lenDecoy float64, tokenID string) (interface{}, error)
+	RandomCommitmentsAndPublicKeys(shardID float64, lenDecoy float64, tokenID string) (jsonresult.RandomCommitmentAndPublicKeyResult, error)
+	SendRawTransaction(txBase58 string) (jsonresult.CreateTransactionResult, error)
 }

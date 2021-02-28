@@ -1274,7 +1274,7 @@ func (r *RemoteRPCClient) SubmitKey(key string) (res interface{},err error) {
 }
 
 
-func (r *RemoteRPCClient) RandomCommitmentsAndPublicKeys(shardID float64, lenDecoy float64, tokenID string) (res interface{},err error) {
+func (r *RemoteRPCClient) RandomCommitmentsAndPublicKeys(shardID float64, lenDecoy float64, tokenID string) (res jsonresult.RandomCommitmentAndPublicKeyResult,err error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"jsonrpc": "1.0",
 		"method":  "randomcommitmentsandpublickeys",
@@ -1289,7 +1289,38 @@ func (r *RemoteRPCClient) RandomCommitmentsAndPublicKeys(shardID float64, lenDec
 		return res,err
 	}
 	resp := struct {
-		Result  interface{}
+		Result  jsonresult.RandomCommitmentAndPublicKeyResult
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,err
+	}
+	return resp.Result,err
+}
+
+
+func (r *RemoteRPCClient) SendRawTransaction(txBase58 string) (res jsonresult.CreateTransactionResult,err error) {
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "sendrawtransaction",
+		"params":   []interface{}{txBase58},
+		"id":      1,
+	})
+	if err != nil {
+		return res,err
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,err
+	}
+	resp := struct {
+		Result  jsonresult.CreateTransactionResult
 		Error *ErrMsg
 	}{}
 	err = json.Unmarshal(body, &resp)
