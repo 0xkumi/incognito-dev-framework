@@ -590,7 +590,7 @@ func (r *RPCClient) API_RandomCommitmentsAndPublicKeys(shardID byte, lenDecoy in
 	return &result, nil
 }
 
-func (r *RPCClient) SendRawTransaction(txBase58 string) (*jsonresult.CreateTransactionResult, error) {
+func (r *RPCClient) API_SendRawTransaction(txBase58 string) (*jsonresult.CreateTransactionResult, error) {
 	result, err := r.client.SendRawTransaction(txBase58)
 	if err != nil {
 		return nil, err
