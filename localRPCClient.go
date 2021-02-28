@@ -378,3 +378,12 @@ func (r *LocalRPCClient) RandomCommitmentsAndPublicKeys(shardID float64, lenDeco
 	}
 	return resI.(jsonresult.RandomCommitmentAndPublicKeyResult),nil
 }
+func (r *LocalRPCClient) SendTransaction(txBase58 string) (res jsonresult.CreateTransactionResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["sendtransaction"]
+	resI, rpcERR := c(httpServer, []interface{}{txBase58}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(jsonresult.CreateTransactionResult),nil
+}

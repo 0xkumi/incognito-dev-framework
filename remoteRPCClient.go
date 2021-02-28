@@ -1305,10 +1305,10 @@ func (r *RemoteRPCClient) RandomCommitmentsAndPublicKeys(shardID float64, lenDec
 }
 
 
-func (r *RemoteRPCClient) SendRawTransaction(txBase58 string) (res jsonresult.CreateTransactionResult,err error) {
+func (r *RemoteRPCClient) SendTransaction(txBase58 string) (res jsonresult.CreateTransactionResult,err error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"jsonrpc": "1.0",
-		"method":  "sendrawtransaction",
+		"method":  "sendtransaction",
 		"params":   []interface{}{txBase58},
 		"id":      1,
 	})
