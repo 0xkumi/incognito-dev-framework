@@ -1334,3 +1334,65 @@ func (r *RemoteRPCClient) SendTransaction(txBase58 string) (res jsonresult.Creat
 	}
 	return resp.Result,err
 }
+
+
+func (r *RemoteRPCClient) ListOutputCoinV2Idxs(param []interface{}, tokenID string) (res *jsonresult.ListOTACoinIdx,err error) {
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "listoutputcoinv2idxs",
+		"params":   []interface{}{param,tokenID},
+		"id":      1,
+	})
+	if err != nil {
+		return res,err
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,err
+	}
+	resp := struct {
+		Result  *jsonresult.ListOTACoinIdx
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,err
+	}
+	return resp.Result,err
+}
+
+
+func (r *RemoteRPCClient) ListOutputCoinV2ByIdxs(param []interface{}, shardID float64, tokenID string) (res *jsonresult.ListOutputCoins,err error) {
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "listoutputcoinv2byidxs",
+		"params":   []interface{}{param,shardID,tokenID},
+		"id":      1,
+	})
+	if err != nil {
+		return res,err
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,err
+	}
+	resp := struct {
+		Result  *jsonresult.ListOutputCoins
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,err
+	}
+	return resp.Result,err
+}

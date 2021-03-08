@@ -597,3 +597,24 @@ func (r *RPCClient) API_SendRawTransaction(txBase58 string) (*jsonresult.CreateT
 	}
 	return &result, nil
 }
+
+func (r *RPCClient) API_ListOutputCoinV2Idxs(paymentAddStr string, viewkey string, otakey string, tokenID string, toHeight uint64) (*jsonresult.ListOTACoinIdx, error) {
+	var result *jsonresult.ListOTACoinIdx
+	result, err := r.client.ListOutputCoinV2Idxs([]interface{}{map[string]interface{}{
+		"PaymentAddress": paymentAddStr,
+		"OTASecretKey":   otakey,
+		"ToHeight":       float64(toHeight),
+	}}, tokenID)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+func (r *RPCClient) API_ListOutputCoinV2ByIdxs(listIdx []uint64, shardID byte, tokenID string) (*jsonresult.ListOutputCoins, error) {
+	var result *jsonresult.ListOutputCoins
+	result, err := r.client.ListOutputCoinV2ByIdxs([]interface{}{listIdx}, float64(shardID), tokenID)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
