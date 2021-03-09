@@ -11,7 +11,7 @@ import (
 )
 
 type Account struct {
-	Name string
+	Name                string
 	PublicKey           string
 	PrivateKey          string
 	MiningKey           string
@@ -75,7 +75,7 @@ func NewAccountFromPrivatekey(privateKey string) (Account, error) {
 	if err != nil {
 		return Account{}, err
 	}
-	acc.PrivateKey = privateKey
+	acc.PrivateKey = wl.Base58CheckSerialize(wallet.PriKeyType)
 	acc.PublicKey = wl.KeySet.GetPublicKeyInBase58CheckEncode()
 	acc.PaymentAddress = wl.Base58CheckSerialize(wallet.PaymentAddressType)
 	validatorKeyBytes := common.HashB(common.HashB(wl.KeySet.PrivateKey))
@@ -87,7 +87,7 @@ func NewAccountFromPrivatekey(privateKey string) (Account, error) {
 	return acc, nil
 }
 
-func GenerateAccountByShard(shardID int, keyID int, seed string) (acc Account,err error) {
+func GenerateAccountByShard(shardID int, keyID int, seed string) (acc Account, err error) {
 	key, _ := wallet.NewMasterKey([]byte(fmt.Sprintf("%v-%v", seed, shardID)))
 	var i int
 	var k = 0
@@ -96,7 +96,7 @@ func GenerateAccountByShard(shardID int, keyID int, seed string) (acc Account,er
 		child, _ := key.NewChildKey(uint32(i))
 		privAddr := child.Base58CheckSerialize(wallet.PriKeyType)
 		if child.KeySet.PaymentAddress.Pk[common.PublicKeySize-1] == byte(shardID) {
-			acc,err = NewAccountFromPrivatekey(privAddr)
+			acc, err = NewAccountFromPrivatekey(privAddr)
 			if err != nil {
 				panic(err)
 			}
