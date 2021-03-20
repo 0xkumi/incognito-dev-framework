@@ -118,6 +118,11 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 		chainParam = networkParam.ChainParam
 		break
 	}
+	common.MaxShardNumber = chainParam.ActiveShards
+	common.TIMESLOT = chainParam.Timeslot
+	if common.TIMESLOT == 0 {
+		common.TIMESLOT = 10
+	}
 	sim.initNode(chainParam, isLightNode, enableRPC)
 	relayShards := []byte{}
 	if isLightNode {
@@ -312,11 +317,11 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
 
 	//init user database
-	handles := 256
+	// handles := 256
 	cache := 8
 	userDBPath := filepath.Join(dbpath, "userdb")
 	lvdb, err := leveldb.OpenFile(userDBPath, &opt.Options{
-		OpenFilesCacheCapacity: handles,
+		OpenFilesCacheCapacity: 0,
 		BlockCacheCapacity:     cache / 2 * opt.MiB,
 		WriteBuffer:            cache / 4 * opt.MiB, // Two of these are used internally
 		Filter:                 filter.NewBloomFilter(10),
