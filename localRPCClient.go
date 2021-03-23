@@ -405,3 +405,12 @@ func (r *LocalRPCClient) ListOutputCoinV2ByIdxs(param []interface{}, shardID flo
 	}
 	return resI.(*jsonresult.ListOutputCoins),nil
 }
+func (r *LocalRPCClient) GetRawMempool() (res *jsonresult.GetRawMempoolResult,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getrawmempool"]
+	resI, rpcERR := c(httpServer, []interface{}{}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.GetRawMempoolResult),nil
+}

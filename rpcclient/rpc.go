@@ -618,3 +618,12 @@ func (r *RPCClient) API_ListOutputCoinV2ByIdxs(listIdx []uint64, shardID byte, t
 	}
 	return result, nil
 }
+
+func (r *RPCClient) API_GetRawMempool() (*jsonresult.GetRawMempoolResult, error) {
+	var result *jsonresult.GetRawMempoolResult
+	result, err := r.client.GetRawMempool()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}

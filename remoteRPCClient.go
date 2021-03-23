@@ -1396,3 +1396,34 @@ func (r *RemoteRPCClient) ListOutputCoinV2ByIdxs(param []interface{}, shardID fl
 	}
 	return resp.Result,err
 }
+
+
+func (r *RemoteRPCClient) GetRawMempool() (res *jsonresult.GetRawMempoolResult,err error) {
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "getrawmempool",
+		"params":   []interface{}{},
+		"id":      1,
+	})
+	if err != nil {
+		return res,err
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,err
+	}
+	resp := struct {
+		Result  *jsonresult.GetRawMempoolResult
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,err
+	}
+	return resp.Result,err
+}

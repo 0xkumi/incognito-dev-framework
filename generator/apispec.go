@@ -50,4 +50,5 @@ type ClientInterface interface {
 	SendTransaction(txBase58 string) (jsonresult.CreateTransactionResult, error)
 	ListOutputCoinV2Idxs(param []interface{}, tokenID string) (*jsonresult.ListOTACoinIdx, error)
 	ListOutputCoinV2ByIdxs(param []interface{}, shardID float64, tokenID string) (*jsonresult.ListOutputCoins, error)
+	GetRawMempool() (*jsonresult.GetRawMempoolResult, error)
 }
