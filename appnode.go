@@ -473,7 +473,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 		}
 
 		if state.LocalHeight == bestHeight {
-			time.Sleep(10 * time.Second)
+			time.Sleep(1 * time.Second)
 		}
 		fmt.Printf("shard %v synced to %v \n", shardID, state.LocalHeight)
 
