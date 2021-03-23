@@ -414,3 +414,12 @@ func (r *LocalRPCClient) GetRawMempool() (res *jsonresult.GetRawMempoolResult,er
 	}
 	return resI.(*jsonresult.GetRawMempoolResult),nil
 }
+func (r *LocalRPCClient) GetMempoolEntry(txHash string) (res *jsonresult.TransactionDetail,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["getmempoolentry"]
+	resI, rpcERR := c(httpServer, []interface{}{txHash}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(*jsonresult.TransactionDetail),nil
+}

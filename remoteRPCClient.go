@@ -1427,3 +1427,34 @@ func (r *RemoteRPCClient) GetRawMempool() (res *jsonresult.GetRawMempoolResult,e
 	}
 	return resp.Result,err
 }
+
+
+func (r *RemoteRPCClient) GetMempoolEntry(txHash string) (res *jsonresult.TransactionDetail,err error) {
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "getmempoolentry",
+		"params":   []interface{}{txHash},
+		"id":      1,
+	})
+	if err != nil {
+		return res,err
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,err
+	}
+	resp := struct {
+		Result  *jsonresult.TransactionDetail
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,err
+	}
+	return resp.Result,err
+}

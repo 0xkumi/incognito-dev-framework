@@ -627,3 +627,12 @@ func (r *RPCClient) API_GetRawMempool() (*jsonresult.GetRawMempoolResult, error)
 	}
 	return result, nil
 }
+
+func (r *RPCClient) API_GetMempoolEntry(txHash string) (*jsonresult.TransactionDetail, error) {
+	var result *jsonresult.TransactionDetail
+	result, err := r.client.GetMempoolEntry(txHash)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
