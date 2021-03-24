@@ -381,12 +381,7 @@ func (sim *NodeEngine) startLightSyncProcess() {
 	sim.OnNewBlockFromParticularHeight(-1, int64(sim.lightNodeData.ProcessedBeaconHeight), false, processBeaconBlk)
 
 	sim.lightNodeData.Shards = make(map[byte]*currentShardState)
-	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
-		sim.lightNodeData.Shards[byte(i)] = &currentShardState{
-			LocalHeight: 1,
-			LocalHash:   &common.Hash{},
-		}
-	}
+
 	sim.loadLightShardsState()
 
 	time.Sleep(5 * time.Second)
@@ -403,6 +398,16 @@ func (sim *NodeEngine) loadLightShardsState() {
 			panic(err)
 		}
 		if err == leveldb.ErrNotFound {
+			hash := sim.bc.ShardChain[i].GetBestState().BestBlock.Hash()
+			height := sim.bc.ShardChain[i].GetBestState().BestBlock.GetHeight()
+			sim.lightNodeData.Shards[byte(i)] = &currentShardState{
+				LocalHeight: height,
+				LocalHash:   hash,
+			}
+			key := fmt.Sprintf("s-%v-%v", i, height)
+			if err := sim.userDB.Put([]byte(key), hash.Bytes(), nil); err != nil {
+				panic(err)
+			}
 			continue
 		}
 		shardState := &currentShardState{}
