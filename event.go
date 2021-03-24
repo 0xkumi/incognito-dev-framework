@@ -6,6 +6,7 @@ import (
 
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 func (s *NodeEngine) OnReceive(msgType int, f func(msg interface{})) {
@@ -68,6 +69,10 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 					prefix := fmt.Sprintf("s-%v-%v", chainID, waitingBlkHeight)
 					blkHash, err := s.userDB.Get([]byte(prefix), nil)
 					if err != nil {
+						if err == leveldb.ErrNotFound {
+							time.Sleep(5 * time.Second)
+							continue
+						}
 						panic(err)
 					}
 					hash, err := common.Hash{}.NewHash(blkHash)
