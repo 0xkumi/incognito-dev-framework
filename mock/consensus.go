@@ -25,6 +25,26 @@ type Consensus struct {
 	consensusEngine *consensus_v2.Engine
 }
 
+func (c *Consensus) GetCurrentMiningPublicKey() (string, string) {
+	return "",""
+}
+
+func (c *Consensus) GetAllMiningPublicKeys() []string {
+	return nil
+}
+
+func (c *Consensus) ExtractBridgeValidationData(block common.BlockInterface) ([][]byte, []int, error) {
+	panic("implement me")
+}
+
+func (c *Consensus) GetAllValidatorKeyState() map[string]consensus.MiningState {
+	return nil
+}
+
+func (c *Consensus) GetUserRole() (string, string, int) {
+	return "","", -2
+}
+
 func (c *Consensus) GetOneValidator() *consensus.Validator {
 	return nil
 }

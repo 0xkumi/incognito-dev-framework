@@ -40,6 +40,7 @@ type AppNodeInterface interface {
 	GetRPC() *rpcclient.RPCClient
 	GetUserDatabase() *leveldb.DB
 	StopSync()
+	GetHWConnection() *HighwayConnection
 	// LightNode() LightNodeInterface
 }
 
@@ -52,7 +53,7 @@ type NetworkParam struct {
 
 var (
 	MainNetParam = NetworkParam{
-		HighwayAddress: "51.91.72.45:9330",
+		HighwayAddress: "51.83.237.29:9330",
 	}
 	TestNetParam = NetworkParam{
 		HighwayAddress: "45.56.115.6:9330",
@@ -118,7 +119,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 		break
 	default:
 		blockchain.IsTestNet = true
-		blockchain.IsTestNet2 = false
+		blockchain.IsTestNet2 = true
 		blockchain.ReadKey(TestnetKeylist, Testnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTestParam
@@ -223,11 +224,11 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	rpcServer := &rpcserver.RpcServer{}
 	rpclocal := &LocalRPCClient{rpcServer}
 
-	btcChain, err := getBTCRelayingChain(activeNetParams.BTCRelayingHeaderChainID, "btcchain", simName)
+	btcChain, err := getBTCRelayingChain(activeNetParams.PortalParams.RelayingParam.BTCRelayingHeaderChainID, "btcchain", simName)
 	if err != nil {
 		panic(err)
 	}
-	bnbChainState, err := getBNBRelayingChainState(activeNetParams.BNBRelayingHeaderChainID, simName)
+	bnbChainState, err := getBNBRelayingChainState(activeNetParams.PortalParams.RelayingParam.BNBRelayingHeaderChainID, simName)
 	if err != nil {
 		panic(err)
 	}
@@ -342,6 +343,10 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 
 func (sim *NodeEngine) GetRPC() *rpcclient.RPCClient {
 	return sim.RPC
+}
+
+func (sim *NodeEngine) GetHWConnection() *HighwayConnection {
+	return sim.Network
 }
 
 func (sim *NodeEngine) startLightSyncProcess() {
