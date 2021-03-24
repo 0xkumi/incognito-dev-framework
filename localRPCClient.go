@@ -387,24 +387,6 @@ func (r *LocalRPCClient) SendTransaction(txBase58 string) (res jsonresult.Create
 	}
 	return resI.(jsonresult.CreateTransactionResult),nil
 }
-func (r *LocalRPCClient) ListOutputCoinV2Idxs(param []interface{}, tokenID string) (res *jsonresult.ListOTACoinIdx,err error) {
-	httpServer := r.rpcServer.HttpServer
-	c := rpcserver.HttpHandler["listoutputcoinv2idxs"]
-	resI, rpcERR := c(httpServer, []interface{}{param,tokenID}, nil)
-	if rpcERR != nil {
-		return res,errors.New(rpcERR.Error())
-	}
-	return resI.(*jsonresult.ListOTACoinIdx),nil
-}
-func (r *LocalRPCClient) ListOutputCoinV2ByIdxs(param []interface{}, shardID float64, tokenID string) (res *jsonresult.ListOutputCoins,err error) {
-	httpServer := r.rpcServer.HttpServer
-	c := rpcserver.HttpHandler["listoutputcoinv2byidxs"]
-	resI, rpcERR := c(httpServer, []interface{}{param,shardID,tokenID}, nil)
-	if rpcERR != nil {
-		return res,errors.New(rpcERR.Error())
-	}
-	return resI.(*jsonresult.ListOutputCoins),nil
-}
 func (r *LocalRPCClient) GetRawMempool() (res *jsonresult.GetRawMempoolResult,err error) {
 	httpServer := r.rpcServer.HttpServer
 	c := rpcserver.HttpHandler["getrawmempool"]
