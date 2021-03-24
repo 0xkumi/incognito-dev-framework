@@ -317,11 +317,11 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
 
 	//init user database
-	// handles := 256
+	handles := 256
 	cache := 8
 	userDBPath := filepath.Join(dbpath, "userdb")
 	lvdb, err := leveldb.OpenFile(userDBPath, &opt.Options{
-		OpenFilesCacheCapacity: 0,
+		OpenFilesCacheCapacity: handles,
 		BlockCacheCapacity:     cache / 2 * opt.MiB,
 		WriteBuffer:            cache / 4 * opt.MiB, // Two of these are used internally
 		Filter:                 filter.NewBloomFilter(10),
@@ -475,7 +475,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 		if state.LocalHeight == bestHeight {
 			time.Sleep(1 * time.Second)
 		}
-		fmt.Printf("shard %v synced to %v \n", shardID, state.LocalHeight)
+		fmt.Printf("shard %v synced to %v at beacon height %v \n", shardID, state.LocalHeight, sim.bc.BeaconChain.CurrentHeight())
 
 	}
 }
