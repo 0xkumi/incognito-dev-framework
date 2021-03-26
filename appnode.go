@@ -39,6 +39,7 @@ type AppNodeInterface interface {
 	GetBlockchain() *blockchain.BlockChain
 	GetRPC() *rpcclient.RPCClient
 	GetUserDatabase() *leveldb.DB
+	GetShardState(shardID int) (uint64, *common.Hash)
 	// LightNode() LightNodeInterface
 }
 
@@ -416,6 +417,20 @@ func (sim *NodeEngine) loadLightShardsState() {
 		}
 		sim.lightNodeData.Shards[byte(i)] = shardState
 	}
+}
+
+func (sim *NodeEngine) GetShardState(shardID int) (uint64, *common.Hash) {
+	statePrefix := fmt.Sprintf("state-%v", shardID)
+	v, err := sim.userDB.Get([]byte(statePrefix), nil)
+	if err != nil && err != leveldb.ErrNotFound {
+		return 0, nil
+	}
+	shardState := &currentShardState{}
+	if err := json.Unmarshal(v, shardState); err != nil {
+		return 0, nil
+	}
+
+	return shardState.LocalHeight, shardState.LocalHash
 }
 
 func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
