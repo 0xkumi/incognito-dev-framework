@@ -318,13 +318,13 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
 
 	//init user database
-	handles := 256
+	handles := 1024
 	cache := 8
 	userDBPath := filepath.Join(dbpath, "userdb")
 	lvdb, err := leveldb.OpenFile(userDBPath, &opt.Options{
 		OpenFilesCacheCapacity: handles,
 		BlockCacheCapacity:     cache / 2 * opt.MiB,
-		WriteBuffer:            cache / 4 * opt.MiB, // Two of these are used internally
+		WriteBuffer:            cache * opt.MiB, // Two of these are used internally
 		Filter:                 filter.NewBloomFilter(10),
 	})
 	if _, corrupted := err.(*lvdbErrors.ErrCorrupted); corrupted {

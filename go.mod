@@ -10,5 +10,5 @@ require (
 	github.com/jrick/logrotate v1.0.0
 	github.com/libp2p/go-libp2p-peer v0.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/syndtr/goleveldb v1.0.0
+	github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954
 )
