@@ -31,7 +31,7 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 		}
 		go func() {
 			for {
-				if (isFinalized && chain.GetFinalView().GetHeight() > waitingBlkHeight) || (!isFinalized && chain.GetBestView().GetHeight() > waitingBlkHeight) {
+				if (isFinalized && chain.GetFinalView().GetHeight() >= waitingBlkHeight) || (!isFinalized && chain.GetBestView().GetHeight() >= waitingBlkHeight) {
 					if chainID == -1 {
 						hash, err := s.bc.GetBeaconBlockHashByHeight(chain.GetFinalView(), chain.GetBestView(), waitingBlkHeight)
 						if err == nil {
