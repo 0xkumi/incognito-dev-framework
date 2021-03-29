@@ -1,10 +1,10 @@
 package mock
 
-import "github.com/incognitochain/incognito-chain/blockchain"
+import "github.com/incognitochain/incognito-chain/blockchain/types"
 
 type Fee struct {
 }
 
-func (f *Fee) RegisterBlock(block *blockchain.ShardBlock) error {
+func (f *Fee) RegisterBlock(block *types.ShardBlock) error {
 	return nil
 }

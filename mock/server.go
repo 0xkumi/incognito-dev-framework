@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/incognitochain/incognito-chain/blockchain"
+	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/wire"
@@ -12,7 +13,7 @@ type Server struct {
 	BlockChain *blockchain.BlockChain
 }
 
-func (s *Server) PushBlockToAll(block common.BlockInterface, isBeacon bool) error {
+func (s *Server) PushBlockToAll(block types.BlockInterface, previousValidationData string, isBeacon bool) error {
 	return nil
 }
 
@@ -42,14 +43,16 @@ func (s *Server) GetPublicKeyRole(publicKey string, keyType string) (int, int) {
 	if err != nil {
 		return -2, -1
 	}
-	for shardID, pubkeyArr := range beaconBestState.ShardPendingValidator {
+
+	for shardID, pubkeyArr := range beaconBestState.GetShardPendingValidator() {
 		keyList, _ := incognitokey.ExtractPublickeysFromCommitteeKeyList(pubkeyArr, keyType)
 		found := common.IndexOfStr(publicKey, keyList)
 		if found > -1 {
 			return 1, int(shardID)
 		}
 	}
-	for shardID, pubkeyArr := range beaconBestState.ShardCommittee {
+
+	for shardID, pubkeyArr := range beaconBestState.GetShardCommittee() {
 		keyList, _ := incognitokey.ExtractPublickeysFromCommitteeKeyList(pubkeyArr, keyType)
 		found := common.IndexOfStr(publicKey, keyList)
 		if found > -1 {
@@ -57,37 +60,37 @@ func (s *Server) GetPublicKeyRole(publicKey string, keyType string) (int, int) {
 		}
 	}
 
-	keyList, _ := incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.BeaconCommittee, keyType)
+	keyList, _ := incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.GetBeaconCommittee(), keyType)
 	found := common.IndexOfStr(publicKey, keyList)
 	if found > -1 {
 		return 2, -1
 	}
 
-	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.BeaconPendingValidator, keyType)
+	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.GetBeaconPendingValidator(), keyType)
 	found = common.IndexOfStr(publicKey, keyList)
 	if found > -1 {
 		return 1, -1
 	}
 
-	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.CandidateBeaconWaitingForCurrentRandom, keyType)
+	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.GetCandidateBeaconWaitingForCurrentRandom(), keyType)
 	found = common.IndexOfStr(publicKey, keyList)
 	if found > -1 {
 		return 0, -1
 	}
 
-	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.CandidateBeaconWaitingForNextRandom, keyType)
+	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.GetCandidateBeaconWaitingForNextRandom(), keyType)
 	found = common.IndexOfStr(publicKey, keyList)
 	if found > -1 {
 		return 0, -1
 	}
 
-	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.CandidateShardWaitingForCurrentRandom, keyType)
+	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.GetCandidateShardWaitingForCurrentRandom(), keyType)
 	found = common.IndexOfStr(publicKey, keyList)
 	if found > -1 {
 		return 0, -1
 	}
 
-	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.CandidateShardWaitingForNextRandom, keyType)
+	keyList, _ = incognitokey.ExtractPublickeysFromCommitteeKeyList(beaconBestState.GetCandidateShardWaitingForNextRandom(), keyType)
 	found = common.IndexOfStr(publicKey, keyList)
 	if found > -1 {
 		return 0, -1

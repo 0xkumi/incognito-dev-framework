@@ -3,7 +3,7 @@ package devframework
 import (
 	"context"
 
-	"github.com/incognitochain/incognito-chain/common"
+	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/peer"
 	"github.com/incognitochain/incognito-chain/peerv2"
@@ -95,7 +95,7 @@ func (s *HighwayConnection) Connect() {
 		&incognitokey.CommitteePublicKey{},
 		s.config.ConsensusEngine,
 		dispatcher,
-		// s.config.NetMode,
+		"",
 		s.config.RelayShards,
 	)
 	go s.conn.Start(nil)
@@ -122,7 +122,7 @@ func (s *HighwayConnection) onTxPrivacyToken(p *peer.PeerConn, msg *wire.Message
 
 func (s *HighwayConnection) onBlockShard(p *peer.PeerConn, msg *wire.MessageBlockShard) {
 	if s.config.syncker != nil {
-		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+		s.config.syncker.ReceiveBlock(msg.Block, "", p.GetRemotePeerID().String())
 	}
 
 	for _, f := range s.listennerRegister[MSG_BLOCK_SHARD] {
@@ -132,7 +132,7 @@ func (s *HighwayConnection) onBlockShard(p *peer.PeerConn, msg *wire.MessageBloc
 
 func (s *HighwayConnection) onBlockBeacon(p *peer.PeerConn, msg *wire.MessageBlockBeacon) {
 	if s.config.syncker != nil {
-		s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+		s.config.syncker.ReceiveBlock(msg.Block, "", p.GetRemotePeerID().String())
 	}
 	for _, f := range s.listennerRegister[MSG_BLOCK_BEACON] {
 		f(msg)
@@ -140,7 +140,7 @@ func (s *HighwayConnection) onBlockBeacon(p *peer.PeerConn, msg *wire.MessageBlo
 }
 
 func (s *HighwayConnection) onCrossShard(p *peer.PeerConn, msg *wire.MessageCrossShard) {
-	s.config.syncker.ReceiveBlock(msg.Block, p.GetRemotePeerID().String())
+	s.config.syncker.ReceiveBlock(msg.Block, "", p.GetRemotePeerID().String())
 	for _, f := range s.listennerRegister[MSG_BLOCK_XSHARD] {
 		f(msg)
 	}
@@ -193,7 +193,7 @@ func (s *HighwayConnection) onPeerState(p *peer.PeerConn, msg *wire.MessagePeerS
 /*
 	Framework Network interface
 */
-func (s *HighwayConnection) GetBeaconBlock(from, to uint64) (chan common.BlockInterface, error) {
+func (s *HighwayConnection) GetBeaconBlock(from, to uint64) (chan types.BlockInterface, error) {
 	blkCh, err := s.conn.RequestBeaconBlocksViaStream(context.Background(), "", from, to)
 	if err != nil {
 		return nil, err
@@ -201,7 +201,7 @@ func (s *HighwayConnection) GetBeaconBlock(from, to uint64) (chan common.BlockIn
 	return blkCh, nil
 }
 
-func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) (chan common.BlockInterface, error) {
+func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) (chan types.BlockInterface, error) {
 	blkCh, err := s.conn.RequestShardBlocksViaStream(context.Background(), "", sid, from, to)
 	if err != nil {
 		return nil, err
