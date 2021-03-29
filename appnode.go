@@ -353,9 +353,11 @@ func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
 	}
 	processBeaconBlk := func(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 		for i := sim.lightNodeData.ProcessedBeaconHeight; i < height; i++ {
+		retry:
 			blks, err := sim.bc.GetBeaconBlockByHeight(i)
 			if err != nil {
-				panic(err)
+				log.Println(err)
+				goto retry
 			}
 			beaconBlk := blks[0]
 			for shardID, states := range beaconBlk.Body.ShardState {
