@@ -52,7 +52,7 @@ type NetworkParam struct {
 
 var (
 	MainNetParam = NetworkParam{
-		HighwayAddress: "51.91.72.45:9330",
+		HighwayAddress: "51.83.237.29:9330",
 	}
 	TestNetParam = NetworkParam{
 		HighwayAddress: "45.56.115.6:9330",
