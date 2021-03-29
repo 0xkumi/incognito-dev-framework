@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/incognitochain/incognito-chain/blockchain/committeestate"
 	consensus "github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/peerv2"
 	"github.com/incognitochain/incognito-chain/syncker"
@@ -34,13 +35,14 @@ var (
 	rpcServiceBridgeLogger = backendLog.Logger("RPC service DeBridge log", false)
 	transactionLogger      = backendLog.Logger("Transaction log", false)
 	// privacyLogger          = backendLog.Logger("Privacy log", false)
-	mempoolLogger    = backendLog.Logger("Mempool log", false)
-	synckerLogger    = backendLog.Logger("Syncker log", false)
-	highwayLogger    = backendLog.Logger("Highway", false)
-	consensusLogger  = backendLog.Logger("Consensus log", false)
-	privacyV1Logger  = backendLog.Logger("Privacy V1 log ", false)
-	privacyV2Logger  = backendLog.Logger("Privacy V2 log ", false)
-	disableStdoutLog = false
+	mempoolLogger        = backendLog.Logger("Mempool log", false)
+	synckerLogger        = backendLog.Logger("Syncker log", false)
+	highwayLogger        = backendLog.Logger("Highway", false)
+	consensusLogger      = backendLog.Logger("Consensus log", false)
+	privacyV1Logger      = backendLog.Logger("Privacy V1 log ", false)
+	privacyV2Logger      = backendLog.Logger("Privacy V2 log ", false)
+	committeeStateLogger = backendLog.Logger("Committee State log ", false)
+	disableStdoutLog     = false
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -66,6 +68,7 @@ func init() {
 	rpcservice.Logger.Init(rpcServiceLogger)
 	rpcservice.BLogger.Init(rpcServiceBridgeLogger)
 	transaction.Logger.Init(transactionLogger)
+	committeestate.Logger.Init(committeeStateLogger)
 	// privacy.Logger.Init(privacyLogger)
 	mempool.Logger.Init(mempoolLogger)
 	syncker.Logger.Init(synckerLogger)
@@ -87,6 +90,7 @@ var subsystemLoggers = map[string]common.Logger{
 	// "PRIV":              privacyLogger,
 	"MEMP": mempoolLogger,
 	"CONS": consensusLogger,
+	"COMS": committeeStateLogger,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
