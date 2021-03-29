@@ -30,7 +30,7 @@ func UpdateShardHeaderOnBodyChange(block *blockchain.ShardBlock, bc *blockchain.
 	}
 	crossTransactionRoot, err := blockchain.CreateMerkleCrossTransaction(block.Body.CrossTransactions)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	txInstructions, err := blockchain.CreateShardInstructionsFromTransactionAndInstruction(block.Body.Transactions, bc, block.Header.ShardID, block.Header.Height)
 	if err != nil {

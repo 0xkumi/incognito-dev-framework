@@ -388,16 +388,16 @@ func (sim *NodeEngine) ConnectNetwork(highwayAddr string, relayShards []byte) {
 }
 
 func (sim *NodeEngine) Pause() {
-	fmt.Print("Simulation pause! Press Enter to continue ...")
+	log.Print("Simulation pause! Press Enter to continue ...")
 	var input string
 	fmt.Scanln(&input)
-	fmt.Print("\n")
+	log.Print("\n")
 }
 
 func (sim *NodeEngine) PrintBlockChainInfo() {
-	fmt.Println("Beacon Chain:")
+	log.Println("Beacon Chain:")
 
-	fmt.Println("Shard Chain:")
+	log.Println("Shard Chain:")
 }
 
 //life cycle of a block generation process:
@@ -468,13 +468,13 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 				block, err = chain.BeaconChain.CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
 				if err != nil {
 					block = nil
-					fmt.Println("NewBlockError", err)
+					log.Println("NewBlockError", err)
 				}
 			} else {
 				block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
 				if err != nil {
 					block = nil
-					fmt.Println("NewBlockError", err)
+					log.Println("NewBlockError", err)
 				}
 			}
 		}
@@ -506,17 +506,17 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 			})
 		} else {
 			if block == nil {
-				fmt.Println("VerifyBlockErr no block")
+				log.Println("VerifyBlockErr no block")
 			} else {
 				if chainID == -1 {
 					err = chain.VerifyPreSignBeaconBlock(block.(*blockchain.BeaconBlock), true)
 					if err != nil {
-						fmt.Println("VerifyBlockErr", err)
+						log.Println("VerifyBlockErr", err)
 					}
 				} else {
 					err = chain.VerifyPreSignShardBlock(block.(*blockchain.ShardBlock), byte(chainID))
 					if err != nil {
-						fmt.Println("VerifyBlockErr", err)
+						log.Println("VerifyBlockErr", err)
 					}
 				}
 			}
@@ -565,17 +565,17 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 			})
 		} else {
 			if block == nil {
-				fmt.Println("InsertBlkErr no block")
+				log.Println("InsertBlkErr no block")
 			} else {
 				if chainID == -1 {
 					err = chain.InsertBeaconBlock(block.(*blockchain.BeaconBlock), true)
 					if err != nil {
-						fmt.Println("InsertBlkErr", err)
+						log.Println("InsertBlkErr", err)
 					}
 				} else {
 					err = chain.InsertShardBlock(block.(*blockchain.ShardBlock), true)
 					if err != nil {
-						fmt.Println("InsertBlkErr", err)
+						log.Println("InsertBlkErr", err)
 					} else {
 						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ChainParam.ActiveShards)
 						for _, blk := range crossX {

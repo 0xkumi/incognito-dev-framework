@@ -63,8 +63,8 @@ func createGenesisTx(accounts []account.Account) []string {
 	transactions := []string{}
 	db, err := incdb.Open("leveldb", "/tmp/"+time.Now().UTC().String())
 	if err != nil {
-		fmt.Print("could not open connection to leveldb")
-		fmt.Print(err)
+		log.Print("could not open connection to leveldb")
+		log.Print(err)
 		panic(err)
 	}
 	stateDB, err := statedb.NewWithPrefixTrie(common.EmptyRoot, statedb.NewDatabaseAccessWarper(db))
@@ -135,7 +135,7 @@ func DownloadLatestBackup(remoteURL string, chainID int) error {
 		fd.Close()
 	}
 
-	fmt.Println("Download finish", chainName)
+	log.Println("Download finish", chainName)
 	return nil
 }
 
@@ -157,14 +157,14 @@ func makeRPCDownloadRequest(address string, method string, w io.Writer, params .
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(requestBytes))
+	log.Println(string(requestBytes))
 	resp, err := http.Post(address, "application/json", bytes.NewBuffer(requestBytes))
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return err
 	}
 	n, err := io.Copy(w, resp.Body)
-	fmt.Println(n, err)
+	log.Println(n, err)
 	if err != nil {
 		return err
 	}
@@ -193,7 +193,7 @@ func (sim *NodeEngine) SendPRV(args ...interface{}) (string, error) {
 	}
 	res, err := sim.RPC.API_SendTxPRV(sender, receivers, -1, true)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		sim.Pause()
 	}
 	return res.TxID, nil
@@ -202,9 +202,9 @@ func (sim *NodeEngine) SendPRV(args ...interface{}) (string, error) {
 func (sim *NodeEngine) ShowBalance(acc account.Account) {
 	res, err := sim.RPC.API_GetBalance(acc)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	fmt.Println(res)
+	log.Println(res)
 }
 
 func GenerateCommitteeIndex(nCommittee int) []int {

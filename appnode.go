@@ -318,7 +318,7 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
 
 	//init user database
-	handles := 1024
+	handles := -1
 	cache := 8
 	userDBPath := filepath.Join(dbpath, "userdb")
 	lvdb, err := leveldb.OpenFile(userDBPath, &opt.Options{
@@ -341,7 +341,7 @@ func (sim *NodeEngine) GetRPC() *rpcclient.RPCClient {
 }
 
 func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
-	fmt.Println("start light sync process")
+	log.Println("start light sync process")
 	sim.lightNodeData.ProcessedBeaconHeight = 1
 	k1 := "lightn-beacon-process"
 	v1, err := sim.userDB.Get([]byte(k1), nil)
@@ -436,7 +436,7 @@ func (sim *NodeEngine) GetShardState(shardID int) (uint64, *common.Hash) {
 }
 
 func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
-	fmt.Println("start sync shard", shardID, state.LocalHeight)
+	log.Println("start sync shard", shardID, state.LocalHeight)
 	for {
 		bestHeight := sim.bc.BeaconChain.GetShardBestViewHeight()[shardID]
 		// bestHash := sim.bc.BeaconChain.GetShardBestViewHash()[shardID]
@@ -497,7 +497,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 		if state.LocalHeight == bestHeight {
 			time.Sleep(1 * time.Second)
 		}
-		fmt.Printf("shard %v synced to %v at beacon height %v \n", shardID, state.LocalHeight, sim.bc.BeaconChain.CurrentHeight())
+		log.Printf("shard %v synced to %v at beacon height %v \n", shardID, state.LocalHeight, sim.bc.BeaconChain.CurrentHeight())
 
 	}
 }
