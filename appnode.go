@@ -79,7 +79,7 @@ func NewNetworkMonitor(highwayAddr string) *HighwayConnection {
 	return network
 }
 
-func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enableRPC bool) AppNodeInterface {
+func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requireFinalizedBeacon bool, enableRPC bool) AppNodeInterface {
 	// os.RemoveAll(name)
 	nodeMode := "full"
 	if isLightNode {
@@ -130,7 +130,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, enable
 		for index := 0; index < common.MaxShardNumber; index++ {
 			relayShards = append(relayShards, byte(index))
 		}
-		go sim.startLightSyncProcess()
+		go sim.startLightSyncProcess(requireFinalizedBeacon)
 	} else {
 		for index := 0; index < common.MaxShardNumber; index++ {
 			relayShards = append(relayShards, byte(index))
@@ -340,7 +340,7 @@ func (sim *NodeEngine) GetRPC() *rpcclient.RPCClient {
 	return sim.RPC
 }
 
-func (sim *NodeEngine) startLightSyncProcess() {
+func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
 	fmt.Println("start light sync process")
 	sim.lightNodeData.ProcessedBeaconHeight = 1
 	k1 := "lightn-beacon-process"
@@ -379,7 +379,7 @@ func (sim *NodeEngine) startLightSyncProcess() {
 		}
 
 	}
-	sim.OnNewBlockFromParticularHeight(-1, int64(sim.lightNodeData.ProcessedBeaconHeight), false, processBeaconBlk)
+	sim.OnNewBlockFromParticularHeight(-1, int64(sim.lightNodeData.ProcessedBeaconHeight), requireFinalizedBeacon, processBeaconBlk)
 
 	sim.lightNodeData.Shards = make(map[byte]*currentShardState)
 

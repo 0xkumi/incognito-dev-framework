@@ -65,7 +65,7 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 		go func() {
 			for {
 				chain := s.lightNodeData.Shards[byte(chainID)]
-				if chain.LocalHeight > waitingBlkHeight {
+				if chain.LocalHeight >= waitingBlkHeight {
 					prefix := fmt.Sprintf("s-%v-%v", chainID, waitingBlkHeight)
 					blkHash, err := s.userDB.Get([]byte(prefix), nil)
 					if err != nil {
