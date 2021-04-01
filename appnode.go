@@ -47,18 +47,22 @@ type AppNodeInterface interface {
 type LightNodeInterface interface {
 }
 type NetworkParam struct {
+	Name           string
 	ChainParam     *blockchain.Params
 	HighwayAddress string
 }
 
 var (
 	MainNetParam = NetworkParam{
+		Name:           "mainnet",
 		HighwayAddress: "51.83.237.29:9330",
 	}
 	TestNetParam = NetworkParam{
+		Name:           "testnet",
 		HighwayAddress: "45.56.115.6:9330",
 	}
 	TestNet2Param = NetworkParam{
+		Name:           "testnet2",
 		HighwayAddress: "74.207.247.250:9330",
 	}
 )
@@ -92,33 +96,29 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requir
 		listennerRegister: make(map[int][]func(msg interface{})),
 	}
 	chainParam := &blockchain.Params{}
-	switch networkParam {
-	case MainNetParam:
+	switch networkParam.Name {
+	case "mainnet":
 		blockchain.IsTestNet = false
 		blockchain.IsTestNet2 = false
 		blockchain.ReadKey(MainnetKeylist, Mainnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainMainParam
-		break
-	case TestNetParam:
+	case "testnet":
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
 		blockchain.ReadKey(TestnetKeylist, Testnetv2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTestParam
-		break
-	case TestNet2Param:
+	case "testnet2":
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = true
 		blockchain.ReadKey(Testnet2Keylist, Testnet2v2Keylist)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTest2Param
-		break
 	default:
 		blockchain.IsTestNet = false
 		blockchain.IsTestNet2 = false
 		chainParam = networkParam.ChainParam
-		break
 	}
 	common.MaxShardNumber = chainParam.ActiveShards
 	common.TIMESLOT = chainParam.Timeslot
