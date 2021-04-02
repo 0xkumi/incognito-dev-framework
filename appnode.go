@@ -353,7 +353,7 @@ func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
 		sim.lightNodeData.ProcessedBeaconHeight = binary.LittleEndian.Uint64(v1)
 	}
 	processBeaconBlk := func(bc *blockchain.BlockChain, h common.Hash, height uint64) {
-		for i := sim.lightNodeData.ProcessedBeaconHeight; i < height; i++ {
+		for i := sim.lightNodeData.ProcessedBeaconHeight+1; i <= height; i++ {
 		retry:
 			blks, err := sim.bc.GetBeaconBlockByHeight(i)
 			if err != nil {
