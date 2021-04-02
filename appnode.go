@@ -443,7 +443,8 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 		// bestHash := sim.bc.BeaconChain.GetShardBestViewHash()[shardID]
 		// state.BestHeight = bestHeight
 		// state.BestHash = &bestHash
-		blkCh, err := sim.Network.GetShardBlock(int(shardID), state.LocalHeight, bestHeight)
+		blkCh, err := sim.Network.GetShardBlock(int(shardID), state.LocalHeight, bestHeight+1)
+		fmt.Printf("Request shard %v block from %v to %v\n", shardID, state.LocalHeight, bestHeight+1)
 		if err != nil && err.Error() != "requester not ready" {
 			panic(err)
 		}
@@ -460,7 +461,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 					panic(err)
 				}
 				blkHash := blk.(*types.ShardBlock).Hash()
-
+				fmt.Printf("Received shard %v block %v\n", shardID, blk.GetHeight())
 				key := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
 				blkHashBytes, err := sim.userDB.Get([]byte(key), nil)
 				if err != nil {
