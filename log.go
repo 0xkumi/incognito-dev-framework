@@ -8,6 +8,11 @@ import (
 	"github.com/incognitochain/incognito-chain/blockchain/committeestate"
 	consensus "github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/peerv2"
+	"github.com/incognitochain/incognito-chain/portal"
+	"github.com/incognitochain/incognito-chain/portal/portalrelaying"
+	portalcommonv3 "github.com/incognitochain/incognito-chain/portal/portalv3/common"
+	portalprocessv3 "github.com/incognitochain/incognito-chain/portal/portalv3/portalprocess"
+	portaltokensv3 "github.com/incognitochain/incognito-chain/portal/portalv3/portaltokens"
 	"github.com/incognitochain/incognito-chain/syncker"
 
 	"github.com/incognitochain/incognito-chain/blockchain"
@@ -42,7 +47,13 @@ var (
 	privacyV1Logger      = backendLog.Logger("Privacy V1 log ", false)
 	privacyV2Logger      = backendLog.Logger("Privacy V2 log ", false)
 	committeeStateLogger = backendLog.Logger("Committee State log ", false)
-	disableStdoutLog     = false
+
+	portalLogger          = backendLog.Logger("Portal log ", false)
+	portalRelayingLogger  = backendLog.Logger("Portal relaying log ", false)
+	portalV3CommonLogger  = backendLog.Logger("Portal v3 common log ", false)
+	portalV3ProcessLogger = backendLog.Logger("Portal v3 process log ", false)
+	portalV3TokenLogger   = backendLog.Logger("Portal v3 token log ", false)
+	disableStdoutLog      = false
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -76,6 +87,12 @@ func init() {
 	consensus.Logger.Init(consensusLogger)
 	privacy.LoggerV1.Init(privacyV1Logger)
 	privacy.LoggerV2.Init(privacyV2Logger)
+
+	portal.Logger.Init(portalLogger)
+	portalrelaying.Logger.Init(portalRelayingLogger)
+	portalcommonv3.Logger.Init(portalV3CommonLogger)
+	portalprocessv3.Logger.Init(portalV3ProcessLogger)
+	portaltokensv3.Logger.Init(portalV3TokenLogger)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -88,9 +105,14 @@ var subsystemLoggers = map[string]common.Logger{
 	"RPCSbridgeservice": rpcServiceBridgeLogger,
 	"TRAN":              transactionLogger,
 	// "PRIV":              privacyLogger,
-	"MEMP": mempoolLogger,
-	"CONS": consensusLogger,
-	"COMS": committeeStateLogger,
+	"MEMP":            mempoolLogger,
+	"CONS":            consensusLogger,
+	"COMS":            committeeStateLogger,
+	"PORTAL":          portalLogger,
+	"PORTALRELAYING":  portalRelayingLogger,
+	"PORTALV3COMMON":  portalV3CommonLogger,
+	"PORTALV3PROCESS": portalV3ProcessLogger,
+	"PORTALV3TOKENS":  portalV3TokenLogger,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
