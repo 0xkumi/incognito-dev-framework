@@ -106,13 +106,13 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requir
 	case "testnet":
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = false
-		blockchain.ReadKey(TestnetKeylist, Testnetv2Keylist)
+		blockchain.ReadKey(nil, nil)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTestParam
 	case "testnet2":
 		blockchain.IsTestNet = true
 		blockchain.IsTestNet2 = true
-		blockchain.ReadKey(Testnet2Keylist, Testnet2v2Keylist)
+		blockchain.ReadKey(nil, nil)
 		blockchain.SetupParam()
 		chainParam = &blockchain.ChainTest2Param
 	default:
