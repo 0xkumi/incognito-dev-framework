@@ -19,6 +19,11 @@ type ConsensusInterface interface {
 	ValidateProducerSig(block types.BlockInterface, consensusType string) error
 	ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey) error
 	IsCommitteeInShard(byte) bool
+	ExtractBridgeValidationData(block types.BlockInterface) ([][]byte, []int, error)
+	GetAllMiningPublicKeys() []string
+	GetAllValidatorKeyState() map[string]consensus.MiningState
+	GetUserRole() (string, string, int)
+	GetCurrentMiningPublicKey() (string, string)
 }
 
 type Consensus struct {
@@ -47,4 +52,21 @@ func (c *Consensus) ValidateBlockCommitteSig(block types.BlockInterface, committ
 
 func (c *Consensus) IsCommitteeInShard(sid byte) bool {
 	return true
+}
+
+func (c *Consensus) ExtractBridgeValidationData(block types.BlockInterface) ([][]byte, []int, error) {
+	return nil, nil, nil
+}
+func (c *Consensus) GetAllMiningPublicKeys() []string {
+	return nil
+}
+
+func (c *Consensus) GetAllValidatorKeyState() map[string]consensus.MiningState {
+	return nil
+}
+func (c *Consensus) GetUserRole() (string, string, int) {
+	return "", "", 0
+}
+func (c *Consensus) GetCurrentMiningPublicKey() (string, string) {
+	return "", ""
 }
