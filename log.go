@@ -2,6 +2,7 @@ package devframework
 
 import (
 	"fmt"
+	"github.com/incognitochain/incognito-chain/blockchain/committeestate"
 	"os"
 	"path/filepath"
 
@@ -38,6 +39,7 @@ var (
 	synckerLogger          = backendLog.Logger("Syncker log", false)
 	highwayLogger          = backendLog.Logger("Highway", false)
 	consensusLogger        = backendLog.Logger("Consensus log", false)
+	committeeLogger = backendLog.Logger("Committee log", false)
 	disableStdoutLog       = false
 )
 
@@ -69,6 +71,7 @@ func init() {
 	syncker.Logger.Init(synckerLogger)
 	peerv2.Logger.Init(highwayLogger)
 	consensus.Logger.Init(consensusLogger)
+	committeestate.Logger.Init(committeeLogger)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
