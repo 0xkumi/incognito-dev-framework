@@ -2,7 +2,7 @@ package mock
 
 import (
 	"context"
-	"github.com/incognitochain/incognito-chain/blockchain"
+	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/syncker"
 )
@@ -11,7 +11,7 @@ type Syncker struct {
 	Syncker *syncker.SynckerManager
 }
 
-func (s *Syncker) InsertCrossShardBlock(blk *blockchain.CrossShardBlock) {
+func (s *Syncker) InsertCrossShardBlock(blk *types.CrossShardBlock) {
 	s.Syncker.InsertCrossShardBlock(blk)
 }
 

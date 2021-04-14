@@ -1,23 +1,23 @@
 package mock
 
 import (
-	"github.com/incognitochain/incognito-chain/common"
+	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common/consensus"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 )
 
 type BlockValidation interface {
-	common.BlockInterface
+	types.BlockInterface
 	AddValidationField(validationData string) error
 }
 
 type ConsensusInterface interface {
 	GetOneValidator() *consensus.Validator
 	GetOneValidatorForEachConsensusProcess() map[int]*consensus.Validator
-	ValidateProducerPosition(blk common.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error
-	ValidateProducerSig(block common.BlockInterface, consensusType string) error
-	ValidateBlockCommitteSig(block common.BlockInterface, committee []incognitokey.CommitteePublicKey) error
+	ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error
+	ValidateProducerSig(block types.BlockInterface, consensusType string) error
+	ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey) error
 	IsCommitteeInShard(byte) bool
 }
 
@@ -33,7 +33,7 @@ func (c *Consensus) GetAllMiningPublicKeys() []string {
 	return nil
 }
 
-func (c *Consensus) ExtractBridgeValidationData(block common.BlockInterface) ([][]byte, []int, error) {
+func (c *Consensus) ExtractBridgeValidationData(block types.BlockInterface) ([][]byte, []int, error) {
 	panic("implement me")
 }
 
@@ -53,15 +53,15 @@ func (c *Consensus) GetOneValidatorForEachConsensusProcess() map[int]*consensus.
 	return nil
 }
 
-func (c *Consensus) ValidateProducerPosition(blk common.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error {
+func (c *Consensus) ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error {
 	return c.consensusEngine.ValidateProducerPosition(blk, lastProposerIdx,committee, minCommitteeSize)
 }
 
-func (c *Consensus) ValidateProducerSig(block common.BlockInterface, consensusType string) error {
+func (c *Consensus) ValidateProducerSig(block types.BlockInterface, consensusType string) error {
 	return c.consensusEngine.ValidateProducerSig(block, consensusType)
 }
 
-func (c *Consensus) ValidateBlockCommitteSig(block common.BlockInterface, committee []incognitokey.CommitteePublicKey) error {
+func (c *Consensus) ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey) error {
 	return c.consensusEngine.ValidateBlockCommitteSig(block, committee)
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"log"
 	"net"
 	"os"
@@ -280,7 +281,6 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		Syncker:         sync,
 		PubSubManager:   ps,
 		FeeEstimator:    make(map[byte]blockchain.FeeEstimator),
-		RandomClient:    &btcrd,
 		ConsensusEngine: cs,
 		GenesisParams:   blockchain.GenesisParam,
 		RelayShards:     relayShards,
@@ -368,7 +368,7 @@ func (sim *NodeEngine) startLightSyncProcess() {
 			}
 			beaconBlk := blks[0]
 			for shardID, states := range beaconBlk.Body.ShardState {
-				go func(sID byte, sts []blockchain.ShardState) {
+				go func(sID byte, sts []types.ShardState) {
 					for _, blk := range sts {
 						key := fmt.Sprintf("s-%v-%v", sID, blk.Height)
 						if err := sim.userDB.Put([]byte(key), blk.Hash.Bytes(), nil); err != nil {
@@ -446,7 +446,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 				if err != nil {
 					panic(err)
 				}
-				blkHash := blk.(*blockchain.ShardBlock).Hash()
+				blkHash := blk.(*types.ShardBlock).Hash()
 
 				key := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
 				blkHashBytes, err := sim.userDB.Get([]byte(key), nil)
@@ -490,8 +490,8 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 	}
 }
 
-func (sim *NodeEngine) GetShardBlockByHeight(shardID byte, height uint64) (*blockchain.ShardBlock, error) {
-	var shardBlk *blockchain.ShardBlock
+func (sim *NodeEngine) GetShardBlockByHeight(shardID byte, height uint64) (*types.ShardBlock, error) {
+	var shardBlk *types.ShardBlock
 	if sim.appNodeMode == "light" {
 		prefix := fmt.Sprintf("s-%v-%v", shardID, height)
 		blkHash, err := sim.userDB.Get([]byte(prefix), nil)
@@ -511,8 +511,8 @@ func (sim *NodeEngine) GetShardBlockByHeight(shardID byte, height uint64) (*bloc
 	return shardBlk, nil
 }
 
-func (sim *NodeEngine) GetShardBlockByHash(shardID byte, blockHash common.Hash) (*blockchain.ShardBlock, error) {
-	var shardBlk *blockchain.ShardBlock
+func (sim *NodeEngine) GetShardBlockByHash(shardID byte, blockHash common.Hash) (*types.ShardBlock, error) {
+	var shardBlk *types.ShardBlock
 	var err error
 	if sim.appNodeMode == "light" {
 		blkBytes, err := sim.userDB.Get(blockHash.Bytes(), nil)
@@ -531,7 +531,7 @@ func (sim *NodeEngine) GetShardBlockByHash(shardID byte, blockHash common.Hash) 
 	return shardBlk, nil
 }
 
-func (sim *NodeEngine) GetBeaconBlockByHeight(height uint64) (*blockchain.BeaconBlock, error) {
+func (sim *NodeEngine) GetBeaconBlockByHeight(height uint64) (*types.BeaconBlock, error) {
 	blks, err := sim.GetBlockchain().GetBeaconBlockByHeight(height)
 	if err != nil {
 		return nil, err
@@ -539,7 +539,7 @@ func (sim *NodeEngine) GetBeaconBlockByHeight(height uint64) (*blockchain.Beacon
 	return blks[0], nil
 }
 
-func (sim *NodeEngine) GetBeaconBlockByHash(blockHash common.Hash) (*blockchain.BeaconBlock, error) {
+func (sim *NodeEngine) GetBeaconBlockByHash(blockHash common.Hash) (*types.BeaconBlock, error) {
 	blk, _, err := sim.GetBlockchain().GetBeaconBlockByHash(blockHash)
 	if err != nil {
 		return nil, err

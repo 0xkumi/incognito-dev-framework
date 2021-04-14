@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"sort"
 	"strconv"
 
@@ -13,7 +14,7 @@ import (
 )
 
 //this function used to update several field that need recalculated in block header (in case there is change of body content)
-func UpdateShardHeaderOnBodyChange(block *blockchain.ShardBlock, bc *blockchain.BlockChain) error {
+func UpdateShardHeaderOnBodyChange(block *types.ShardBlock, bc *blockchain.BlockChain) error {
 	totalTxsFee := make(map[common.Hash]uint64)
 	for _, tx := range block.Body.Transactions {
 		totalTxsFee[*tx.GetTokenID()] += tx.GetTxFee()
@@ -71,7 +72,7 @@ func UpdateShardHeaderOnBodyChange(block *blockchain.ShardBlock, bc *blockchain.
 }
 
 //this function used to update several field that need recalculated in block header (in case there is change of body content)
-func UpdateBeaconHeaderOnBodyChange(block *blockchain.BeaconBlock) error {
+func UpdateBeaconHeaderOnBodyChange(block *types.BeaconBlock) error {
 
 	// Shard state hash
 	tempShardStateHash, err := generateHashFromShardState(block.Body.ShardState)
@@ -124,7 +125,7 @@ func generateHashFromStringArray(strs []string) (common.Hash, error) {
 	return hash, nil
 }
 
-func generateHashFromShardState(allShardState map[byte][]blockchain.ShardState) (common.Hash, error) {
+func generateHashFromShardState(allShardState map[byte][]types.ShardState) (common.Hash, error) {
 	allShardStateStr := []string{}
 	var keys []int
 	for k := range allShardState {

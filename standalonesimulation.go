@@ -3,6 +3,7 @@ package devframework
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"log"
 	"net"
 	"os"
@@ -48,10 +49,10 @@ type Config struct {
 }
 
 type Hook struct {
-	Create       func(chainID int, doCreate func() (blk common.BlockInterface, err error))
-	Validation   func(chainID int, block common.BlockInterface, doValidation func(blk common.BlockInterface) error)
+	Create       func(chainID int, doCreate func() (blk types.BlockInterface, err error))
+	Validation   func(chainID int, block types.BlockInterface, doValidation func(blk types.BlockInterface) error)
 	CombineVotes func(chainID int) []int
-	Insert       func(chainID int, block common.BlockInterface, doInsert func(blk common.BlockInterface) error)
+	Insert       func(chainID int, block types.BlockInterface, doInsert func(blk types.BlockInterface) error)
 }
 
 type NodeEngine struct {
@@ -267,7 +268,6 @@ func (sim *NodeEngine) init() {
 		Syncker:         sync,
 		PubSubManager:   ps,
 		FeeEstimator:    make(map[byte]blockchain.FeeEstimator),
-		RandomClient:    &btcrd,
 		ConsensusEngine: &cs,
 		GenesisParams:   blockchain.GenesisParam,
 	})
@@ -415,7 +415,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 
 	//beacon
 	chain := sim.bc
-	var block common.BlockInterface = nil
+	var block types.BlockInterface = nil
 	var err error
 
 	//Create blocks for apply chain
@@ -439,16 +439,16 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 
 		proposerPkStr, _ := proposerPK.ToBase58()
 		if h != nil && h.Create != nil {
-			h.Create(chainID, func() (blk common.BlockInterface, err error) {
+			h.Create(chainID, func() (blk types.BlockInterface, err error) {
 				if chainID == -1 {
-					block, err = chain.BeaconChain.CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
+					block, err = chain.BeaconChain.CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now(),nil,common.Hash{})
 					if err != nil {
 						block = nil
 						return nil, err
 					}
 					return block, nil
 				} else {
-					block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
+					block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now(),nil,common.Hash{})
 					if err != nil {
 						return nil, err
 					}
@@ -457,13 +457,13 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 			})
 		} else {
 			if chainID == -1 {
-				block, err = chain.BeaconChain.CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
+				block, err = chain.BeaconChain.CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now(),nil,common.Hash{})
 				if err != nil {
 					block = nil
 					fmt.Println("NewBlockError", err)
 				}
 			} else {
-				block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now())
+				block, err = chain.ShardChain[byte(chainID)].CreateNewBlock(sim.config.ConsensusVersion, proposerPkStr, 1, sim.timer.Now(),nil,common.Hash{})
 				if err != nil {
 					block = nil
 					fmt.Println("NewBlockError", err)
@@ -478,18 +478,18 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 
 		//Validation
 		if h != nil && h.Validation != nil {
-			h.Validation(chainID, block, func(blk common.BlockInterface) (err error) {
+			h.Validation(chainID, block, func(blk types.BlockInterface) (err error) {
 				if blk == nil {
 					return errors.New("No block for validation")
 				}
 				if chainID == -1 {
-					err = chain.VerifyPreSignBeaconBlock(blk.(*blockchain.BeaconBlock), true)
+					err = chain.VerifyPreSignBeaconBlock(blk.(*types.BeaconBlock), true)
 					if err != nil {
 						return err
 					}
 					return nil
 				} else {
-					err = chain.VerifyPreSignShardBlock(blk.(*blockchain.ShardBlock), byte(chainID))
+					err = chain.VerifyPreSignShardBlock(blk.(*types.ShardBlock),nil, byte(chainID))
 					if err != nil {
 						return err
 					}
@@ -501,12 +501,12 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 				fmt.Println("VerifyBlockErr no block")
 			} else {
 				if chainID == -1 {
-					err = chain.VerifyPreSignBeaconBlock(block.(*blockchain.BeaconBlock), true)
+					err = chain.VerifyPreSignBeaconBlock(block.(*types.BeaconBlock), true)
 					if err != nil {
 						fmt.Println("VerifyBlockErr", err)
 					}
 				} else {
-					err = chain.VerifyPreSignShardBlock(block.(*blockchain.ShardBlock), byte(chainID))
+					err = chain.VerifyPreSignShardBlock(block.(*types.ShardBlock), nil,byte(chainID))
 					if err != nil {
 						fmt.Println("VerifyBlockErr", err)
 					}
@@ -532,22 +532,22 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 
 		//Insert
 		if h != nil && h.Insert != nil {
-			h.Insert(chainID, block, func(blk common.BlockInterface) (err error) {
+			h.Insert(chainID, block, func(blk types.BlockInterface) (err error) {
 				if blk == nil {
 					return errors.New("No block for insert")
 				}
 				if chainID == -1 {
-					err = chain.InsertBeaconBlock(blk.(*blockchain.BeaconBlock), true)
+					err = chain.InsertBeaconBlock(blk.(*types.BeaconBlock), true)
 					if err != nil {
 						return err
 					}
 					return
 				} else {
-					err = chain.InsertShardBlock(blk.(*blockchain.ShardBlock), true)
+					err = chain.InsertShardBlock(blk.(*types.ShardBlock), true)
 					if err != nil {
 						return err
 					} else {
-						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ChainParam.ActiveShards)
+						crossX := blockchain.CreateAllCrossShardBlock(blk.(*types.ShardBlock), sim.config.ChainParam.ActiveShards)
 						for _, blk := range crossX {
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
@@ -560,16 +560,16 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 				fmt.Println("InsertBlkErr no block")
 			} else {
 				if chainID == -1 {
-					err = chain.InsertBeaconBlock(block.(*blockchain.BeaconBlock), true)
+					err = chain.InsertBeaconBlock(block.(*types.BeaconBlock), true)
 					if err != nil {
 						fmt.Println("InsertBlkErr", err)
 					}
 				} else {
-					err = chain.InsertShardBlock(block.(*blockchain.ShardBlock), true)
+					err = chain.InsertShardBlock(block.(*types.ShardBlock), true)
 					if err != nil {
 						fmt.Println("InsertBlkErr", err)
 					} else {
-						crossX := block.(*blockchain.ShardBlock).CreateAllCrossShardBlock(sim.config.ChainParam.ActiveShards)
+						crossX := blockchain.CreateAllCrossShardBlock(block.(*types.ShardBlock), sim.config.ChainParam.ActiveShards)
 						for _, blk := range crossX {
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
@@ -617,7 +617,7 @@ func (s *NodeEngine) DisableChainLog(b bool) {
 	disableStdoutLog = b
 }
 
-func (s *NodeEngine) SignBlockWithCommittee(block common.BlockInterface, committees []account.Account, committeeIndex []int) error {
+func (s *NodeEngine) SignBlockWithCommittee(block types.BlockInterface, committees []account.Account, committeeIndex []int) error {
 	committeePubKey := []incognitokey.CommitteePublicKey{}
 	miningKeys := []*signatureschemes.MiningKey{}
 	if block.GetVersion() == 2 {
@@ -650,7 +650,7 @@ func (s *NodeEngine) SignBlockWithCommittee(block common.BlockInterface, committ
 	return nil
 }
 
-func (s *NodeEngine) SignBlock(userMiningKey *signatureschemes.MiningKey, block common.BlockInterface) {
+func (s *NodeEngine) SignBlock(userMiningKey *signatureschemes.MiningKey, block types.BlockInterface) {
 	var validationData blsbftv2.ValidationData
 	validationData.ProducerBLSSig, _ = userMiningKey.BriSignData(block.Hash().GetBytes())
 	validationDataString, _ := blsbftv2.EncodeValidationData(validationData)
