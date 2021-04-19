@@ -288,15 +288,6 @@ func (r *LocalRPCClient) RetrieveBeaconBlockByHeight(height float64) (res []*jso
 	}
 	return resI.([]*jsonresult.GetBeaconBlockResult),nil
 }
-func (r *LocalRPCClient) GetRewardAmountByEpoch(shard float64, epoch float64) (res uint64,err error) {
-	httpServer := r.rpcServer.HttpServer
-	c := rpcserver.HttpHandler["getrewardamountbyepoch"]
-	resI, rpcERR := c(httpServer, []interface{}{shard,epoch}, nil)
-	if rpcERR != nil {
-		return res,errors.New(rpcERR.Error())
-	}
-	return resI.(uint64),nil
-}
 func (r *LocalRPCClient) DefragmentAccount(privateKey string, maxValue float64, fee float64, privacy float64) (res jsonresult.CreateTransactionResult,err error) {
 	httpServer := r.rpcServer.HttpServer
 	c := rpcserver.HttpHandler["defragmentaccount"]
@@ -404,4 +395,13 @@ func (r *LocalRPCClient) GetMempoolEntry(txHash string) (res *jsonresult.Transac
 		return res,errors.New(rpcERR.Error())
 	}
 	return resI.(*jsonresult.TransactionDetail),nil
+}
+func (r *LocalRPCClient) ListCommitments(tokenID string, shardID float64) (res map[string]uint64,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["listcommitments"]
+	resI, rpcERR := c(httpServer, []interface{}{tokenID,shardID}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(map[string]uint64),nil
 }

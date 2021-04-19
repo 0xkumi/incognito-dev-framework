@@ -502,9 +502,10 @@ func (r *RPCClient) API_RetrieveBeaconBlockByHeight(height uint64) ([]*jsonresul
 	}
 	return result, nil
 }
-func (r *RPCClient) API_GetRewardAmountByEpoch(shardID byte, epoch uint64) (uint64, error) {
-	return r.client.GetRewardAmountByEpoch(float64(shardID), float64(epoch))
-}
+
+// func (r *RPCClient) API_GetRewardAmountByEpoch(shardID byte, epoch uint64) (uint64, error) {
+// 	return r.client.GetRewardAmountByEpoch(float64(shardID), float64(epoch))
+// }
 func (r *RPCClient) API_DefragmentAccountPRV(privateKey string, maxValue uint64, fee uint64, privacy bool) (*jsonresult.CreateTransactionResult, error) {
 	var result jsonresult.CreateTransactionResult
 	privacyTx := float64(0)
@@ -544,7 +545,7 @@ func (r *RPCClient) API_ListOutputCoins(paymentAddStr string, viewkey string, ot
 		"PaymentAddress": paymentAddStr,
 		"OTASecretKey":   otakey,
 		"ReadonlyKey":    viewkey,
-		"StartHeight":    float64(startHeight),
+		"StartHeight":    float64(startHeight), //TO BE REMOVED
 	}}, tokenID)
 	if err != nil {
 		return nil, err
@@ -631,6 +632,15 @@ func (r *RPCClient) API_GetRawMempool() (*jsonresult.GetRawMempoolResult, error)
 func (r *RPCClient) API_GetMempoolEntry(txHash string) (*jsonresult.TransactionDetail, error) {
 	var result *jsonresult.TransactionDetail
 	result, err := r.client.GetMempoolEntry(txHash)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *RPCClient) API_ListCommitments(tokenID string, shardID byte) (interface{}, error) {
+	var result map[string]uint64
+	result, err := r.client.ListCommitments(tokenID, float64(shardID))
 	if err != nil {
 		return nil, err
 	}

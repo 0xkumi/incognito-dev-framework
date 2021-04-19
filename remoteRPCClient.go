@@ -995,37 +995,6 @@ func (r *RemoteRPCClient) RetrieveBeaconBlockByHeight(height float64) (res []*js
 }
 
 
-func (r *RemoteRPCClient) GetRewardAmountByEpoch(shard float64, epoch float64) (res uint64,err error) {
-	requestBody, err := json.Marshal(map[string]interface{}{
-		"jsonrpc": "1.0",
-		"method":  "getrewardamountbyepoch",
-		"params":   []interface{}{shard,epoch},
-		"id":      1,
-	})
-	if err != nil {
-		return res,err
-	}
-	body, err := r.sendRequest(requestBody)
-	if err != nil {
-		return res,err
-	}
-	resp := struct {
-		Result  uint64
-		Error *ErrMsg
-	}{}
-	err = json.Unmarshal(body, &resp)
-
-	if resp.Error != nil && resp.Error.StackTrace != "" {
-		return res, errors.New(resp.Error.StackTrace)
-	}
-
-	if err != nil {
-		return res,err
-	}
-	return resp.Result,err
-}
-
-
 func (r *RemoteRPCClient) DefragmentAccount(privateKey string, maxValue float64, fee float64, privacy float64) (res jsonresult.CreateTransactionResult,err error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"jsonrpc": "1.0",
@@ -1383,6 +1352,37 @@ func (r *RemoteRPCClient) GetMempoolEntry(txHash string) (res *jsonresult.Transa
 	}
 	resp := struct {
 		Result  *jsonresult.TransactionDetail
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,err
+	}
+	return resp.Result,err
+}
+
+
+func (r *RemoteRPCClient) ListCommitments(tokenID string, shardID float64) (res map[string]uint64,err error) {
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "listcommitments",
+		"params":   []interface{}{tokenID,shardID},
+		"id":      1,
+	})
+	if err != nil {
+		return res,err
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,err
+	}
+	resp := struct {
+		Result  map[string]uint64
 		Error *ErrMsg
 	}{}
 	err = json.Unmarshal(body, &resp)
