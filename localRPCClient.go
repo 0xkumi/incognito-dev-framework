@@ -405,3 +405,12 @@ func (r *LocalRPCClient) ListCommitments(tokenID string, shardID float64) (res m
 	}
 	return resI.(map[string]uint64),nil
 }
+func (r *LocalRPCClient) ListSerialNumbers(tokenID string, shardID float64) (res map[string]struct{},err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["listserialnumbers"]
+	resI, rpcERR := c(httpServer, []interface{}{tokenID,shardID}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.(map[string]struct{}),nil
+}

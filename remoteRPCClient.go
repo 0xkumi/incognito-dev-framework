@@ -1396,3 +1396,34 @@ func (r *RemoteRPCClient) ListCommitments(tokenID string, shardID float64) (res 
 	}
 	return resp.Result,err
 }
+
+
+func (r *RemoteRPCClient) ListSerialNumbers(tokenID string, shardID float64) (res map[string]struct{},err error) {
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"jsonrpc": "1.0",
+		"method":  "listserialnumbers",
+		"params":   []interface{}{tokenID,shardID},
+		"id":      1,
+	})
+	if err != nil {
+		return res,err
+	}
+	body, err := r.sendRequest(requestBody)
+	if err != nil {
+		return res,err
+	}
+	resp := struct {
+		Result  map[string]struct{}
+		Error *ErrMsg
+	}{}
+	err = json.Unmarshal(body, &resp)
+
+	if resp.Error != nil && resp.Error.StackTrace != "" {
+		return res, errors.New(resp.Error.StackTrace)
+	}
+
+	if err != nil {
+		return res,err
+	}
+	return resp.Result,err
+}

@@ -50,4 +50,5 @@ type ClientInterface interface {
 	GetRawMempool() (*jsonresult.GetRawMempoolResult, error)
 	GetMempoolEntry(txHash string) (*jsonresult.TransactionDetail, error)
 	ListCommitments(tokenID string, shardID float64) (map[string]uint64, error)
+	ListSerialNumbers(tokenID string, shardID float64) (map[string]struct{}, error)
 }

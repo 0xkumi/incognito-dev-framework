@@ -646,3 +646,12 @@ func (r *RPCClient) API_ListCommitments(tokenID string, shardID byte) (interface
 	}
 	return result, nil
 }
+
+func (r *RPCClient) API_ListSerialNumbers(tokenID string, shardID byte) (map[string]struct{}, error) {
+	var result map[string]struct{}
+	result, err := r.client.ListSerialNumbers(tokenID, float64(shardID))
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
