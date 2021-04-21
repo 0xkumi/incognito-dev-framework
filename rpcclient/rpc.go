@@ -539,13 +539,12 @@ func (r *RPCClient) API_DefragmentAccountToken(privateKey string, tokenID string
 	return &result, nil
 }
 
-func (r *RPCClient) API_ListOutputCoins(paymentAddStr string, viewkey string, otakey string, tokenID string, startHeight uint64) (*jsonresult.ListOutputCoins, error) {
+func (r *RPCClient) API_ListOutputCoins(paymentAddStr string, viewkey string, otakey string, tokenID string, toHeight uint64) (*jsonresult.ListOutputCoins, error) {
 	var result *jsonresult.ListOutputCoins
-	result, err := r.client.ListOutputCoins(float64(0), float64(999999), []interface{}{map[string]interface{}{
+	result, err := r.client.ListOutputCoins(float64(0), float64(toHeight), []interface{}{map[string]interface{}{
 		"PaymentAddress": paymentAddStr,
 		"OTASecretKey":   otakey,
 		"ReadonlyKey":    viewkey,
-		"StartHeight":    float64(startHeight), //TO BE REMOVED
 	}}, tokenID)
 	if err != nil {
 		return nil, err
