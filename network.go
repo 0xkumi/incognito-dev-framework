@@ -95,7 +95,7 @@ func (s *HighwayConnection) Connect() {
 		&incognitokey.CommitteePublicKey{},
 		s.config.ConsensusEngine,
 		dispatcher,
-		"",
+		"netmonitor",
 		s.config.RelayShards,
 	)
 	go s.conn.Start(nil)
