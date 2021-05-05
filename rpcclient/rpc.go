@@ -196,8 +196,8 @@ func (r *RPCClient) API_SendTxWithPRVContributionV2(account account.Account, prv
 	result, err := r.client.CreateAndSendTxWithPRVContributionV2(account.PrivateKey, map[string]interface{}{burnAddr: strconv.Itoa(prvAmount)}, -1, 0, reqInfo)
 	return &result, err
 }
-func (r *RPCClient) API_GetPDEState(beaconHeight float64) (jsonresult.CurrentPDEState, error) {
-	result, err := r.client.GetPDEState(map[string]interface{}{"BeaconHeight": beaconHeight})
+func (r *RPCClient) API_GetPDEState(beaconHeight uint64) (jsonresult.CurrentPDEState, error) {
+	result, err := r.client.GetPDEState(map[string]interface{}{"BeaconHeight": float64(beaconHeight)})
 	return result, err
 }
 
