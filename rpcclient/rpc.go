@@ -247,9 +247,9 @@ func (r *RPCClient) API_GetShardBestState(sid int) (*jsonresult.GetShardBestStat
 	return result, err
 }
 
-func (r *RPCClient) API_GetTransactionHash(h string) (jsonresult.TransactionDetail, error) {
+func (r *RPCClient) API_GetTransactionHash(h string) (*jsonresult.TransactionDetail, error) {
 	result, err := r.client.GetTransactionByHash(h)
-	return *result, err
+	return result, err
 }
 
 func (r *RPCClient) API_GetPrivacyCustomToken(h string) (*jsonresult.GetCustomToken, error) {
