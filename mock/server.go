@@ -13,6 +13,10 @@ type Server struct {
 	BlockChain *blockchain.BlockChain
 }
 
+func (s *Server) PushMessageToShard(msg wire.Message, shard byte) error {
+	return nil
+}
+
 func (s *Server) PushBlockToAll(block types.BlockInterface, previousValidationData string, isBeacon bool) error {
 	return nil
 }
