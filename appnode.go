@@ -84,7 +84,7 @@ func NewNetworkMonitor(highwayAddr string) *HighwayConnection {
 	return network
 }
 
-func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requireFinalizedBeacon bool, enableRPC bool) AppNodeInterface {
+func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requireFinalizedBeacon bool, enableRPC bool, disableLogFile bool) AppNodeInterface {
 	// os.RemoveAll(name)
 	nodeMode := "full"
 	if isLightNode {
@@ -125,7 +125,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requir
 	if common.TIMESLOT == 0 {
 		common.TIMESLOT = 10
 	}
-	sim.initNode(chainParam, isLightNode, enableRPC)
+	sim.initNode(chainParam, isLightNode, enableRPC, disableLogFile)
 	relayShards := []byte{}
 	if isLightNode {
 		for index := 0; index < common.MaxShardNumber; index++ {
@@ -143,13 +143,15 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requir
 	return sim
 }
 
-func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool, enableRPC bool) {
+func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool, enableRPC bool, disableLogFile bool) {
 	simName := sim.simName
 	path, err := os.Getwd()
 	if err != nil {
 		log.Println(err)
 	}
-	initLogRotator(filepath.Join(path, simName+".log"))
+	if !disableLogFile {
+		initLogRotator(filepath.Join(path, simName+".log"))
+	}
 	dbLogger.SetLevel(common.LevelTrace)
 	blockchainLogger.SetLevel(common.LevelTrace)
 	bridgeLogger.SetLevel(common.LevelTrace)
