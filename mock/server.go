@@ -5,6 +5,7 @@ import (
 	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/incognitokey"
+	"github.com/incognitochain/incognito-chain/peer"
 	"github.com/incognitochain/incognito-chain/wire"
 	peer2 "github.com/libp2p/go-libp2p-peer"
 )
@@ -107,4 +108,11 @@ func (s *Server) GetIncognitoPublicKeyRole(publicKey string) (int, bool, int) {
 }
 func (s *Server) GetMinerIncognitoPublickey(publicKey string, keyType string) []byte {
 	return nil
+}
+
+func (s *Server) OnTx(peer *peer.PeerConn, msg *wire.MessageTx) {
+
+}
+
+func (s *Server) OnTxPrivacyToken(peer *peer.PeerConn, msg *wire.MessageTxPrivacyToken) {
 }
