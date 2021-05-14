@@ -30,6 +30,7 @@ import (
 	"github.com/incognitochain/incognito-chain/pubsub"
 	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/syncker"
+	"github.com/incognitochain/incognito-chain/txpool"
 )
 
 type AppNodeInterface interface {
@@ -169,8 +170,8 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	bc := blockchain.BlockChain{}
 
 	cs := consensus_v2.NewConsensusEngine()
-	txpool := mempool.TxPool{}
-	temppool := mempool.TxPool{}
+	txPool := mempool.TxPool{}
+	tempPool := mempool.TxPool{}
 	btcrd := mock.BTCRandom{} // use mock for now
 	sync := syncker.NewSynckerManager()
 	server := mock.Server{}
@@ -186,7 +187,7 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	cPendingTxs := make(chan metadata.Transaction, 500)
 	cRemovedTxs := make(chan metadata.Transaction, 500)
 	cQuit := make(chan struct{})
-	blockgen, err := blockchain.NewBlockGenerator(&txpool, &bc, sync, cPendingTxs, cRemovedTxs)
+	blockgen, err := blockchain.NewBlockGenerator(&txPool, &bc, sync, cPendingTxs, cRemovedTxs)
 	if err != nil {
 		panic(err)
 	}
@@ -215,7 +216,7 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		ChainParams:    activeNetParams,
 		BlockChain:     &bc,
 		Blockgen:       blockgen,
-		TxMemPool:      &txpool,
+		TxMemPool:      &txPool,
 		Server:         &server,
 		Database:       db,
 	}
@@ -230,7 +231,7 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	if err != nil {
 		panic(err)
 	}
-	txpool.Init(&mempool.Config{
+	txPool.Init(&mempool.Config{
 		ConsensusEngine: cs,
 		BlockChain:      &bc,
 		DataBase:        db,
@@ -245,9 +246,9 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		PubSubManager:     ps,
 	})
 	// serverObj.blockChain.AddTxPool(serverObj.memPool)
-	txpool.InitChannelMempool(cPendingTxs, cRemovedTxs)
+	txPool.InitChannelMempool(cPendingTxs, cRemovedTxs)
 
-	temppool.Init(&mempool.Config{
+	tempPool.Init(&mempool.Config{
 		BlockChain:    &bc,
 		DataBase:      db,
 		ChainParams:   activeNetParams,
@@ -255,9 +256,9 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		MaxTx:         1000,
 		PubSubManager: ps,
 	})
-	txpool.IsBlockGenStarted = true
-	go temppool.Start(cQuit)
-	go txpool.Start(cQuit)
+	txPool.IsBlockGenStarted = true
+	go tempPool.Start(cQuit)
+	go txPool.Start(cQuit)
 
 	relayShards := []byte{}
 	if !isLightNode {
@@ -265,6 +266,12 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 			relayShards = append(relayShards, byte(index))
 		}
 	}
+	poolManager, _ := txpool.NewPoolManager(
+		common.MaxShardNumber,
+		ps,
+		time.Duration(2)*time.Second,
+	)
+
 	err = bc.Init(&blockchain.Config{
 		BTCChain:      btcChain,
 		BNBChainState: bnbChainState,
@@ -272,8 +279,8 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		DataBase:      db,
 		MemCache:      memcache.New(),
 		BlockGen:      blockgen,
-		TxPool:        &txpool,
-		TempTxPool:    &temppool,
+		TxPool:        &txPool,
+		TempTxPool:    &tempPool,
 		Server:        &server,
 		Syncker:       sync,
 		PubSubManager: ps,
@@ -282,6 +289,7 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		ConsensusEngine: cs,
 		GenesisParams:   blockchain.GenesisParam,
 		RelayShards:     relayShards,
+		PoolManager:     poolManager,
 	})
 	if err != nil {
 		panic(err)
@@ -291,8 +299,8 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	sim.param = activeNetParams
 	sim.bc = &bc
 	sim.consensus = cs
-	sim.txpool = &txpool
-	sim.temppool = &temppool
+	sim.txpool = &txPool
+	sim.temppool = &tempPool
 	sim.btcrd = &btcrd
 	sim.syncker = sync
 	sim.server = &server
