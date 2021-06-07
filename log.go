@@ -1,9 +1,7 @@
 package devframework
 
 import (
-	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/incognitochain/incognito-chain/blockchain/committeestate"
 	consensus "github.com/incognitochain/incognito-chain/consensus_v2"
@@ -122,19 +120,20 @@ var subsystemLoggers = map[string]common.Logger{
 // create roll files in the same directory.  It must be called before the
 // package-global log rotater variables are used.
 func initLogRotator(logFile string) {
-	logDir, _ := filepath.Split(logFile)
-	err := os.MkdirAll(logDir, 0700)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to create log directory: %v\n", err)
-		os.Exit(common.ExitByLogging)
-	}
-	r, err := rotator.New(logFile, 10*1024, false, 3)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to create file rotator: %v\n", err)
-		os.Exit(common.ExitByLogging)
-	}
+	// logDir, _ := filepath.Split(logFile)
+	// err := os.MkdirAll(logDir, 0700)
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "failed to create log directory: %v\n", err)
+	// 	os.Exit(common.ExitByLogging)
+	// }
+	// r, err := rotator.New(logFile, 10*1024, false, 3)
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "failed to create file rotator: %v\n", err)
+	// 	os.Exit(common.ExitByLogging)
+	// }
 
-	logRotator = r
+	// logRotator = r
+	logRotator = &rotator.Rotator{}
 }
 
 // setLogLevel sets the logging level for provided subsystem.  Invalid

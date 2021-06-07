@@ -22,11 +22,13 @@ import (
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common"
+	"github.com/incognitochain/incognito-chain/config"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/incdb"
 	"github.com/incognitochain/incognito-chain/memcache"
 	"github.com/incognitochain/incognito-chain/mempool"
 	"github.com/incognitochain/incognito-chain/metadata"
+	"github.com/incognitochain/incognito-chain/portal"
 	"github.com/incognitochain/incognito-chain/pubsub"
 	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/syncker"
@@ -49,7 +51,7 @@ type LightNodeInterface interface {
 }
 type NetworkParam struct {
 	Name           string
-	ChainParam     *blockchain.Params
+	ChainParam     interface{}
 	HighwayAddress string
 }
 
@@ -96,37 +98,24 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requir
 		appNodeMode:       nodeMode,
 		listennerRegister: make(map[int][]func(msg interface{})),
 	}
-	chainParam := &blockchain.Params{}
-	switch networkParam.Name {
-	case "mainnet":
-		blockchain.IsTestNet = false
-		blockchain.IsTestNet2 = false
-		blockchain.ReadKey(MainnetKeylist, Mainnetv2Keylist)
-		blockchain.SetupParam()
-		chainParam = &blockchain.ChainMainParam
-	case "testnet":
-		blockchain.IsTestNet = true
-		blockchain.IsTestNet2 = false
-		blockchain.ReadKey(nil, nil)
-		blockchain.SetupParam()
-		chainParam = &blockchain.ChainTestParam
-	case "testnet2":
-		blockchain.IsTestNet = true
-		blockchain.IsTestNet2 = true
-		blockchain.ReadKey(nil, nil)
-		blockchain.SetupParam()
-		chainParam = &blockchain.ChainTest2Param
-	default:
-		blockchain.IsTestNet = false
-		blockchain.IsTestNet2 = false
-		chainParam = networkParam.ChainParam
-	}
-	common.MaxShardNumber = chainParam.ActiveShards
-	common.TIMESLOT = chainParam.Timeslot
+	cfg := config.LoadConfig()
+	_ = cfg
+	param := config.LoadParam()
+
+	common.TIMESLOT = param.ConsensusParam.Timeslot
+	common.MaxShardNumber = param.ActiveShards
+
+	//load keys from file
+	param.LoadKey()
+	portal.SetupParam()
+
+	//create genesis block
+	blockchain.CreateGenesisBlocks()
+
 	if common.TIMESLOT == 0 {
 		common.TIMESLOT = 10
 	}
-	sim.initNode(chainParam, isLightNode, enableRPC, disableLogFile)
+	sim.initNode(isLightNode, enableRPC, disableLogFile)
 	relayShards := []byte{}
 	if isLightNode {
 		for index := 0; index < common.MaxShardNumber; index++ {
@@ -144,7 +133,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requir
 	return sim
 }
 
-func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool, enableRPC bool, disableLogFile bool) {
+func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile bool) {
 	simName := sim.simName
 	path, err := os.Getwd()
 	if err != nil {
@@ -162,8 +151,7 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	transactionLogger.SetLevel(common.LevelTrace)
 	// privacyLogger.SetLevel(common.LevelTrace)
 	mempoolLogger.SetLevel(common.LevelTrace)
-	activeNetParams := chainParam
-	activeNetParams.CreateGenesisBlocks()
+	activeNetParams := config.Param()
 
 	common.MaxShardNumber = activeNetParams.ActiveShards
 	//init blockchain
@@ -213,7 +201,6 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		HttpListenters: lsList,
 		RPCMaxClients:  1,
 		DisableAuth:    true,
-		ChainParams:    activeNetParams,
 		BlockChain:     &bc,
 		Blockgen:       blockgen,
 		TxMemPool:      &txPool,
@@ -223,11 +210,11 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	rpcServer := &rpcserver.RpcServer{}
 	rpclocal := &LocalRPCClient{rpcServer}
 
-	btcChain, err := getBTCRelayingChain(activeNetParams.PortalParams.RelayingParam.BTCRelayingHeaderChainID, "btcchain", simName)
+	btcChain, err := getBTCRelayingChain(portal.GetPortalParams().RelayingParam.BTCRelayingHeaderChainID, portal.GetPortalParams().RelayingParam.BTCDataFolderName, simName)
 	if err != nil {
 		panic(err)
 	}
-	bnbChainState, err := getBNBRelayingChainState(activeNetParams.PortalParams.RelayingParam.BNBRelayingHeaderChainID, simName)
+	bnbChainState, err := getBNBRelayingChainState(portal.GetPortalParams().RelayingParam.BNBRelayingHeaderChainID, simName)
 	if err != nil {
 		panic(err)
 	}
@@ -235,7 +222,6 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		ConsensusEngine: cs,
 		BlockChain:      &bc,
 		DataBase:        db,
-		ChainParams:     activeNetParams,
 		FeeEstimator:    fees,
 		TxLifeTime:      100,
 		MaxTx:           1000,
@@ -251,7 +237,6 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	tempPool.Init(&mempool.Config{
 		BlockChain:    &bc,
 		DataBase:      db,
-		ChainParams:   activeNetParams,
 		FeeEstimator:  fees,
 		MaxTx:         1000,
 		PubSubManager: ps,
@@ -275,7 +260,6 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	err = bc.Init(&blockchain.Config{
 		BTCChain:      btcChain,
 		BNBChainState: bnbChainState,
-		ChainParams:   activeNetParams,
 		DataBase:      db,
 		MemCache:      memcache.New(),
 		BlockGen:      blockgen,
@@ -287,7 +271,6 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 		FeeEstimator:  make(map[byte]blockchain.FeeEstimator),
 		// RandomClient:    &btcrd,
 		ConsensusEngine: cs,
-		GenesisParams:   blockchain.GenesisParam,
 		RelayShards:     relayShards,
 		PoolManager:     poolManager,
 	})
@@ -296,7 +279,6 @@ func (sim *NodeEngine) initNode(chainParam *blockchain.Params, isLightNode bool,
 	}
 	bc.InitChannelBlockchain(cRemovedTxs)
 
-	sim.param = activeNetParams
 	sim.bc = &bc
 	sim.consensus = cs
 	sim.txpool = &txPool
@@ -405,7 +387,7 @@ func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
 }
 
 func (sim *NodeEngine) loadLightShardsState() {
-	for i := 0; i < sim.bc.GetChainParams().ActiveShards; i++ {
+	for i := 0; i < config.Param().ActiveShards; i++ {
 		statePrefix := fmt.Sprintf("state-%v", i)
 		v, err := sim.userDB.Get([]byte(statePrefix), nil)
 		if err != nil && err != leveldb.ErrNotFound {

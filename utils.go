@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/incognitochain/incognito-chain/blockchain"
+	"github.com/incognitochain/incognito-chain/portal"
 	"github.com/incognitochain/incognito-chain/privacy/coin"
 	bnbrelaying "github.com/incognitochain/incognito-chain/relaying/bnb"
 	btcrelaying "github.com/incognitochain/incognito-chain/relaying/btc"
@@ -30,14 +30,14 @@ import (
 
 func getBTCRelayingChain(btcRelayingChainID string, btcDataFolderName string, dataFolder string) (*btcrelaying.BlockChain, error) {
 	relayingChainParams := map[string]*chaincfg.Params{
-		blockchain.TestnetBTCChainID:  btcrelaying.GetTestNet3Params(),
-		blockchain.Testnet2BTCChainID: btcrelaying.GetTestNet3ParamsForInc2(),
-		blockchain.MainnetBTCChainID:  btcrelaying.GetMainNetParams(),
+		portal.TestnetBTCChainID:  btcrelaying.GetTestNet3Params(),
+		portal.Testnet2BTCChainID: btcrelaying.GetTestNet3ParamsForInc2(),
+		portal.MainnetBTCChainID:  btcrelaying.GetMainNetParams(),
 	}
 	relayingChainGenesisBlkHeight := map[string]int32{
-		blockchain.TestnetBTCChainID:  int32(1833130),
-		blockchain.Testnet2BTCChainID: int32(1833130),
-		blockchain.MainnetBTCChainID:  int32(634140),
+		portal.TestnetBTCChainID:  int32(1896910),
+		portal.Testnet2BTCChainID: int32(1863675),
+		portal.MainnetBTCChainID:  int32(634140),
 	}
 	return btcrelaying.GetChainV2(
 		filepath.Join("./"+dataFolder, btcDataFolderName),

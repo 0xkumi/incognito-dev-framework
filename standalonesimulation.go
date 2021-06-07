@@ -10,10 +10,12 @@ import (
 	"time"
 
 	"github.com/incognitochain/incognito-chain/blockchain/types"
+	"github.com/incognitochain/incognito-chain/config"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
 	"github.com/incognitochain/incognito-chain/consensus_v2/signatureschemes"
 	"github.com/incognitochain/incognito-chain/incognitokey"
+	"github.com/incognitochain/incognito-chain/portal"
 	"github.com/incognitochain/incognito-chain/transaction/tx_ver2"
 
 	"github.com/0xkumi/incognito-dev-framework/account"
@@ -44,7 +46,6 @@ import (
 
 type Config struct {
 	ConsensusVersion int
-	ChainParam       *ChainParam
 	DisableLog       bool
 }
 
@@ -71,7 +72,6 @@ type NodeEngine struct {
 
 	//blockchain dependency object
 	Network     *HighwayConnection
-	param       *blockchain.Params
 	bc          *blockchain.BlockChain
 	ps          *pubsub.PubSubManager
 	consensus   mock.ConsensusInterface
@@ -139,37 +139,51 @@ func (sim *NodeEngine) init() {
 	mempoolLogger.SetLevel(common.LevelTrace)
 
 	sim.appNodeMode = "full"
-	activeNetParams := sim.config.ChainParam.GetParamData()
-	common.MaxShardNumber = activeNetParams.ActiveShards
-	common.TIMESLOT = activeNetParams.Timeslot
-	if common.TIMESLOT == 0 {
-		common.TIMESLOT = 10
-	}
-	sim.GenesisAccount = sim.NewAccount()
+	cfg := config.LoadConfig()
+	_ = cfg
+	param := config.LoadParam()
 
-	for i := 0; i < activeNetParams.MinBeaconCommitteeSize; i++ {
+	common.TIMESLOT = param.ConsensusParam.Timeslot
+	common.MaxShardNumber = param.ActiveShards
+
+	//load keys from file
+	param.LoadKey()
+	portal.SetupParam()
+
+	sim.GenesisAccount = sim.NewAccount()
+	for i := 0; i < param.CommitteeSize.MinBeaconCommitteeSize; i++ {
 		acc := sim.NewAccountFromShard(-1)
 		sim.committeeAccount[-1] = append(sim.committeeAccount[-1], acc)
-		activeNetParams.GenesisParams.PreSelectBeaconNodeSerializedPubkey = append(activeNetParams.GenesisParams.PreSelectBeaconNodeSerializedPubkey, acc.SelfCommitteePubkey)
-		activeNetParams.GenesisParams.PreSelectBeaconNodeSerializedPaymentAddress = append(activeNetParams.GenesisParams.PreSelectBeaconNodeSerializedPaymentAddress, acc.PaymentAddress)
+		param.GenesisParam.PreSelectBeaconNodeSerializedPubkey = append(param.GenesisParam.PreSelectBeaconNodeSerializedPubkey, acc.SelfCommitteePubkey)
+		param.GenesisParam.PreSelectBeaconNodeSerializedPaymentAddress = append(param.GenesisParam.PreSelectBeaconNodeSerializedPaymentAddress, acc.PaymentAddress)
 	}
-	for i := 0; i < activeNetParams.ActiveShards; i++ {
-		for a := 0; a < activeNetParams.MinShardCommitteeSize; a++ {
+	for i := 0; i < param.ActiveShards; i++ {
+		for a := 0; a < param.CommitteeSize.MinShardCommitteeSize; a++ {
 			acc := sim.NewAccountFromShard(i)
 			sim.committeeAccount[i] = append(sim.committeeAccount[i], acc)
-			activeNetParams.GenesisParams.PreSelectShardNodeSerializedPubkey = append(activeNetParams.GenesisParams.PreSelectShardNodeSerializedPubkey, acc.SelfCommitteePubkey)
-			activeNetParams.GenesisParams.PreSelectShardNodeSerializedPaymentAddress = append(activeNetParams.GenesisParams.PreSelectShardNodeSerializedPaymentAddress, acc.PaymentAddress)
+			param.GenesisParam.PreSelectShardNodeSerializedPubkey = append(param.GenesisParam.PreSelectShardNodeSerializedPubkey, acc.SelfCommitteePubkey)
+			param.GenesisParam.PreSelectShardNodeSerializedPaymentAddress = append(param.GenesisParam.PreSelectShardNodeSerializedPaymentAddress, acc.PaymentAddress)
 		}
 	}
+	//TODO: can't add custom tx
+	// initTxs := createGenesisTx([]account.Account{sim.GenesisAccount})
+	// param.GenesisParam.InitialIncognito = initTxs
 
-	initTxs := createGenesisTx([]account.Account{sim.GenesisAccount})
-	activeNetParams.GenesisParams.InitialIncognito = initTxs
-	activeNetParams.CreateGenesisBlocks()
+	//create genesis block
+	blockchain.CreateGenesisBlocks()
 
 	//init blockchain
 	bc := blockchain.BlockChain{}
 
-	sim.timer.init(activeNetParams.GenesisBeaconBlock.Header.Timestamp + 10)
+	layout := "2006-01-02T15:04:05.000Z"
+	str := param.GenesisParam.BlockTimestamp
+	genesisTime, err := time.Parse(layout, str)
+
+	if err != nil {
+		Logger.log.Error(err)
+	}
+
+	sim.timer.init(genesisTime.Unix() + 10)
 
 	cs := mock.Consensus{}
 	txpool := mempool.TxPool{}
@@ -181,7 +195,7 @@ func (sim *NodeEngine) init() {
 	}
 	ps := pubsub.NewPubSubManager()
 	fees := make(map[byte]*mempool.FeeEstimator)
-	for i := byte(0); i < byte(activeNetParams.ActiveShards); i++ {
+	for i := byte(0); i < byte(param.ActiveShards); i++ {
 		fees[i] = mempool.NewFeeEstimator(
 			mempool.DefaultEstimateFeeMaxRollback,
 			mempool.DefaultEstimateFeeMinRegisteredBlocks,
@@ -211,7 +225,6 @@ func (sim *NodeEngine) init() {
 		HttpListenters: []net.Listener{nil},
 		RPCMaxClients:  1,
 		DisableAuth:    true,
-		ChainParams:    activeNetParams,
 		BlockChain:     &bc,
 		Blockgen:       blockgen,
 		TxMemPool:      &txpool,
@@ -221,11 +234,11 @@ func (sim *NodeEngine) init() {
 	rpcServer := &rpcserver.RpcServer{}
 	rpclocal := &LocalRPCClient{rpcServer}
 
-	btcChain, err := getBTCRelayingChain(activeNetParams.PortalParams.RelayingParam.BTCRelayingHeaderChainID, "btcchain", simName)
+	btcChain, err := getBTCRelayingChain(portal.GetPortalParams().RelayingParam.BTCRelayingHeaderChainID, "btcchain", simName)
 	if err != nil {
 		panic(err)
 	}
-	bnbChainState, err := getBNBRelayingChainState(activeNetParams.PortalParams.RelayingParam.BNBRelayingHeaderChainID, simName)
+	bnbChainState, err := getBNBRelayingChainState(portal.GetPortalParams().RelayingParam.BNBRelayingHeaderChainID, simName)
 	if err != nil {
 		panic(err)
 	}
@@ -234,7 +247,6 @@ func (sim *NodeEngine) init() {
 		ConsensusEngine: &cs,
 		BlockChain:      &bc,
 		DataBase:        db,
-		ChainParams:     activeNetParams,
 		FeeEstimator:    fees,
 		TxLifeTime:      100,
 		MaxTx:           1000,
@@ -250,7 +262,6 @@ func (sim *NodeEngine) init() {
 	temppool.Init(&mempool.Config{
 		BlockChain:    &bc,
 		DataBase:      db,
-		ChainParams:   activeNetParams,
 		FeeEstimator:  fees,
 		MaxTx:         1000,
 		PubSubManager: ps,
@@ -268,7 +279,6 @@ func (sim *NodeEngine) init() {
 	err = bc.Init(&blockchain.Config{
 		BTCChain:      btcChain,
 		BNBChainState: bnbChainState,
-		ChainParams:   activeNetParams,
 		DataBase:      db,
 		MemCache:      memcache.New(),
 		BlockGen:      blockgen,
@@ -280,7 +290,6 @@ func (sim *NodeEngine) init() {
 		FeeEstimator:  make(map[byte]blockchain.FeeEstimator),
 		// RandomClient:      &btcrd,
 		ConsensusEngine:   &cs,
-		GenesisParams:     blockchain.GenesisParam,
 		OutcoinByOTAKeyDb: outcoinDb,
 	})
 	if err != nil {
@@ -288,7 +297,6 @@ func (sim *NodeEngine) init() {
 	}
 	bc.InitChannelBlockchain(cRemovedTxs)
 
-	sim.param = activeNetParams
 	sim.bc = &bc
 	sim.consensus = &cs
 	sim.txpool = &txpool
@@ -406,7 +414,7 @@ func (sim *NodeEngine) PrintBlockChainInfo() {
 func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 	time.Sleep(time.Nanosecond)
 	var chainArray = []int{-1}
-	for i := 0; i < sim.config.ChainParam.ActiveShards; i++ {
+	for i := 0; i < config.Param().ActiveShards; i++ {
 		chainArray = append(chainArray, i)
 	}
 	var h *Hook
@@ -556,7 +564,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 					if err != nil {
 						return err
 					} else {
-						crossX := blockchain.CreateAllCrossShardBlock(block.(*types.ShardBlock), sim.config.ChainParam.ActiveShards)
+						crossX := blockchain.CreateAllCrossShardBlock(block.(*types.ShardBlock), config.Param().ActiveShards)
 						for _, blk := range crossX {
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
@@ -578,7 +586,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 					if err != nil {
 						log.Println("InsertBlkErr", err)
 					} else {
-						crossX := blockchain.CreateAllCrossShardBlock(block.(*types.ShardBlock), sim.config.ChainParam.ActiveShards)
+						crossX := blockchain.CreateAllCrossShardBlock(block.(*types.ShardBlock), config.Param().ActiveShards)
 						for _, blk := range crossX {
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
