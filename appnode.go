@@ -393,8 +393,8 @@ func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
 
 	sim.loadLightShardsState()
 
-	time.Sleep(5 * time.Second)
-	for i := 0; i < sim.bc.GetActiveShardNumber(); i++ {
+	time.Sleep(2 * time.Second)
+	for i := 0; i < config.Param().ActiveShards; i++ {
 		go sim.syncShardLight(byte(i), sim.lightNodeData.Shards[byte(i)])
 	}
 }
@@ -443,6 +443,31 @@ func (sim *NodeEngine) GetShardState(shardID int) (uint64, *common.Hash) {
 
 func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 	log.Println("start sync shard", shardID, state.LocalHeight)
+	if state.LocalHeight == 1 {
+		blk, err := sim.bc.GetShardBlockByHeightV1(1, shardID)
+		if err != nil {
+			panic(err)
+		}
+
+		blkBytes, err := json.Marshal(blk)
+		if err != nil {
+			panic(err)
+		}
+		blkHash := blk.Hash()
+		if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
+			panic(err)
+		}
+		state.LocalHeight = blk.GetHeight()
+		state.LocalHash = blkHash
+		stateBytes, err := json.Marshal(state)
+		if err != nil {
+			panic(err)
+		}
+		statePrefix := fmt.Sprintf("state-%v", shardID)
+		if err := sim.userDB.Put([]byte(statePrefix), stateBytes, nil); err != nil {
+			panic(err)
+		}
+	}
 	for {
 		bestHeight := sim.bc.BeaconChain.GetShardBestViewHeight()[shardID]
 		// bestHash := sim.bc.BeaconChain.GetShardBestViewHash()[shardID]
@@ -457,7 +482,6 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 			time.Sleep(5 * time.Second)
 			continue
 		}
-
 		for {
 			blk := <-blkCh
 			if !isNil(blk) {
@@ -465,8 +489,8 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 				if err != nil {
 					panic(err)
 				}
+
 				blkHash := blk.(*types.ShardBlock).Hash()
-				fmt.Printf("Received shard %v block %v\n", shardID, blk.GetHeight())
 				key := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
 				blkHashBytes, err := sim.userDB.Get([]byte(key), nil)
 				if err != nil {
