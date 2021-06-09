@@ -353,15 +353,28 @@ func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
 				goto retry
 			}
 			beaconBlk := blks[0]
-			for shardID, states := range beaconBlk.Body.ShardState {
-				go func(sID byte, sts []types.ShardState) {
-					for _, blk := range sts {
-						key := fmt.Sprintf("s-%v-%v", sID, blk.Height)
-						if err := sim.userDB.Put([]byte(key), blk.Hash.Bytes(), nil); err != nil {
-							panic(err)
-						}
+			if beaconBlk.Header.Height == 1 {
+				for i := 0; i < config.Param().ActiveShards; i++ {
+					blk, err := sim.bc.GetShardBlockByHeightV1(1, byte(i))
+					if err != nil {
+						panic(err)
 					}
-				}(shardID, states)
+					key := fmt.Sprintf("s-%v-%v", byte(i), blk.GetHeight())
+					if err := sim.userDB.Put([]byte(key), blk.Hash().Bytes(), nil); err != nil {
+						panic(err)
+					}
+				}
+			} else {
+				for shardID, states := range beaconBlk.Body.ShardState {
+					go func(sID byte, sts []types.ShardState) {
+						for _, blk := range sts {
+							key := fmt.Sprintf("s-%v-%v", sID, blk.Height)
+							if err := sim.userDB.Put([]byte(key), blk.Hash.Bytes(), nil); err != nil {
+								panic(err)
+							}
+						}
+					}(shardID, states)
+				}
 			}
 			sim.lightNodeData.ProcessedBeaconHeight = height
 			key := "lightn-beacon-process"
