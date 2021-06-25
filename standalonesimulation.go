@@ -290,7 +290,7 @@ func (sim *NodeEngine) init() {
 		FeeEstimator:  make(map[byte]blockchain.FeeEstimator),
 		// RandomClient:      &btcrd,
 		ConsensusEngine:   &cs,
-		OutcoinByOTAKeyDb: outcoinDb,
+		OutCoinByOTAKeyDb: outcoinDb,
 	})
 	if err != nil {
 		panic(err)
