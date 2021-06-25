@@ -487,6 +487,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 					panic(err)
 				}
 				if !blkHash.IsEqual(blkLocalHash) {
+					fmt.Printf("wrong block hash need %v get %v\n", blkLocalHash.String(), blkHash.String())
 					panic(errors.New("Synced block has wrong block hash 🙀"))
 				}
 				if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
