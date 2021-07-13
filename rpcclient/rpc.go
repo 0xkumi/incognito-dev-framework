@@ -11,6 +11,7 @@ import (
 	"github.com/incognitochain/incognito-chain/common/base58"
 	"github.com/incognitochain/incognito-chain/dataaccessobject/rawdbv2"
 	"github.com/incognitochain/incognito-chain/incognitokey"
+	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/rpcserver/jsonresult"
 	"github.com/incognitochain/incognito-chain/wallet"
 )
@@ -649,6 +650,15 @@ func (r *RPCClient) API_ListCommitments(tokenID string, shardID byte) (interface
 func (r *RPCClient) API_ListSerialNumbers(tokenID string, shardID byte) (map[string]struct{}, error) {
 	var result map[string]struct{}
 	result, err := r.client.ListSerialNumbers(tokenID, float64(shardID))
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *RPCClient) API_ConvertPDEPrices(FromTokenIDStr string, ToTokenIDStr string, amount float64) ([]rpcserver.ConvertedPrice, error) {
+	var result []rpcserver.ConvertedPrice
+	result, err := r.client.ConvertPDEPrices(FromTokenIDStr, ToTokenIDStr, amount)
 	if err != nil {
 		return nil, err
 	}

@@ -414,3 +414,12 @@ func (r *LocalRPCClient) ListSerialNumbers(tokenID string, shardID float64) (res
 	}
 	return resI.(map[string]struct{}),nil
 }
+func (r *LocalRPCClient) ConvertPDEPrices(FromTokenIDStr string, ToTokenIDStr string, amount float64) (res []rpcserver.ConvertedPrice,err error) {
+	httpServer := r.rpcServer.HttpServer
+	c := rpcserver.HttpHandler["convertpdeprices"]
+	resI, rpcERR := c(httpServer, []interface{}{FromTokenIDStr,ToTokenIDStr,amount}, nil)
+	if rpcERR != nil {
+		return res,errors.New(rpcERR.Error())
+	}
+	return resI.([]rpcserver.ConvertedPrice),nil
+}

@@ -2,6 +2,7 @@ package rpcclient //This file is auto generated. Please do not change if you don
 
 import (
 	"github.com/incognitochain/incognito-chain/common"
+	"github.com/incognitochain/incognito-chain/rpcserver"
 	"github.com/incognitochain/incognito-chain/rpcserver/jsonresult"
 )
 
@@ -51,4 +52,5 @@ type ClientInterface interface {
 	GetMempoolEntry(txHash string) (*jsonresult.TransactionDetail, error)
 	ListCommitments(tokenID string, shardID float64) (map[string]uint64, error)
 	ListSerialNumbers(tokenID string, shardID float64) (map[string]struct{}, error)
+	ConvertPDEPrices(FromTokenIDStr string, ToTokenIDStr string, amount float64) ([]rpcserver.ConvertedPrice, error)
 }
