@@ -443,20 +443,21 @@ func (sim *NodeEngine) GetShardState(shardID int) (uint64, *common.Hash) {
 
 func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 	log.Println("start sync shard", shardID, state.LocalHeight)
-	if state.LocalHeight == 1 {
-		blk, err := sim.bc.GetShardBlockByHeightV1(1, shardID)
-		if err != nil {
-			panic(err)
-		}
+	blk, err := sim.bc.GetShardBlockByHeightV1(1, shardID)
+	if err != nil {
+		panic(err)
+	}
 
-		blkBytes, err := json.Marshal(blk)
-		if err != nil {
-			panic(err)
-		}
-		blkHash := blk.Hash()
-		if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
-			panic(err)
-		}
+	blkBytes, err := json.Marshal(blk)
+	if err != nil {
+		panic(err)
+	}
+	blkHash := blk.Hash()
+	if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
+		panic(err)
+	}
+
+	if state.LocalHeight == 1 {
 		state.LocalHeight = blk.GetHeight()
 		state.LocalHash = blkHash
 		stateBytes, err := json.Marshal(state)
