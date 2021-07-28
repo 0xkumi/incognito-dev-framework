@@ -147,7 +147,7 @@ func (sim *NodeEngine) init() {
 	common.MaxShardNumber = param.ActiveShards
 
 	//load keys from file
-	param.LoadKey()
+	param.LoadKey(nil, nil)
 	portal.SetupParam()
 
 	sim.GenesisAccount = sim.NewAccount()

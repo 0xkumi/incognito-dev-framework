@@ -106,7 +106,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requir
 	common.MaxShardNumber = param.ActiveShards
 
 	//load keys from file
-	param.LoadKey()
+	param.LoadKey(nil, nil)
 	portal.SetupParam()
 
 	//create genesis block
