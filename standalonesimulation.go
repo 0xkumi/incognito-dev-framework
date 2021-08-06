@@ -655,12 +655,12 @@ func (s *NodeEngine) SignBlockWithCommittee(block types.BlockInterface, committe
 			miningKeys = append(miningKeys, miningKey)
 		}
 		for _, committeeID := range committeeIndex {
-			vote, _ := blsbftv2.CreateVote(miningKeys[committeeID], block, committeePubKey)
+			vote, _ := blsbftv2.CreateVote(miningKeys[committeeID], block, committeePubKey, s.bc.BeaconChain.GetPortalParamsV4(0))
 			vote.IsValid = 1
 			votes[vote.Validator] = vote
 		}
 		committeeBLSString, _ := incognitokey.ExtractPublickeysFromCommitteeKeyList(committeePubKey, common.BlsConsensus)
-		aggSig, brigSigs, validatorIdx, err := blsbftv2.CombineVotes(votes, committeeBLSString)
+		aggSig, brigSigs, validatorIdx, portalSigs, err := blsbftv2.CombineVotes(votes, committeeBLSString)
 
 		valData, err := blsbftv2.DecodeValidationData(block.GetValidationField())
 		if err != nil {
@@ -669,6 +669,7 @@ func (s *NodeEngine) SignBlockWithCommittee(block types.BlockInterface, committe
 		valData.AggSig = aggSig
 		valData.BridgeSig = brigSigs
 		valData.ValidatiorsIdx = validatorIdx
+		valData.PortalSig = portalSigs
 		validationDataString, _ := blsbftv2.EncodeValidationData(*valData)
 		if err := block.(mock.BlockValidation).AddValidationField(validationDataString); err != nil {
 			return errors.New("Add validation error")

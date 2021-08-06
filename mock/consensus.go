@@ -5,6 +5,7 @@ import (
 	"github.com/incognitochain/incognito-chain/common/consensus"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/incognitokey"
+	portalprocessv4 "github.com/incognitochain/incognito-chain/portal/portalv4/portalprocess"
 )
 
 type BlockValidation interface {
@@ -69,4 +70,7 @@ func (c *Consensus) GetUserRole() (string, string, int) {
 }
 func (c *Consensus) GetCurrentMiningPublicKey() (string, string) {
 	return "", ""
+}
+func (c *Consensus) ExtractPortalV4ValidationData(block types.BlockInterface) ([]*portalprocessv4.PortalSig, error) {
+	return nil, nil
 }
