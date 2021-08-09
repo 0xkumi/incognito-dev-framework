@@ -564,7 +564,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 					if err != nil {
 						return err
 					} else {
-						crossX := blockchain.CreateAllCrossShardBlock(block.(*types.ShardBlock), config.Param().ActiveShards)
+						crossX := types.CreateAllCrossShardBlock(block.(*types.ShardBlock), config.Param().ActiveShards)
 						for _, blk := range crossX {
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
@@ -586,7 +586,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 					if err != nil {
 						log.Println("InsertBlkErr", err)
 					} else {
-						crossX := blockchain.CreateAllCrossShardBlock(block.(*types.ShardBlock), config.Param().ActiveShards)
+						crossX := types.CreateAllCrossShardBlock(block.(*types.ShardBlock), config.Param().ActiveShards)
 						for _, blk := range crossX {
 							sim.syncker.InsertCrossShardBlock(blk)
 						}
