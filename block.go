@@ -58,9 +58,9 @@ func UpdateShardHeaderOnBodyChange(block *types.ShardBlock, bc *blockchain.Block
 		return fmt.Errorf("Instruction from block body: %+v", err)
 	}
 	insts := append(flattenTxInsts, flattenInsts...) // Order of instructions must be preserved in shardprocess
-	instMerkleRoot := blockchain.GetKeccak256MerkleRoot(insts)
+	instMerkleRoot := types.GetKeccak256MerkleRoot(insts)
 
-	_, shardTxMerkleData := blockchain.CreateShardTxRoot(block.Body.Transactions)
+	_, shardTxMerkleData := types.CreateShardTxRoot(block.Body.Transactions)
 	block.Header.TotalTxsFee = totalTxsFee
 	block.Header.TxRoot = *merkleRoot
 	block.Header.ShardTxRoot = shardTxMerkleData[len(shardTxMerkleData)-1]
@@ -96,7 +96,7 @@ func UpdateBeaconHeaderOnBodyChange(block *types.BeaconBlock) error {
 
 	block.Header.ShardStateHash = tempShardStateHash
 	block.Header.InstructionHash = tempInstructionHash
-	copy(block.Header.InstructionMerkleRoot[:], blockchain.GetKeccak256MerkleRoot(flattenInsts))
+	copy(block.Header.InstructionMerkleRoot[:], types.GetKeccak256MerkleRoot(flattenInsts))
 	return nil
 }
 func generateZeroValueHash() (common.Hash, error) {
