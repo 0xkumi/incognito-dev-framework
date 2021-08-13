@@ -1,9 +1,13 @@
 package mock
 
 import (
+	"errors"
+
 	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common/consensus"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
+	"github.com/incognitochain/incognito-chain/consensus_v2/blsbft"
+	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 )
 
@@ -55,7 +59,12 @@ func (c *Consensus) IsCommitteeInShard(sid byte) bool {
 }
 
 func (c *Consensus) ExtractBridgeValidationData(block types.BlockInterface) ([][]byte, []int, error) {
-	return nil, nil, nil
+	if block.GetVersion() == types.BFT_VERSION {
+		return blsbft.ExtractBridgeValidationData(block)
+	} else if block.GetVersion() >= types.MULTI_VIEW_VERSION {
+		return blsbftv2.ExtractBridgeValidationData(block)
+	}
+	return nil, nil, blsbft.NewConsensusError(blsbft.ConsensusTypeNotExistError, errors.New(block.GetConsensusType()))
 }
 func (c *Consensus) GetAllMiningPublicKeys() []string {
 	return nil
