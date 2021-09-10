@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/incognitochain/incognito-chain/blockchain/committeestate"
+	"github.com/incognitochain/incognito-chain/blockchain/pdex"
 	consensus "github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/peerv2"
 	"github.com/incognitochain/incognito-chain/portal"
@@ -48,6 +49,7 @@ var (
 	privacyV1Logger      = backendLog.Logger("Privacy V1 log ", false)
 	privacyV2Logger      = backendLog.Logger("Privacy V2 log ", false)
 	committeeStateLogger = backendLog.Logger("Committee State log ", false)
+	pdexLogger           = backendLog.Logger("Pdex log ", false)
 
 	portalLogger          = backendLog.Logger("Portal log ", false)
 	portalRelayingLogger  = backendLog.Logger("Portal relaying log ", false)
@@ -93,6 +95,7 @@ func init() {
 	consensus.Logger.Init(consensusLogger)
 	privacy.LoggerV1.Init(privacyV1Logger)
 	privacy.LoggerV2.Init(privacyV2Logger)
+	pdex.Logger.Init(pdexLogger)
 
 	portal.Logger.Init(portalLogger)
 	portalrelaying.Logger.Init(portalRelayingLogger)
