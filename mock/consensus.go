@@ -44,19 +44,22 @@ func (c *Consensus) GetOneValidatorForEachConsensusProcess() map[int]*consensus.
 }
 
 func (c *Consensus) ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error {
-	return c.consensusEngine.ValidateProducerPosition(blk, lastProposerIdx, committee, minCommitteeSize)
+	// return c.consensusEngine.ValidateProducerPosition(blk, lastProposerIdx, committee, minCommitteeSize)
+	return nil
 }
 
 func (c *Consensus) ValidateProducerSig(block types.BlockInterface, consensusType string) error {
-	return c.consensusEngine.ValidateProducerSig(block, consensusType)
+	// return c.consensusEngine.ValidateProducerSig(block, consensusType)
+	return nil
 }
 
 func (c *Consensus) ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey) error {
-	return c.consensusEngine.ValidateBlockCommitteSig(block, committee)
+	// return c.consensusEngine.ValidateBlockCommitteSig(block, committee)
+	return nil
 }
 
 func (c *Consensus) IsCommitteeInShard(sid byte) bool {
-	return true
+	return false
 }
 
 func (c *Consensus) ExtractBridgeValidationData(block types.BlockInterface) ([][]byte, []int, error) {

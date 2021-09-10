@@ -23,7 +23,6 @@ import (
 	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/config"
-	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/incdb"
 	"github.com/incognitochain/incognito-chain/memcache"
 	"github.com/incognitochain/incognito-chain/mempool"
@@ -157,7 +156,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 	//init blockchain
 	bc := blockchain.BlockChain{}
 
-	cs := consensus_v2.NewConsensusEngine()
+	cs := mock.Consensus{}
 	txPool := mempool.TxPool{}
 	tempPool := mempool.TxPool{}
 	btcrd := mock.BTCRandom{} // use mock for now
@@ -219,7 +218,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 		panic(err)
 	}
 	txPool.Init(&mempool.Config{
-		ConsensusEngine: cs,
+		ConsensusEngine: &cs,
 		BlockChain:      &bc,
 		DataBase:        db,
 		FeeEstimator:    fees,
@@ -270,7 +269,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 		PubSubManager: ps,
 		FeeEstimator:  make(map[byte]blockchain.FeeEstimator),
 		// RandomClient:    &btcrd,
-		ConsensusEngine: cs,
+		ConsensusEngine: &cs,
 		RelayShards:     relayShards,
 		PoolManager:     poolManager,
 	})
@@ -280,7 +279,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 	bc.InitChannelBlockchain(cRemovedTxs)
 
 	sim.bc = &bc
-	sim.consensus = cs
+	sim.consensus = &cs
 	sim.txpool = &txPool
 	sim.temppool = &tempPool
 	sim.btcrd = &btcrd
