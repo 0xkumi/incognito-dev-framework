@@ -25,6 +25,7 @@ type ConsensusInterface interface {
 	GetAllValidatorKeyState() map[string]consensus.MiningState
 	GetUserRole() (string, string, int)
 	GetCurrentMiningPublicKey() (string, string)
+	GetSyncingValidators() []*consensus.Validator
 }
 
 type Consensus struct {
@@ -73,4 +74,8 @@ func (c *Consensus) GetCurrentMiningPublicKey() (string, string) {
 }
 func (c *Consensus) ExtractPortalV4ValidationData(block types.BlockInterface) ([]*portalprocessv4.PortalSig, error) {
 	return nil, nil
+}
+
+func (c *Consensus) GetSyncingValidators() []*consensus.Validator {
+	return c.GetSyncingValidators()
 }
