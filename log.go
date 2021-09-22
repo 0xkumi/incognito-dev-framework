@@ -14,6 +14,7 @@ import (
 	portalprocessv4 "github.com/incognitochain/incognito-chain/portal/portalv4/portalprocess"
 	portaltokensv4 "github.com/incognitochain/incognito-chain/portal/portalv4/portaltokens"
 	"github.com/incognitochain/incognito-chain/syncker"
+	"github.com/incognitochain/incognito-chain/syncker/finishsync"
 	"github.com/incognitochain/incognito-chain/txpool"
 
 	"github.com/incognitochain/incognito-chain/blockchain"
@@ -48,6 +49,7 @@ var (
 	privacyV1Logger      = backendLog.Logger("Privacy V1 log ", false)
 	privacyV2Logger      = backendLog.Logger("Privacy V2 log ", false)
 	committeeStateLogger = backendLog.Logger("Committee State log ", false)
+	finishSyncLogger     = backendLog.Logger("Finish Sync log ", false)
 
 	portalLogger          = backendLog.Logger("Portal log ", false)
 	portalRelayingLogger  = backendLog.Logger("Portal relaying log ", false)
@@ -89,6 +91,7 @@ func init() {
 	// privacy.Logger.Init(privacyLogger)
 	mempool.Logger.Init(mempoolLogger)
 	syncker.Logger.Init(synckerLogger)
+	finishsync.Logger.Init(finishSyncLogger)
 	peerv2.Logger.Init(highwayLogger)
 	consensus.Logger.Init(consensusLogger)
 	privacy.LoggerV1.Init(privacyV1Logger)
@@ -126,6 +129,7 @@ var subsystemLoggers = map[string]common.Logger{
 	"PORTALV3TOKENS":  portalV3TokenLogger,
 	"PORTALV4PROCESS": portalV4ProcessLogger,
 	"PORTALV4TOKENS":  portalV4TokenLogger,
+	"FINS":            finishSyncLogger,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
