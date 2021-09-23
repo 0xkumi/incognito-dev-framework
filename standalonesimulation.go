@@ -12,9 +12,10 @@ import (
 	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/config"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
-	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
+	"github.com/incognitochain/incognito-chain/consensus_v2/consensustypes"
 	"github.com/incognitochain/incognito-chain/consensus_v2/signatureschemes"
 	"github.com/incognitochain/incognito-chain/incognitokey"
+	"github.com/incognitochain/incognito-chain/multiview"
 	"github.com/incognitochain/incognito-chain/portal"
 	"github.com/incognitochain/incognito-chain/transaction/tx_ver2"
 
@@ -438,7 +439,12 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 	//Create blocks for apply chain
 	for _, chainID := range chainArray {
 		var proposerPK incognitokey.CommitteePublicKey
-
+		var bestview multiview.View
+		if chainID == -1 {
+			bestview = sim.bc.BeaconChain.GetBestView()
+		} else {
+			bestview = sim.bc.ShardChain[chainID].GetBestView()
+		}
 		switch sim.config.ConsensusVersion {
 		case 1:
 			var producerPosition int
@@ -449,9 +455,9 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 			// 	lastProposerIdx := chain.ShardChain[chainID].GetBestState().ShardProposerIdx
 			// 	producerPosition = lastProposerIdx + 1%len(chain.GetChain(chainID).GetBestView().GetCommittee())
 			// }
-			proposerPK = chain.GetChain(chainID).GetBestView().GetCommittee()[producerPosition]
+			proposerPK = bestview.GetCommittee()[producerPosition]
 		case 2:
-			proposerPK, _ = chain.GetChain(chainID).GetBestView().GetProposerByTimeSlot((sim.timer.Now() / 10), 2)
+			proposerPK, _ = bestview.GetProposerByTimeSlot((sim.timer.Now() / 10), 2)
 		}
 
 		proposerPkStr, _ := proposerPK.ToBase58()
@@ -506,7 +512,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 					}
 					return nil
 				} else {
-					err = chain.VerifyPreSignShardBlock(blk.(*types.ShardBlock), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), byte(chainID))
+					err = chain.VerifyPreSignShardBlock(blk.(*types.ShardBlock), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), byte(chainID))
 					if err != nil {
 						return err
 					}
@@ -523,7 +529,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 						log.Println("VerifyBlockErr", err)
 					}
 				} else {
-					err = chain.VerifyPreSignShardBlock(block.(*types.ShardBlock), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), byte(chainID))
+					err = chain.VerifyPreSignShardBlock(block.(*types.ShardBlock), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), byte(chainID))
 					if err != nil {
 						log.Println("VerifyBlockErr", err)
 					}
@@ -540,11 +546,11 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 		if h != nil && h.CombineVotes != nil {
 			nCombine := h.CombineVotes(chainID)
 			if nCombine == nil {
-				nCombine = GenerateCommitteeIndex(len(sim.bc.GetChain(chainID).GetBestView().GetCommittee()))
+				nCombine = GenerateCommitteeIndex(len(bestview.GetCommittee()))
 			}
 			sim.SignBlockWithCommittee(block, accs, nCombine)
 		} else {
-			sim.SignBlockWithCommittee(block, accs, GenerateCommitteeIndex(len(sim.bc.GetChain(chainID).GetBestView().GetCommittee())))
+			sim.SignBlockWithCommittee(block, accs, GenerateCommitteeIndex(len(bestview.GetCommittee())))
 		}
 
 		//Insert
@@ -645,42 +651,43 @@ func (s *NodeEngine) DisableChainLog(b bool) {
 }
 
 func (s *NodeEngine) SignBlockWithCommittee(block types.BlockInterface, committees []account.Account, committeeIndex []int) error {
-	committeePubKey := []incognitokey.CommitteePublicKey{}
-	miningKeys := []*signatureschemes.MiningKey{}
+	// committeePubKey := []incognitokey.CommitteePublicKey{}
+	// miningKeys := []*signatureschemes.MiningKey{}
 	if block.GetVersion() == 2 {
-		votes := make(map[string]*blsbftv2.BFTVote)
-		for _, committee := range committees {
-			miningKey, _ := consensus_v2.GetMiningKeyFromPrivateSeed(committee.MiningKey)
-			committeePubKey = append(committeePubKey, *miningKey.GetPublicKey())
-			miningKeys = append(miningKeys, miningKey)
-		}
-		for _, committeeID := range committeeIndex {
-			vote, _ := blsbftv2.CreateVote(miningKeys[committeeID], block, committeePubKey)
-			vote.IsValid = 1
-			votes[vote.Validator] = vote
-		}
-		committeeBLSString, _ := incognitokey.ExtractPublickeysFromCommitteeKeyList(committeePubKey, common.BlsConsensus)
-		aggSig, brigSigs, validatorIdx, err := blsbftv2.CombineVotes(votes, committeeBLSString)
+		// votes := make(map[string]*blsbft.BFTVote)
+		// for _, committee := range committees {
+		// 	miningKey, _ := consensus_v2.GetMiningKeyFromPrivateSeed(committee.MiningKey)
+		// 	committeePubKey = append(committeePubKey, *miningKey.GetPublicKey())
+		// 	miningKeys = append(miningKeys, miningKey)
+		// }
+		// for _, committeeID := range committeeIndex {
+		// 	vote, _ := blsbft.CreateVote(miningKeys[committeeID], block, committeePubKey, s.bc.BeaconChain.GetPortalParamsV4(0))
+		// 	vote.IsValid = 1
+		// 	votes[vote.Validator] = vote
+		// }
+		// committeeBLSString, _ := incognitokey.ExtractPublickeysFromCommitteeKeyList(committeePubKey, common.BlsConsensus)
+		// aggSig, brigSigs, validatorIdx, portalSigs, err := blsbft.CombineVotes(votes, committeeBLSString)
 
-		valData, err := blsbftv2.DecodeValidationData(block.GetValidationField())
-		if err != nil {
-			return errors.New("decode validation data")
-		}
-		valData.AggSig = aggSig
-		valData.BridgeSig = brigSigs
-		valData.ValidatiorsIdx = validatorIdx
-		validationDataString, _ := blsbftv2.EncodeValidationData(*valData)
-		if err := block.(mock.BlockValidation).AddValidationField(validationDataString); err != nil {
-			return errors.New("Add validation error")
-		}
+		// valData, err := consensustypes.DecodeValidationData(block.GetValidationField())
+		// if err != nil {
+		// 	return errors.New("decode validation data")
+		// }
+		// valData.AggSig = aggSig
+		// valData.BridgeSig = brigSigs
+		// valData.ValidatiorsIdx = validatorIdx
+		// valData.PortalSig = portalSigs
+		// validationDataString, _ := consensustypes.EncodeValidationData(*valData)
+		// if err := block.(mock.BlockValidation).AddValidationField(validationDataString); err != nil {
+		// 	return errors.New("Add validation error")
+		// }
 	}
 	return nil
 }
 
 func (s *NodeEngine) SignBlock(userMiningKey *signatureschemes.MiningKey, block types.BlockInterface) {
-	var validationData blsbftv2.ValidationData
+	var validationData consensustypes.ValidationData
 	validationData.ProducerBLSSig, _ = userMiningKey.BriSignData(block.Hash().GetBytes())
-	validationDataString, _ := blsbftv2.EncodeValidationData(validationData)
+	validationDataString, _ := consensustypes.EncodeValidationData(validationData)
 	block.(mock.BlockValidation).AddValidationField(validationDataString)
 }
 
@@ -708,6 +715,11 @@ func (s *NodeEngine) GetListAccountByCommitteePubkey(cpks []incognitokey.Committ
 }
 
 func (sim *NodeEngine) GetListAccountsByChainID(chainID int) ([]account.Account, error) {
-	committees := sim.bc.GetChain(chainID).GetBestView().GetCommittee()
+	var committees []incognitokey.CommitteePublicKey
+	if chainID == -1 {
+		committees = sim.bc.BeaconChain.GetBestView().GetCommittee()
+	} else {
+		committees = sim.bc.ShardChain[chainID].GetBestView().GetCommittee()
+	}
 	return sim.GetListAccountByCommitteePubkey(committees)
 }
