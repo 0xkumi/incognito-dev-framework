@@ -512,7 +512,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 					}
 					return nil
 				} else {
-					err = chain.VerifyPreSignShardBlock(blk.(*types.ShardBlock), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), byte(chainID))
+					err = chain.VerifyPreSignShardBlock(blk.(*types.ShardBlock), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), byte(chainID))
 					if err != nil {
 						return err
 					}
@@ -529,7 +529,7 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 						log.Println("VerifyBlockErr", err)
 					}
 				} else {
-					err = chain.VerifyPreSignShardBlock(block.(*types.ShardBlock), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), byte(chainID))
+					err = chain.VerifyPreSignShardBlock(block.(*types.ShardBlock), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), chain.ShardChain[chainID].GetBestState().GetShardCommittee(), byte(chainID))
 					if err != nil {
 						log.Println("VerifyBlockErr", err)
 					}

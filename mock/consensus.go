@@ -7,7 +7,6 @@ import (
 	"github.com/incognitochain/incognito-chain/common/consensus"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/consensus_v2/blsbft"
-	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	portalprocessv4 "github.com/incognitochain/incognito-chain/portal/portalv4/portalprocess"
 )
@@ -67,7 +66,7 @@ func (c *Consensus) ExtractBridgeValidationData(block types.BlockInterface) ([][
 	if block.GetVersion() == types.BFT_VERSION {
 		return blsbft.ExtractBridgeValidationData(block)
 	} else if block.GetVersion() >= types.MULTI_VIEW_VERSION {
-		return blsbftv2.ExtractBridgeValidationData(block)
+		return blsbft.ExtractBridgeValidationData(block)
 	}
 	return nil, nil, blsbft.NewConsensusError(blsbft.ConsensusTypeNotExistError, errors.New(block.GetConsensusType()))
 }
