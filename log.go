@@ -1,7 +1,7 @@
 package devframework
 
 import (
-	"os"
+	"log"
 
 	"github.com/incognitochain/incognito-chain/blockchain/committeestate"
 	"github.com/incognitochain/incognito-chain/blockchain/pdex"
@@ -73,7 +73,8 @@ type logWriter struct{}
 
 func (logWriter) Write(p []byte) (n int, err error) {
 	if !disableStdoutLog {
-		os.Stdout.Write(p)
+		// os.Stdout.Write(p)
+		log.Println(string(p))
 	}
 	if logRotator != nil {
 		logRotator.Write(p)
