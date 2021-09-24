@@ -40,6 +40,13 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 		}
 		go func() {
 			for {
+				if chainID == -1 {
+					chainBestView = s.bc.BeaconChain.GetBestView()
+					chainFinalView = s.bc.BeaconChain.GetFinalView()
+				} else {
+					chainBestView = s.bc.ShardChain[chainID].GetBestView()
+					chainFinalView = s.bc.ShardChain[chainID].GetFinalView()
+				}
 				if (isFinalized && chainFinalView.GetHeight() >= waitingBlkHeight) || (!isFinalized && chainBestView.GetHeight() >= waitingBlkHeight) {
 					if chainID == -1 {
 						hash, err := s.bc.GetBeaconBlockHashByHeight(chainFinalView, chainBestView, waitingBlkHeight)
