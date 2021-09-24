@@ -149,6 +149,8 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 	rpcServiceBridgeLogger.SetLevel(common.LevelTrace)
 	transactionLogger.SetLevel(common.LevelTrace)
 	highwayLogger.SetLevel(common.LevelTrace)
+	highwayLogger.SetLevel(common.LevelTrace)
+	synckerLogger.SetLevel(common.LevelTrace)
 	// privacyLogger.SetLevel(common.LevelTrace)
 	mempoolLogger.SetLevel(common.LevelTrace)
 	activeNetParams := config.Param()

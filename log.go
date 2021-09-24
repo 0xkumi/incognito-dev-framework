@@ -64,7 +64,7 @@ var (
 	portalV4ProcessLogger = backendLog.Logger("Portal v4 process log ", false)
 	portalV4TokenLogger   = backendLog.Logger("Portal v4 token log ", false)
 
-	disableStdoutLog = true
+	disableStdoutLog = false
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -135,6 +135,7 @@ var subsystemLoggers = map[string]common.Logger{
 	"PORTALV4TOKENS":  portalV4TokenLogger,
 	"FINS":            finishSyncLogger,
 	"HW":              highwayLogger,
+	"SYK":             synckerLogger,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
