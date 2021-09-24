@@ -141,18 +141,16 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 	if !disableLogFile {
 		initLogRotator(filepath.Join(path, simName+".log"))
 	}
-	dbLogger.SetLevel(common.LevelTrace)
-	blockchainLogger.SetLevel(common.LevelTrace)
-	bridgeLogger.SetLevel(common.LevelTrace)
-	rpcLogger.SetLevel(common.LevelTrace)
-	rpcServiceLogger.SetLevel(common.LevelTrace)
-	rpcServiceBridgeLogger.SetLevel(common.LevelTrace)
-	transactionLogger.SetLevel(common.LevelTrace)
-	highwayLogger.SetLevel(common.LevelTrace)
-	highwayLogger.SetLevel(common.LevelTrace)
-	synckerLogger.SetLevel(common.LevelTrace)
-	// privacyLogger.SetLevel(common.LevelTrace)
-	mempoolLogger.SetLevel(common.LevelTrace)
+	// dbLogger.SetLevel(common.LevelTrace)
+	// blockchainLogger.SetLevel(common.LevelTrace)
+	// bridgeLogger.SetLevel(common.LevelTrace)
+	// rpcLogger.SetLevel(common.LevelTrace)
+	// rpcServiceLogger.SetLevel(common.LevelTrace)
+	// rpcServiceBridgeLogger.SetLevel(common.LevelTrace)
+	// transactionLogger.SetLevel(common.LevelTrace)
+	// peerv2Logger.SetLevel(common.LevelTrace)
+	// synckerLogger.SetLevel(common.LevelTrace)
+	// mempoolLogger.SetLevel(common.LevelTrace)
 	activeNetParams := config.Param()
 
 	common.MaxShardNumber = activeNetParams.ActiveShards
@@ -482,6 +480,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 			panic(err)
 		}
 		if err != nil && err.Error() == "requester not ready" {
+			fmt.Println("requester not ready")
 			time.Sleep(5 * time.Second)
 			continue
 		}

@@ -127,7 +127,7 @@ func (sim *NodeEngine) init() {
 	if err != nil {
 		log.Println(err)
 	}
-	disableStdoutLog = sim.config.DisableLog
+	enableLogToFile = sim.config.DisableLog
 	initLogRotator(filepath.Join(path, simName+".log"))
 	dbLogger.SetLevel(common.LevelTrace)
 	blockchainLogger.SetLevel(common.LevelTrace)
@@ -647,7 +647,7 @@ func (s *NodeEngine) GetUserDatabase() *leveldb.DB {
 }
 
 func (s *NodeEngine) DisableChainLog(b bool) {
-	disableStdoutLog = b
+	enableLogToFile = b
 }
 
 func (s *NodeEngine) SignBlockWithCommittee(block types.BlockInterface, committees []account.Account, committeeIndex []int) error {
