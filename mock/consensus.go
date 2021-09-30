@@ -7,7 +7,6 @@ import (
 	"github.com/incognitochain/incognito-chain/common/consensus"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/consensus_v2/blsbft"
-	"github.com/incognitochain/incognito-chain/consensus_v2/blsbftv2"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	portalprocessv4 "github.com/incognitochain/incognito-chain/portal/portalv4/portalprocess"
 )
@@ -29,6 +28,7 @@ type ConsensusInterface interface {
 	GetAllValidatorKeyState() map[string]consensus.MiningState
 	GetUserRole() (string, string, int)
 	GetCurrentMiningPublicKey() (string, string)
+	GetSyncingValidators() []*consensus.Validator
 }
 
 type Consensus struct {
@@ -63,7 +63,7 @@ func (c *Consensus) ExtractBridgeValidationData(block types.BlockInterface) ([][
 	if block.GetVersion() == types.BFT_VERSION {
 		return blsbft.ExtractBridgeValidationData(block)
 	} else if block.GetVersion() >= types.MULTI_VIEW_VERSION {
-		return blsbftv2.ExtractBridgeValidationData(block)
+		return blsbft.ExtractBridgeValidationData(block)
 	}
 	return nil, nil, blsbft.NewConsensusError(blsbft.ConsensusTypeNotExistError, errors.New(block.GetConsensusType()))
 }
@@ -82,4 +82,8 @@ func (c *Consensus) GetCurrentMiningPublicKey() (string, string) {
 }
 func (c *Consensus) ExtractPortalV4ValidationData(block types.BlockInterface) ([]*portalprocessv4.PortalSig, error) {
 	return nil, nil
+}
+
+func (c *Consensus) GetSyncingValidators() []*consensus.Validator {
+	return c.GetSyncingValidators()
 }

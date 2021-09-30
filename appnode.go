@@ -496,7 +496,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 				blkHashBytes, err := sim.userDB.Get([]byte(key), nil)
 				if err != nil {
 					if err.Error() == "leveldb: not found" {
-						log.Println(err)
+						log.Println("sdfSDFSDFSDFSDF alo", err)
 						time.Sleep(2 * time.Second)
 						break
 					}
