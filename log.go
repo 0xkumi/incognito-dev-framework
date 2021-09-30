@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	// "github.com/incognitochain/incognito-chain/syncker/finishsync"
+	"github.com/incognitochain/incognito-chain/syncker/finishsync"
 
 	"github.com/incognitochain/incognito-chain/addrmanager"
 	"github.com/incognitochain/incognito-chain/blockchain"
@@ -82,7 +82,7 @@ var (
 	privacyV2Logger        = backendLog.Logger("Privacy V2 log ", false)
 	instructionLogger      = backendLog.Logger("Instruction log ", false)
 	committeeStateLogger   = backendLog.Logger("Committee State log ", false)
-	// finishSyncLogger       = backendLog.Logger("Finish Sync log ", false)
+	finishSyncLogger       = backendLog.Logger("Finish Sync log ", false)
 
 	portalLogger          = backendLog.Logger("Portal log ", false)
 	portalRelayingLogger  = backendLog.Logger("Portal relaying log ", false)
@@ -139,7 +139,7 @@ func init() {
 	dataaccessobject.Logger.Init(daov2Logger)
 	btcRelaying.Logger.Init(btcRelayingLogger)
 	syncker.Logger.Init(synckerLogger)
-	// finishsync.Logger.Init(finishSyncLogger)
+	finishsync.Logger.Init(finishSyncLogger)
 	privacy.LoggerV1.Init(privacyV1Logger)
 	privacy.LoggerV2.Init(privacyV2Logger)
 	instruction.Logger.Init(instructionLogger)
@@ -186,14 +186,14 @@ var subsystemLoggers = map[string]common.Logger{
 	"SYNCKER":           synckerLogger,
 	"INST":              instructionLogger,
 	"COMS":              committeeStateLogger,
-	// "FINS":              finishSyncLogger,
-	"PORTAL":          portalLogger,
-	"PORTALRELAYING":  portalRelayingLogger,
-	"PORTALV3COMMON":  portalV3CommonLogger,
-	"PORTALV3PROCESS": portalV3ProcessLogger,
-	"PORTALV3TOKENS":  portalV3TokenLogger,
-	"PORTALV4PROCESS": portalV4ProcessLogger,
-	"PORTALV4TOKENS":  portalV4TokenLogger,
+	"FINS":              finishSyncLogger,
+	"PORTAL":            portalLogger,
+	"PORTALRELAYING":    portalRelayingLogger,
+	"PORTALV3COMMON":    portalV3CommonLogger,
+	"PORTALV3PROCESS":   portalV3ProcessLogger,
+	"PORTALV3TOKENS":    portalV3TokenLogger,
+	"PORTALV4PROCESS":   portalV4ProcessLogger,
+	"PORTALV4TOKENS":    portalV4TokenLogger,
 }
 
 // initLogRotator initializes the logging rotater to write logs to logFile and
