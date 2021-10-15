@@ -91,7 +91,7 @@ func (s *HighwayConnection) Connect() {
 
 	s.conn = peerv2.NewConnManager(
 		host,
-		s.config.HighwayEndpoint,
+		[]string{s.config.HighwayEndpoint},
 		&incognitokey.CommitteePublicKey{},
 		s.config.ConsensusEngine,
 		dispatcher,
