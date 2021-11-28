@@ -36,13 +36,14 @@ import (
 
 type AppNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
-	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
+	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64, chainID int))
 	OnInserted(blkType int, f func(msg interface{}))
 	DisableChainLog(bool)
 	GetBlockchain() *blockchain.BlockChain
 	GetRPC() *rpcclient.RPCClient
 	GetUserDatabase() *leveldb.DB
 	GetShardState(shardID int) (uint64, *common.Hash)
+	SyncSpecificShardBlockBytes(shardID int, height uint64, blockHash string) ([]byte, error)
 	// LightNode() LightNodeInterface
 }
 
@@ -344,7 +345,7 @@ func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
 	if err == nil {
 		sim.lightNodeData.ProcessedBeaconHeight = binary.LittleEndian.Uint64(v1)
 	}
-	processBeaconBlk := func(bc *blockchain.BlockChain, h common.Hash, height uint64) {
+	processBeaconBlk := func(bc *blockchain.BlockChain, h common.Hash, height uint64, chainID int) {
 		for i := sim.lightNodeData.ProcessedBeaconHeight; i <= height; i++ {
 		retry:
 			blks, err := sim.bc.GetBeaconBlockByHeight(i)
@@ -439,6 +440,36 @@ func (sim *NodeEngine) GetShardState(shardID int) (uint64, *common.Hash) {
 	}
 
 	return shardState.LocalHeight, shardState.LocalHash
+}
+
+func (sim *NodeEngine) SyncSpecificShardBlockBytes(shardID int, height uint64, blockHash string) ([]byte, error) {
+	blkCh, err := sim.Network.GetShardBlock(shardID, height, height)
+	fmt.Printf("Request shard %v block from %v to %v\n", shardID, height, height)
+	if err != nil && err.Error() != "requester not ready" {
+		panic(err)
+	}
+	if err != nil && err.Error() == "requester not ready" {
+		fmt.Println("requester not ready")
+		time.Sleep(5 * time.Second)
+		return nil, err
+	}
+	for {
+		blk := <-blkCh
+		if !isNil(blk) {
+			blkBytes, err := json.Marshal(blk)
+			if err != nil {
+				panic(err)
+			}
+
+			blkHash := blk.(*types.ShardBlock).Hash()
+			if blkHash.String() == blockHash {
+				if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
+					panic(err)
+				}
+				return blkBytes, nil
+			}
+		}
+	}
 }
 
 func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {

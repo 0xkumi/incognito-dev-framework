@@ -19,7 +19,7 @@ func (s *NodeEngine) OnInserted(blkType int, f func(msg interface{})) {
 	s.listennerRegister[blkType] = append(s.listennerRegister[blkType], f)
 }
 
-func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64)) {
+func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64, chainID int)) {
 	fullmode := func() {
 		var chainBestView multiview.View
 		var chainFinalView multiview.View
@@ -51,13 +51,13 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 					if chainID == -1 {
 						hash, err := s.bc.GetBeaconBlockHashByHeight(chainFinalView, chainBestView, waitingBlkHeight)
 						if err == nil {
-							f(s.bc, *hash, waitingBlkHeight)
+							f(s.bc, *hash, waitingBlkHeight, chainID)
 							waitingBlkHeight++
 						}
 					} else {
 						hash, err := s.bc.GetShardBlockHashByHeight(chainFinalView, chainBestView, waitingBlkHeight)
 						if err == nil {
-							f(s.bc, *hash, waitingBlkHeight)
+							f(s.bc, *hash, waitingBlkHeight, chainID)
 							waitingBlkHeight++
 						}
 					}
@@ -93,7 +93,7 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 					}
 					hash, err := common.Hash{}.NewHash(blkHash)
 					if err == nil {
-						f(s.bc, *hash, waitingBlkHeight)
+						f(s.bc, *hash, waitingBlkHeight, chainID)
 						waitingBlkHeight++
 					}
 
