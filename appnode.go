@@ -443,7 +443,8 @@ func (sim *NodeEngine) GetShardState(shardID int) (uint64, *common.Hash) {
 }
 
 func (sim *NodeEngine) SyncSpecificShardBlockBytes(shardID int, height uint64, blockHash string) ([]byte, error) {
-	blkCh, err := sim.Network.GetShardBlock(shardID, height, height)
+	newHash, _ := common.Hash{}.NewHashFromStr(blockHash)
+	blkCh, err := sim.Network.GetShardBlockHash(shardID, [][]byte{newHash.Bytes()})
 	fmt.Printf("Request shard %v block from %v to %v\n", shardID, height, height)
 	if err != nil && err.Error() != "requester not ready" {
 		panic(err)

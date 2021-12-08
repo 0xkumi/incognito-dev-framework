@@ -209,6 +209,14 @@ func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) (chan types.
 	return blkCh, nil
 }
 
+func (s *HighwayConnection) GetShardBlockHash(sid int, hashes [][]byte) (chan types.BlockInterface, error) {
+	blkCh, err := s.conn.RequestShardBlocksByHashViaStream(context.Background(), "", sid, hashes)
+	if err != nil {
+		return nil, err
+	}
+	return blkCh, nil
+}
+
 //func (s *HighwayConnection) GetCrossShardBlock(fromsid, tosid, from, to int) *blockchain.CrossShardBlock {
 //	panic("implement me")
 //}
