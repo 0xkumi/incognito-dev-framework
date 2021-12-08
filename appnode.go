@@ -468,6 +468,8 @@ func (sim *NodeEngine) SyncSpecificShardBlockBytes(shardID int, height uint64, b
 				}
 				return blkBytes, nil
 			}
+		} else {
+			return nil, errors.New("cant find block")
 		}
 	}
 }
