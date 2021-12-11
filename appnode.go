@@ -531,14 +531,26 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 				blkHashBytes, err := sim.userDB.Get([]byte(key), nil)
 				if err != nil {
 					if err.Error() == "leveldb: not found" {
-						log.Println(err)
+						// if shardID == 2 {
+						// 	key := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
+						// 	err = sim.userDB.Put([]byte(key), blkHash.Bytes(), nil)
+						// 	if err != nil {
+						// 		fmt.Println(err)
+						// 		continue
+						// 	}
+						// 	blkHashBytes = blkHash.Bytes()
+						// } else {
+						fmt.Println(err)
 						time.Sleep(2 * time.Second)
 						break
+						// }
+					} else {
+						panic(err)
 					}
-					panic(err)
 				}
 				blkLocalHash, err := common.Hash{}.NewHash(blkHashBytes)
 				if err != nil {
+					fmt.Println(blkHash.String(), len(blkHashBytes), key)
 					panic(err)
 				}
 				if !blkHash.IsEqual(blkLocalHash) {
