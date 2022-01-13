@@ -23,7 +23,6 @@ import (
 	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common"
 	"github.com/incognitochain/incognito-chain/config"
-	"github.com/incognitochain/incognito-chain/consensus_v2"
 	"github.com/incognitochain/incognito-chain/incdb"
 	"github.com/incognitochain/incognito-chain/memcache"
 	"github.com/incognitochain/incognito-chain/mempool"
@@ -37,13 +36,14 @@ import (
 
 type AppNodeInterface interface {
 	OnReceive(msgType int, f func(msg interface{}))
-	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
+	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64, chainID int))
 	OnInserted(blkType int, f func(msg interface{}))
 	DisableChainLog(bool)
 	GetBlockchain() *blockchain.BlockChain
 	GetRPC() *rpcclient.RPCClient
 	GetUserDatabase() *leveldb.DB
 	GetShardState(shardID int) (uint64, *common.Hash)
+	SyncSpecificShardBlockBytes(shardID int, height uint64, blockHash string) ([]byte, error)
 	// LightNode() LightNodeInterface
 }
 
@@ -142,22 +142,23 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 	if !disableLogFile {
 		initLogRotator(filepath.Join(path, simName+".log"))
 	}
-	dbLogger.SetLevel(common.LevelTrace)
-	blockchainLogger.SetLevel(common.LevelTrace)
-	bridgeLogger.SetLevel(common.LevelTrace)
-	rpcLogger.SetLevel(common.LevelTrace)
-	rpcServiceLogger.SetLevel(common.LevelTrace)
-	rpcServiceBridgeLogger.SetLevel(common.LevelTrace)
-	transactionLogger.SetLevel(common.LevelTrace)
-	// privacyLogger.SetLevel(common.LevelTrace)
-	mempoolLogger.SetLevel(common.LevelTrace)
+	// dbLogger.SetLevel(common.LevelTrace)
+	// blockchainLogger.SetLevel(common.LevelTrace)
+	// bridgeLogger.SetLevel(common.LevelTrace)
+	// rpcLogger.SetLevel(common.LevelTrace)
+	// rpcServiceLogger.SetLevel(common.LevelTrace)
+	// rpcServiceBridgeLogger.SetLevel(common.LevelTrace)
+	// transactionLogger.SetLevel(common.LevelTrace)
+	// peerv2Logger.SetLevel(common.LevelTrace)
+	// synckerLogger.SetLevel(common.LevelTrace)
+	// mempoolLogger.SetLevel(common.LevelTrace)
 	activeNetParams := config.Param()
 
 	common.MaxShardNumber = activeNetParams.ActiveShards
 	//init blockchain
 	bc := blockchain.BlockChain{}
 
-	cs := consensus_v2.NewConsensusEngine()
+	cs := mock.Consensus{}
 	txPool := mempool.TxPool{}
 	tempPool := mempool.TxPool{}
 	btcrd := mock.BTCRandom{} // use mock for now
@@ -219,7 +220,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 		panic(err)
 	}
 	txPool.Init(&mempool.Config{
-		ConsensusEngine: cs,
+		ConsensusEngine: &cs,
 		BlockChain:      &bc,
 		DataBase:        db,
 		FeeEstimator:    fees,
@@ -270,7 +271,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 		PubSubManager: ps,
 		FeeEstimator:  make(map[byte]blockchain.FeeEstimator),
 		// RandomClient:    &btcrd,
-		ConsensusEngine: cs,
+		ConsensusEngine: &cs,
 		RelayShards:     relayShards,
 		PoolManager:     poolManager,
 	})
@@ -280,7 +281,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 	bc.InitChannelBlockchain(cRemovedTxs)
 
 	sim.bc = &bc
-	sim.consensus = cs
+	sim.consensus = &cs
 	sim.txpool = &txPool
 	sim.temppool = &tempPool
 	sim.btcrd = &btcrd
@@ -344,7 +345,7 @@ func (sim *NodeEngine) startLightSyncProcess(requireFinalizedBeacon bool) {
 	if err == nil {
 		sim.lightNodeData.ProcessedBeaconHeight = binary.LittleEndian.Uint64(v1)
 	}
-	processBeaconBlk := func(bc *blockchain.BlockChain, h common.Hash, height uint64) {
+	processBeaconBlk := func(bc *blockchain.BlockChain, h common.Hash, height uint64, chainID int) {
 		for i := sim.lightNodeData.ProcessedBeaconHeight; i <= height; i++ {
 		retry:
 			blks, err := sim.bc.GetBeaconBlockByHeight(i)
@@ -441,6 +442,39 @@ func (sim *NodeEngine) GetShardState(shardID int) (uint64, *common.Hash) {
 	return shardState.LocalHeight, shardState.LocalHash
 }
 
+func (sim *NodeEngine) SyncSpecificShardBlockBytes(shardID int, height uint64, blockHash string) ([]byte, error) {
+	newHash, _ := common.Hash{}.NewHashFromStr(blockHash)
+	blkCh, err := sim.Network.GetShardBlockHash(shardID, [][]byte{newHash.Bytes()})
+	fmt.Printf("Request shard %v block from %v to %v\n", shardID, height, height)
+	if err != nil && err.Error() != "requester not ready" {
+		panic(err)
+	}
+	if err != nil && err.Error() == "requester not ready" {
+		fmt.Println("requester not ready")
+		time.Sleep(5 * time.Second)
+		return nil, err
+	}
+	for {
+		blk := <-blkCh
+		if !isNil(blk) {
+			blkBytes, err := json.Marshal(blk)
+			if err != nil {
+				panic(err)
+			}
+
+			blkHash := blk.(*types.ShardBlock).Hash()
+			if blkHash.String() == blockHash {
+				if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {
+					panic(err)
+				}
+				return blkBytes, nil
+			}
+		} else {
+			return nil, errors.New("cant find block")
+		}
+	}
+}
+
 func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 	log.Println("start sync shard", shardID, state.LocalHeight)
 	blk, err := sim.bc.GetShardBlockByHeightV1(1, shardID)
@@ -480,6 +514,7 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 			panic(err)
 		}
 		if err != nil && err.Error() == "requester not ready" {
+			fmt.Println("requester not ready")
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -496,14 +531,26 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 				blkHashBytes, err := sim.userDB.Get([]byte(key), nil)
 				if err != nil {
 					if err.Error() == "leveldb: not found" {
-						log.Println(err)
+						// if shardID == 2 {
+						// 	key := fmt.Sprintf("s-%v-%v", shardID, blk.GetHeight())
+						// 	err = sim.userDB.Put([]byte(key), blkHash.Bytes(), nil)
+						// 	if err != nil {
+						// 		fmt.Println(err)
+						// 		continue
+						// 	}
+						// 	blkHashBytes = blkHash.Bytes()
+						// } else {
+						fmt.Println(err)
 						time.Sleep(2 * time.Second)
 						break
+						// }
+					} else {
+						panic(err)
 					}
-					panic(err)
 				}
 				blkLocalHash, err := common.Hash{}.NewHash(blkHashBytes)
 				if err != nil {
+					fmt.Println(blkHash.String(), len(blkHashBytes), key)
 					panic(err)
 				}
 				if !blkHash.IsEqual(blkLocalHash) {
@@ -514,7 +561,8 @@ func (sim *NodeEngine) syncShardLight(shardID byte, state *currentShardState) {
 						}
 					} else {
 						fmt.Printf("wrong block hash need %v get %v\n", blkLocalHash.String(), blkHash.String())
-						panic(errors.New("Synced block has wrong block hash 🙀"))
+						log.Println(errors.New("Synced block has wrong block hash 🙀"))
+						continue
 					}
 				}
 				if err := sim.userDB.Put(blkHash.Bytes(), blkBytes, nil); err != nil {

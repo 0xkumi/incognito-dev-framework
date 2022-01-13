@@ -91,7 +91,7 @@ func (s *HighwayConnection) Connect() {
 
 	s.conn = peerv2.NewConnManager(
 		host,
-		s.config.HighwayEndpoint,
+		[]string{s.config.HighwayEndpoint},
 		&incognitokey.CommitteePublicKey{},
 		s.config.ConsensusEngine,
 		dispatcher,
@@ -203,6 +203,14 @@ func (s *HighwayConnection) GetBeaconBlock(from, to uint64) (chan types.BlockInt
 
 func (s *HighwayConnection) GetShardBlock(sid int, from, to uint64) (chan types.BlockInterface, error) {
 	blkCh, err := s.conn.RequestShardBlocksViaStream(context.Background(), "", sid, from, to)
+	if err != nil {
+		return nil, err
+	}
+	return blkCh, nil
+}
+
+func (s *HighwayConnection) GetShardBlockHash(sid int, hashes [][]byte) (chan types.BlockInterface, error) {
+	blkCh, err := s.conn.RequestShardBlocksByHashViaStream(context.Background(), "", sid, hashes)
 	if err != nil {
 		return nil, err
 	}

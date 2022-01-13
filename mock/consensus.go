@@ -1,9 +1,12 @@
 package mock
 
 import (
+	"errors"
+
 	"github.com/incognitochain/incognito-chain/blockchain/types"
 	"github.com/incognitochain/incognito-chain/common/consensus"
 	"github.com/incognitochain/incognito-chain/consensus_v2"
+	"github.com/incognitochain/incognito-chain/consensus_v2/blsbft"
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	portalprocessv4 "github.com/incognitochain/incognito-chain/portal/portalv4/portalprocess"
 )
@@ -41,23 +44,31 @@ func (c *Consensus) GetOneValidatorForEachConsensusProcess() map[int]*consensus.
 }
 
 func (c *Consensus) ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error {
-	return c.consensusEngine.ValidateProducerPosition(blk, lastProposerIdx, committee, minCommitteeSize)
+	// return c.consensusEngine.ValidateProducerPosition(blk, lastProposerIdx, committee, minCommitteeSize)
+	return nil
 }
 
 func (c *Consensus) ValidateProducerSig(block types.BlockInterface, consensusType string) error {
-	return c.consensusEngine.ValidateProducerSig(block, consensusType)
+	// return c.consensusEngine.ValidateProducerSig(block, consensusType)
+	return nil
 }
 
 func (c *Consensus) ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey) error {
-	return c.consensusEngine.ValidateBlockCommitteSig(block, committee)
+	// return c.consensusEngine.ValidateBlockCommitteSig(block, committee)
+	return nil
 }
 
 func (c *Consensus) IsCommitteeInShard(sid byte) bool {
-	return true
+	return false
 }
 
 func (c *Consensus) ExtractBridgeValidationData(block types.BlockInterface) ([][]byte, []int, error) {
-	return nil, nil, nil
+	if block.GetVersion() == types.BFT_VERSION {
+		return blsbft.ExtractBridgeValidationData(block)
+	} else if block.GetVersion() >= types.MULTI_VIEW_VERSION {
+		return blsbft.ExtractBridgeValidationData(block)
+	}
+	return nil, nil, blsbft.NewConsensusError(blsbft.ConsensusTypeNotExistError, errors.New(block.GetConsensusType()))
 }
 func (c *Consensus) GetAllMiningPublicKeys() []string {
 	return nil
