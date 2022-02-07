@@ -88,5 +88,5 @@ func (c *Consensus) ExtractPortalV4ValidationData(block types.BlockInterface) ([
 }
 
 func (c *Consensus) GetSyncingValidators() []*consensus.Validator {
-	return c.consensusEngine.GetSyncingValidators()
+	return nil
 }
