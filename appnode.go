@@ -308,8 +308,8 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 		go rpcServer.Start()
 	}
 	sim.startPubSub()
-	//init syncker
-	sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc})
+	// //init syncker
+	// sim.syncker.Init(&syncker.SynckerManagerConfig{Blockchain: sim.bc, Consensus: sim.consensus, Network: sim.Network.conn})
 
 	//init user database
 	handles := -1
