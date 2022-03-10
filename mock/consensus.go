@@ -29,6 +29,7 @@ type ConsensusInterface interface {
 	GetUserRole() (string, string, int)
 	GetCurrentMiningPublicKey() (string, string)
 	GetSyncingValidators() []*consensus.Validator
+	GetValidators() []*consensus.Validator
 }
 
 type Consensus struct {
@@ -89,4 +90,8 @@ func (c *Consensus) ExtractPortalV4ValidationData(block types.BlockInterface) ([
 
 func (c *Consensus) GetSyncingValidators() []*consensus.Validator {
 	return nil
+}
+
+func (c *Consensus) GetValidators() []*consensus.Validator {
+	return c.GetValidators()
 }
