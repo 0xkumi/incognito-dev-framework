@@ -93,5 +93,5 @@ func (c *Consensus) GetSyncingValidators() []*consensus.Validator {
 }
 
 func (c *Consensus) GetValidators() []*consensus.Validator {
-	return c.GetValidators()
+	return nil
 }
