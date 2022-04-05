@@ -27,6 +27,7 @@ import (
 	"github.com/incognitochain/incognito-chain/memcache"
 	"github.com/incognitochain/incognito-chain/mempool"
 	"github.com/incognitochain/incognito-chain/metadata"
+	"github.com/incognitochain/incognito-chain/metadata/evmcaller"
 	"github.com/incognitochain/incognito-chain/portal"
 	"github.com/incognitochain/incognito-chain/pubsub"
 	"github.com/incognitochain/incognito-chain/rpcserver"
@@ -115,6 +116,7 @@ func NewAppNode(name string, networkParam NetworkParam, isLightNode bool, requir
 	if common.TIMESLOT == 0 {
 		common.TIMESLOT = 10
 	}
+	evmcaller.InitCacher()
 	sim.initNode(isLightNode, enableRPC, disableLogFile)
 	relayShards := []byte{}
 	if isLightNode {
