@@ -121,3 +121,8 @@ func (s *Server) OnTx(peer *peer.PeerConn, msg *wire.MessageTx) {
 
 func (s *Server) OnTxPrivacyToken(peer *peer.PeerConn, msg *wire.MessageTxPrivacyToken) {
 }
+
+func (s *Server) RequestMissingViewViaStream(peerID string, hashes [][]byte, fromCID int, chainName string) (err error) {
+
+	return nil
+}
