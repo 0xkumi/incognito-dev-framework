@@ -33,10 +33,11 @@ func UpdateShardHeaderOnBodyChange(block *types.ShardBlock, bc *blockchain.Block
 	if err != nil {
 		panic(err)
 	}
-	txInstructions, err := blockchain.CreateShardInstructionsFromTransactionAndInstruction(block.Body.Transactions, bc, block.Header.ShardID, block.Header.Height)
+	txInstructions, _, err := blockchain.CreateShardInstructionsFromTransactionAndInstruction(block.Body.Transactions, bc, block.Header.ShardID, block.Header.Height, block.Header.BeaconHeight, false)
 	if err != nil {
 		return err
 	}
+
 	totalInstructions := []string{}
 	for _, value := range txInstructions {
 		totalInstructions = append(totalInstructions, value...)

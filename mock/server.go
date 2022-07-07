@@ -7,6 +7,7 @@ import (
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/peer"
 	"github.com/incognitochain/incognito-chain/wire"
+	libp2p "github.com/libp2p/go-libp2p-core/peer"
 	peer2 "github.com/libp2p/go-libp2p-peer"
 )
 
@@ -19,6 +20,10 @@ func (s *Server) PushMessageToShard(msg wire.Message, shard byte) error {
 }
 
 func (s *Server) PushBlockToAll(block types.BlockInterface, previousValidationData string, isBeacon bool) error {
+	return nil
+}
+
+func (s *Server) PushMessageToBeacon(msg wire.Message, exclusivePeerIDs map[libp2p.ID]bool) error {
 	return nil
 }
 
@@ -115,4 +120,9 @@ func (s *Server) OnTx(peer *peer.PeerConn, msg *wire.MessageTx) {
 }
 
 func (s *Server) OnTxPrivacyToken(peer *peer.PeerConn, msg *wire.MessageTxPrivacyToken) {
+}
+
+func (s *Server) RequestMissingViewViaStream(peerID string, hashes [][]byte, fromCID int, chainName string) (err error) {
+
+	return nil
 }

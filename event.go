@@ -19,7 +19,7 @@ func (s *NodeEngine) OnInserted(blkType int, f func(msg interface{})) {
 	s.listennerRegister[blkType] = append(s.listennerRegister[blkType], f)
 }
 
-func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64)) {
+func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64, chainID int)) {
 	fullmode := func() {
 		var chainBestView multiview.View
 		var chainFinalView multiview.View
@@ -51,13 +51,13 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 					if chainID == -1 {
 						hash, err := s.bc.GetBeaconBlockHashByHeight(chainFinalView, chainBestView, waitingBlkHeight)
 						if err == nil {
-							f(s.bc, *hash, waitingBlkHeight)
+							f(s.bc, *hash, waitingBlkHeight, chainID)
 							waitingBlkHeight++
 						}
 					} else {
 						hash, err := s.bc.GetShardBlockHashByHeight(chainFinalView, chainBestView, waitingBlkHeight)
 						if err == nil {
-							f(s.bc, *hash, waitingBlkHeight)
+							f(s.bc, *hash, waitingBlkHeight, chainID)
 							waitingBlkHeight++
 						}
 					}
@@ -83,6 +83,31 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 				chain := s.lightNodeData.Shards[byte(chainID)]
 				if chain.LocalHeight >= waitingBlkHeight {
 					prefix := fmt.Sprintf("s-%v-%v", chainID, waitingBlkHeight)
+					// if chainID == 2 && waitingBlkHeight == 3903687 {
+					// 	blkCh, err := s.Network.GetShardBlock(int(2), waitingBlkHeight, 3926614)
+					// 	if err != nil && err.Error() != "requester not ready" {
+					// 		panic(err)
+					// 	}
+					// 	if err != nil && err.Error() == "requester not ready" {
+					// 		fmt.Println("requester not ready")
+					// 		time.Sleep(5 * time.Second)
+					// 		continue
+					// 	}
+					// 	for {
+					// 		blk := <-blkCh
+					// 		if !isNil(blk) {
+					// 			blkHash := blk.(*types.ShardBlock).Hash()
+					// 			key := fmt.Sprintf("s-%v-%v", 2, blk.GetHeight())
+					// 			err = s.userDB.Put([]byte(key), blkHash.Bytes(), nil)
+					// 			if err != nil {
+					// 				fmt.Println(err)
+					// 				continue
+					// 			}
+					// 		} else {
+					// 			break
+					// 		}
+					// 	}
+					// }
 					blkHash, err := s.userDB.Get([]byte(prefix), nil)
 					if err != nil {
 						if err == leveldb.ErrNotFound {
@@ -93,14 +118,12 @@ func (s *NodeEngine) OnNewBlockFromParticularHeight(chainID int, blkHeight int64
 					}
 					hash, err := common.Hash{}.NewHash(blkHash)
 					if err == nil {
-						f(s.bc, *hash, waitingBlkHeight)
+						f(s.bc, *hash, waitingBlkHeight, chainID)
 						waitingBlkHeight++
 					}
-
 				} else {
 					time.Sleep(500 * time.Millisecond)
 				}
-
 			}
 		}()
 		return
