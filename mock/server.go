@@ -126,3 +126,5 @@ func (s *Server) RequestMissingViewViaStream(peerID string, hashes [][]byte, fro
 
 	return nil
 }
+
+func (s *Server) InsertNewShardView(*blockchain.ShardBestState) {}
