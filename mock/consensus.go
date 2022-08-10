@@ -19,7 +19,7 @@ type BlockValidation interface {
 type ConsensusInterface interface {
 	GetOneValidator() *consensus.Validator
 	GetOneValidatorForEachConsensusProcess() map[int]*consensus.Validator
-	ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int, produceTimeSlot int64, proposeTimeSlot int64) error
+	ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error
 	ValidateProducerSig(block types.BlockInterface, consensusType string) error
 	ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey) error
 	IsCommitteeInShard(byte) bool
@@ -44,7 +44,7 @@ func (c *Consensus) GetOneValidatorForEachConsensusProcess() map[int]*consensus.
 	return nil
 }
 
-func (c *Consensus) ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int, produceTimeSlot int64, proposeTimeSlot int64) error {
+func (c *Consensus) ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error {
 	// return c.consensusEngine.ValidateProducerPosition(blk, lastProposerIdx, committee, minCommitteeSize)
 	return nil
 }

@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/btcsuite/btcd v0.20.1-beta
 	github.com/ethereum/go-ethereum v1.8.22-0.20190710074244-72029f0f88f6
-	github.com/incognitochain/incognito-chain v0.0.0-20220808025640-7409cff16ad4
+	github.com/incognitochain/incognito-chain v0.0.0-20220804060227-fc056388d1d0
 	github.com/jrick/logrotate v1.0.0
 	github.com/libp2p/go-libp2p-core v0.6.1
 	github.com/libp2p/go-libp2p-peer v0.2.0
