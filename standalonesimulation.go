@@ -410,8 +410,8 @@ func (sim *NodeEngine) PrintBlockChainInfo() {
 	log.Println("Shard Chain:")
 }
 
-//life cycle of a block generation process:
-//PreCreate -> PreValidation -> PreInsert ->
+// life cycle of a block generation process:
+// PreCreate -> PreValidation -> PreInsert ->
 func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 	time.Sleep(time.Nanosecond)
 	var chainArray = []int{-1}
@@ -607,8 +607,8 @@ func (sim *NodeEngine) GenerateBlock(args ...interface{}) *NodeEngine {
 	return sim
 }
 
-//number of second we want simulation to forward
-//default = round interval
+// number of second we want simulation to forward
+// default = round interval
 func (sim *NodeEngine) NextRound() {
 	sim.timer.Forward(10)
 }
