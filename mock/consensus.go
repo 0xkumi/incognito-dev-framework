@@ -19,9 +19,9 @@ type BlockValidation interface {
 type ConsensusInterface interface {
 	GetOneValidator() *consensus.Validator
 	GetOneValidatorForEachConsensusProcess() map[int]*consensus.Validator
-	ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error
+	ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int, produceTimeSlot int64, proposeTimeSlot int64) error
 	ValidateProducerSig(block types.BlockInterface, consensusType string) error
-	ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey) error
+	ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey, numOfFixNode int) error
 	IsCommitteeInShard(byte) bool
 	ExtractBridgeValidationData(block types.BlockInterface) ([][]byte, []int, error)
 	GetAllMiningPublicKeys() []string
@@ -44,7 +44,7 @@ func (c *Consensus) GetOneValidatorForEachConsensusProcess() map[int]*consensus.
 	return nil
 }
 
-func (c *Consensus) ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int) error {
+func (c *Consensus) ValidateProducerPosition(blk types.BlockInterface, lastProposerIdx int, committee []incognitokey.CommitteePublicKey, minCommitteeSize int, produceTimeSlot int64, proposeTimeSlot int64) error {
 	// return c.consensusEngine.ValidateProducerPosition(blk, lastProposerIdx, committee, minCommitteeSize)
 	return nil
 }
@@ -54,7 +54,7 @@ func (c *Consensus) ValidateProducerSig(block types.BlockInterface, consensusTyp
 	return nil
 }
 
-func (c *Consensus) ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey) error {
+func (c *Consensus) ValidateBlockCommitteSig(block types.BlockInterface, committee []incognitokey.CommitteePublicKey, numOfFixNode int) error {
 	// return c.consensusEngine.ValidateBlockCommitteSig(block, committee)
 	return nil
 }
