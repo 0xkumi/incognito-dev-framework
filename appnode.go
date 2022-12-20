@@ -173,7 +173,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 		fees[i] = mempool.NewFeeEstimator(
 			mempool.DefaultEstimateFeeMaxRollback,
 			mempool.DefaultEstimateFeeMinRegisteredBlocks,
-			1, 1, 1)
+			1)
 	}
 	cPendingTxs := make(chan metadata.Transaction, 500)
 	cRemovedTxs := make(chan metadata.Transaction, 500)
