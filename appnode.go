@@ -144,6 +144,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 	if !disableLogFile {
 		initLogRotator(filepath.Join(path, simName+".log"))
 	}
+
 	// dbLogger.SetLevel(common.LevelTrace)
 	// blockchainLogger.SetLevel(common.LevelTrace)
 	// bridgeLogger.SetLevel(common.LevelTrace)
@@ -155,7 +156,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 	// synckerLogger.SetLevel(common.LevelTrace)
 	// mempoolLogger.SetLevel(common.LevelTrace)
 	activeNetParams := config.Param()
-
+	cfg := config.Config()
 	common.MaxShardNumber = activeNetParams.ActiveShards
 	//init blockchain
 	bc := blockchain.BlockChain{}
@@ -173,7 +174,7 @@ func (sim *NodeEngine) initNode(isLightNode bool, enableRPC bool, disableLogFile
 		fees[i] = mempool.NewFeeEstimator(
 			mempool.DefaultEstimateFeeMaxRollback,
 			mempool.DefaultEstimateFeeMinRegisteredBlocks,
-			1, 1, 1)
+			1, 1, 1, cfg.SpecifiedMinFeePerKBType2, cfg.SpecifiedMinFeePerTxType2)
 	}
 	cPendingTxs := make(chan metadata.Transaction, 500)
 	cRemovedTxs := make(chan metadata.Transaction, 500)
